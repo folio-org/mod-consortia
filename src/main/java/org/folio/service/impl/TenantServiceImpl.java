@@ -3,7 +3,6 @@ package org.folio.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.folio.pv.domain.dto.Tenant;
 import org.folio.pv.domain.dto.TenantCollection;
 import org.folio.repository.CQLService;
 import org.folio.repository.TenantRepository;
@@ -36,7 +35,7 @@ public class TenantServiceImpl implements TenantService{
         .stream()
         .map(TenantServiceImpl::entityToDto)
         .toList());
-      result.setTotalRecords(cqlService.countByCQL(Tenant.class, query));
+      result.setTotalRecords(cqlService.countByCQL(org.folio.entity.Tenant.class, query));
     }
     return result;
   }

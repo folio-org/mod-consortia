@@ -6,6 +6,13 @@ info:
 servers:
   - url: /consortia/
 paths:
+  /health-check:
+    description: Module  health check
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
   /tenants:
     get:
       description: Get a list of tenants
