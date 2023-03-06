@@ -30,7 +30,7 @@ class TenantControllerTest extends BaseTest {
       .andExpect(
         matchAll(
           status().is(400),
-          content().contentType(MediaType.APPLICATION_JSON_VALUE)));
+          content().contentType(MediaType.TEXT_PLAIN)));
   }
 
 }
