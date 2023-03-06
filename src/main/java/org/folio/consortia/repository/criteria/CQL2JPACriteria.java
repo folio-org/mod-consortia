@@ -19,7 +19,6 @@ import java.io.IOException;
 
 @Log4j2
 public class CQL2JPACriteria<E> {
-
   private final CriteriaBuilder builder;
   public final Root<E> root;
   public static final String NOT_EQUALS_OPERATOR = "<>";
@@ -63,23 +62,19 @@ public class CQL2JPACriteria<E> {
 
   private Predicate indexNode(Path<?> field, CQLTermNode node)
       throws QueryValidationException {
-
     String comparator = node.getRelation().getBase().toLowerCase();
 
-    switch (comparator) {
-      case "adj", "all", "any", "==", NOT_EQUALS_OPERATOR:
-        return buildQuery(field, node);
-      default:
-        throw new CQLFeatureUnsupportedException(
-            "Relation " + comparator + " not implemented yet: " + node);
-    }
+    return switch (comparator) {
+      case "adj", "all", "any", "==", NOT_EQUALS_OPERATOR -> buildQuery(field, node);
+      default -> throw new CQLFeatureUnsupportedException(
+        "Relation " + comparator + " not implemented yet: " + node);
+    };
   }
 
   private Predicate buildQuery(Path<?> field, CQLTermNode node) {
     return queryByLike((Path<String>) field, node);
   }
 
-  /** Create an SQL expression using LIKE query syntax. */
   private Predicate queryByLike(Path<String> field, CQLTermNode node) {
     return builder.like(field, Cql2SqlUtil.cql2like(node.getTerm()));
   }

@@ -19,7 +19,6 @@ import java.util.List;
 @Log4j2
 @RequiredArgsConstructor
 public class TenantServiceImpl implements TenantService {
-
   private final TenantRepository repository;
   private final CQLService cqlService;
 

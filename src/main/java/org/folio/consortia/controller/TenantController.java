@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class TenantController implements TenantsApi {
   @Autowired
   private final TenantService service;
+
   @Override
   public ResponseEntity<TenantCollection> getTenants(String query, Integer offset, Integer limit) {
     return ResponseEntity.ok(service.get(query, offset, limit));
