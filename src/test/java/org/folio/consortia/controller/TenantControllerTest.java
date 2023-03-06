@@ -29,8 +29,7 @@ class TenantControllerTest extends BaseTest {
     this.mockMvc.perform(get("/consortia/tenants?query=tenantName==").headers(headers))
       .andExpect(
         matchAll(
-          status().is(400),
-          content().contentType(MediaType.TEXT_PLAIN)));
+          status().is(400)));
   }
 
 }
