@@ -3,6 +3,7 @@ package org.folio.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+@Table
 @Entity
 @Data
 public class Tenant {
