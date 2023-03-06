@@ -28,7 +28,7 @@
     <java.version>17</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <start-class>org.folio.FolioConsortiaApplication</start-class>
+    <start-class>org.folio.consortia.FolioConsortiaApplication</start-class>
     <sonar.exclusions>
       <!-- define sonar exclusions here -->
       src/main/java/org/folio/template/FolioSpringTemplateApplication.java
