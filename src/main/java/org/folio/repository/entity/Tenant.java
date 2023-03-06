@@ -1,11 +1,12 @@
-package org.folio.entity;
+package org.folio.repository.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import lombok.Data;
 
-@Table
-@Entity
 @Data
+@Entity
 public class Tenant {
   @Id
   @Column(name = "tenant_id", updatable = false, nullable = false)

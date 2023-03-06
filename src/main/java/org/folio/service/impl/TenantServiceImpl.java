@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.folio.pv.domain.dto.TenantCollection;
 import org.folio.repository.CQLService;
 import org.folio.repository.TenantRepository;
+import org.folio.repository.entity.Tenant;
 import org.folio.service.TenantService;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
@@ -27,20 +28,20 @@ public class TenantServiceImpl implements TenantService{
   public TenantCollection get(String query, Integer offset, Integer limit) {
     var result = new TenantCollection();
     if (StringUtils.isBlank(query)) {
-      List<org.folio.entity.Tenant> tenantList = repository.findAll();
+      List<Tenant> tenantList = repository.findAll();
       result.setTenants(tenantList.stream().map(TenantServiceImpl::entityToDto).toList());
       result.setTotalRecords(tenantList.size());
     } else {
-      result.setTenants(cqlService.getByCQL(org.folio.entity.Tenant.class, query, offset, limit)
+      result.setTenants(cqlService.getByCQL(Tenant.class, query, offset, limit)
         .stream()
         .map(TenantServiceImpl::entityToDto)
         .toList());
-      result.setTotalRecords(cqlService.countByCQL(org.folio.entity.Tenant.class, query));
+      result.setTotalRecords(cqlService.countByCQL(Tenant.class, query));
     }
     return result;
   }
 
-  public static org.folio.pv.domain.dto.Tenant entityToDto(org.folio.entity.Tenant entity) {
+  public static org.folio.pv.domain.dto.Tenant entityToDto(Tenant entity) {
     var result = new org.folio.pv.domain.dto.Tenant();
 
     result.setTenantId(entity.getTenantId());
