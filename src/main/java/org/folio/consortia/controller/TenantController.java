@@ -1,9 +1,9 @@
-package org.folio.controller;
+package org.folio.consortia.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.folio.pv.domain.dto.TenantCollection;
 import org.folio.pv.rest.resource.TenantsApi;
-import org.folio.service.TenantService;
+import org.folio.consortia.service.TenantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;

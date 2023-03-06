@@ -1,4 +1,4 @@
-package org.folio.service;
+package org.folio.consortia.service;
 
 import org.folio.pv.domain.dto.TenantCollection;
 

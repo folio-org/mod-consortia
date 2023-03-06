@@ -1,4 +1,4 @@
-package org.folio.repository.criteria;
+package org.folio.consortia.repository.criteria;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
@@ -9,8 +9,6 @@ import org.z3950.zing.cql.CQLTermNode;
 
 import java.util.Arrays;
 import java.util.List;
-
-import static org.folio.repository.criteria.CQL2JPACriteria.CRITERIA_JSONB_START;
 
 public class JsonbNodeConverter {
 
@@ -50,7 +48,7 @@ public class JsonbNodeConverter {
   @NotNull
   public List<String> getFieldNames(String jsonPath) {
     return Arrays.stream(jsonPath.split("\\."))
-      .filter(fieldName -> !CRITERIA_JSONB_START.equals(fieldName))
+      .filter(fieldName -> !CQL2JPACriteria.CRITERIA_JSONB_START.equals(fieldName))
       .toList();
   }
 

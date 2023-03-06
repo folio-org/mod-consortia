@@ -1,6 +1,6 @@
-package org.folio.repository;
+package org.folio.consortia.repository;
 
-import org.folio.repository.entity.Tenant;
+import org.folio.consortia.repository.entity.Tenant;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

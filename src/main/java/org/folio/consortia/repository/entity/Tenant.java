@@ -1,4 +1,4 @@
-package org.folio.repository.entity;
+package org.folio.consortia.repository.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

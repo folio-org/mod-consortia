@@ -1,11 +1,11 @@
-package org.folio.repository;
+package org.folio.consortia.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.CriteriaQuery;
 import lombok.extern.log4j.Log4j2;
 import org.folio.cql2pgjson.exception.QueryValidationException;
-import org.folio.repository.criteria.CQL2JPACriteria;
+import org.folio.consortia.repository.criteria.CQL2JPACriteria;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

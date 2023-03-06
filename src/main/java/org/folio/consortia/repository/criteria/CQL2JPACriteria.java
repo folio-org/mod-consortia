@@ -1,4 +1,4 @@
-package org.folio.repository.criteria;
+package org.folio.consortia.repository.criteria;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.*;
