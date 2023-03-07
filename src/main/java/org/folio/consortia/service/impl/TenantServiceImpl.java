@@ -8,12 +8,10 @@ import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.entity.Tenant;
 import org.folio.spring.data.OffsetRequest;
 import org.springframework.data.domain.Page;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@EnableScheduling
 @Log4j2
 @RequiredArgsConstructor
 public class TenantServiceImpl implements TenantService {
