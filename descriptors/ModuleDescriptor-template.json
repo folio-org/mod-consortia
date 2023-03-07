@@ -10,14 +10,6 @@
           "methods": [
             "GET"
           ],
-          "pathPattern": "/consortia/health-check",
-          "permissionsRequired": [],
-          "modulePermissions": []
-        },
-        {
-          "methods": [
-            "GET"
-          ],
           "pathPattern": "/consortia/tenants",
           "permissionsRequired": [
             "consortia.tenants.collection.get"
@@ -62,7 +54,7 @@
     {
       "permissionName": "consortia.tenants.collection.get",
       "displayName": "get tenants",
-      "description": "Get tenants"
+      "description": "Get list of tenants"
     }
   ],
   "requires": [],

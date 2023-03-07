@@ -22,14 +22,4 @@ class TenantControllerTest extends BaseTest {
           status().isOk(),
           content().contentType(MediaType.APPLICATION_JSON_VALUE)));
   }
-
-  @Test
-  void shouldReturnBadRequest() throws Exception {
-    var headers = defaultHeaders();
-    this.mockMvc.perform(get("/consortia/tenants?query=tenantName==").headers(headers))
-      .andExpect(
-        matchAll(
-          status().is(400)));
-  }
-
 }

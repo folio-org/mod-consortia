@@ -2,10 +2,8 @@ package org.folio.consortia.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.folio.consortia.service.TenantService;
 import org.folio.pv.domain.dto.TenantCollection;
-import org.folio.consortia.service.CQLService;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.entity.Tenant;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -20,23 +18,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TenantServiceImpl implements TenantService {
   private final TenantRepository repository;
-  private final CQLService cqlService;
 
   @Transactional(readOnly = true)
   @Override
-  public TenantCollection get(String query, Integer offset, Integer limit) {
+  public TenantCollection get() {
     var result = new TenantCollection();
-    if (StringUtils.isBlank(query)) {
-      List<Tenant> tenantList = repository.findAll();
-      result.setTenants(tenantList.stream().map(TenantServiceImpl::entityToDto).toList());
-      result.setTotalRecords(tenantList.size());
-    } else {
-      result.setTenants(cqlService.getByCQL(Tenant.class, query, offset, limit)
-        .stream()
-        .map(TenantServiceImpl::entityToDto)
-        .toList());
-      result.setTotalRecords(cqlService.countByCQL(Tenant.class, query));
-    }
+    List<Tenant> tenantList = repository.findAll();
+    result.setTenants(tenantList.stream().map(TenantServiceImpl::entityToDto).toList());
+    result.setTotalRecords(tenantList.size());
+
     return result;
   }
 
