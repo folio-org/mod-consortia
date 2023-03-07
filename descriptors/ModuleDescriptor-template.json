@@ -28,9 +28,7 @@
           "methods": [
             "POST"
           ],
-          "modulePermissions": [
-          "consortia.job.collection.get"
-          ],
+          "modulePermissions": [],
           "pathPattern": "/_/tenant"
         },
         {
