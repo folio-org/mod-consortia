@@ -16,7 +16,7 @@ class TenantControllerTest extends BaseTest {
   @Test
   void getTenants() throws Exception {
     var headers = defaultHeaders();
-    this.mockMvc.perform(get("/consortia/tenants?query=tenantName==\"River2\"").headers(headers))
+    this.mockMvc.perform(get("/consortia/tenants?limit=2&offset=1").headers(headers))
       .andExpect(
         matchAll(
           status().isOk(),
