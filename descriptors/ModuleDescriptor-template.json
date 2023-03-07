@@ -13,6 +13,16 @@
           "pathPattern": "/consortia/health-check",
           "permissionsRequired": [],
           "modulePermissions": []
+        },
+        {
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/consortia/user-tenants",
+          "permissionsRequired": [
+            "consortia.user-tenants.collection.get"
+          ],
+          "modulePermissions": []
         }
       ]
     },
@@ -41,7 +51,14 @@
       "permissionName": "consortia.all",
       "displayName": "Consortia API module - all permissions",
       "description": "All permissions for consortia module",
-      "subPermissions": []
+      "subPermissions": [
+        "consortia.user-tenants.collection.get"
+      ]
+    },
+    {
+      "permissionName": "consortia.user-tenants.collection.get",
+      "displayName": "get user tenants associations",
+      "description": "Get user tenants associations"
     }
   ],
   "requires": [],

@@ -13,4 +13,61 @@ paths:
       responses:
         '200':
           description: OK
+  /user-tenants:
+    description: User Tenant Associations
+    get:
+      summary: Get a list of user tenant associations
+      operationId: getUserTenants
+      parameters:
+        - $ref: "#/components/parameters/trait_pageable_offset"
+        - $ref: "#/components/parameters/trait_pageable_limit"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/userTenantCollection"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        "500":
+          description: Internal server errors, e.g. due to misconfiguration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+components:
+  schemas:
+    userTenant:
+      $ref: 'schemas/userTenant/userTenant.json#/UserTenant'
+    userTenantCollection:
+      $ref: 'schemas/userTenant/userTenantCollection.json#/UserTenantCollection'
+    error:
+      $ref: 'schemas/error/error.json#/Error'
+    errors:
+      $ref: 'schemas/error/errors.json#/Errors'
+  parameters:
+    trait_pageable_offset:
+      name: offset
+      in: query
+      description: Skip over a number of elements by specifying an offset value for
+        the query
+      schema:
+        default: 0
+        minimum: 0
+        maximum: 2147483647
+        type: integer
+    trait_pageable_limit:
+      name: limit
+      in: query
+      description: Limit the number of elements returned in the response
+      schema:
+        default: 10
+        minimum: 0
+        maximum: 2147483647
+        type: integer
 
