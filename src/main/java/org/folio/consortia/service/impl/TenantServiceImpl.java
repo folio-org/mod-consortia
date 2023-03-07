@@ -6,11 +6,11 @@ import org.folio.consortia.service.TenantService;
 import org.folio.pv.domain.dto.TenantCollection;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.entity.Tenant;
+import org.folio.spring.data.OffsetRequest;
+import org.springframework.data.domain.Page;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @EnableScheduling
@@ -21,11 +21,11 @@ public class TenantServiceImpl implements TenantService {
 
   @Transactional(readOnly = true)
   @Override
-  public TenantCollection get() {
+  public TenantCollection get(Integer offset, Integer limit) {
     var result = new TenantCollection();
-    List<Tenant> tenantList = repository.findAll();
-    result.setTenants(tenantList.stream().map(TenantServiceImpl::entityToDto).toList());
-    result.setTotalRecords(tenantList.size());
+    Page<Tenant> page = repository.findAll(new OffsetRequest(offset, limit));
+    result.setTenants(page.map(TenantServiceImpl::entityToDto).getContent());
+    result.setTotalRecords(page.map(TenantServiceImpl::entityToDto).getContent().size());
 
     return result;
   }
@@ -33,7 +33,7 @@ public class TenantServiceImpl implements TenantService {
   public static org.folio.pv.domain.dto.Tenant entityToDto(Tenant entity) {
     var result = new org.folio.pv.domain.dto.Tenant();
 
-    result.setTenantId(entity.getTenantId());
+    result.setTenantId(entity.getId());
     result.setTenantName(entity.getTenantName());
 
     return result;

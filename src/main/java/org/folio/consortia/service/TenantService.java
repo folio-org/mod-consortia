@@ -5,9 +5,11 @@ import org.folio.pv.domain.dto.TenantCollection;
 public interface TenantService {
 
   /**
-   * Gets tenant collection by search query.
+   * Gets tenant collection.
+   * @param limit the limit
+   * @param offset the offset
    *
    * @return tenant collection
    */
-  TenantCollection get();
+  TenantCollection get(Integer offset, Integer limit);
 }

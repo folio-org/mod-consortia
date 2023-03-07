@@ -17,7 +17,7 @@ public class TenantController implements TenantsApi {
   private final TenantService service;
 
   @Override
-  public ResponseEntity<TenantCollection> getTenants() {
-    return ResponseEntity.ok(service.get());
+  public ResponseEntity<TenantCollection> getTenants(Integer offset, Integer limit) {
+    return ResponseEntity.ok(service.get(offset, limit));
   }
 }

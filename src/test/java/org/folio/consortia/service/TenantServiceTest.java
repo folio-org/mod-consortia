@@ -30,18 +30,18 @@ class TenantServiceTest {
   void shouldGetTenantList()
   {
     Tenant tenant1 = new Tenant();
-    tenant1.setTenantId("ABC1");
+    tenant1.setId("ABC1");
     tenant1.setTenantName("TestName1");
 
     Tenant tenant2 = new Tenant();
-    tenant1.setTenantId("ABC2");
+    tenant1.setId("ABC2");
     tenant1.setTenantName("TestName2");
     List<Tenant> tenantList = new ArrayList<>();
     tenantList.add(tenant1);
     tenantList.add(tenant2);
     Mockito.when(repository.findAll()).thenReturn(tenantList);
 
-    TenantCollection tenantCollection = tenantService.get();
+    TenantCollection tenantCollection = tenantService.get(0, 0);
     Assertions.assertEquals(2, tenantCollection.getTotalRecords());
   }
 
