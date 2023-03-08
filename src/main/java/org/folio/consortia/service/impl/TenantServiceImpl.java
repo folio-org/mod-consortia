@@ -28,7 +28,7 @@ public class TenantServiceImpl implements TenantService {
     return result;
   }
 
-  public static org.folio.pv.domain.dto.Tenant entityToDto(Tenant entity) {
+  private static org.folio.pv.domain.dto.Tenant entityToDto(Tenant entity) {
     var result = new org.folio.pv.domain.dto.Tenant();
 
     result.setTenantId(entity.getId());
