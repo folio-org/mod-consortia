@@ -14,7 +14,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
 import java.util.ArrayList;
@@ -34,11 +33,11 @@ class TenantServiceTest {
   {
     Tenant tenant1 = new Tenant();
     tenant1.setId("ABC1");
-    tenant1.setTenantName("TestName1");
+    tenant1.setName("TestName1");
 
     Tenant tenant2 = new Tenant();
     tenant1.setId("ABC2");
-    tenant1.setTenantName("TestName2");
+    tenant1.setName("TestName2");
     List<Tenant> tenantList = new ArrayList<>();
     tenantList.add(tenant1);
     tenantList.add(tenant2);

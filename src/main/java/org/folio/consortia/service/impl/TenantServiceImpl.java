@@ -32,7 +32,7 @@ public class TenantServiceImpl implements TenantService {
     var result = new org.folio.pv.domain.dto.Tenant();
 
     result.setTenantId(entity.getId());
-    result.setTenantName(entity.getTenantName());
+    result.setTenantName(entity.getName());
 
     return result;
   }
