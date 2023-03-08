@@ -7,7 +7,7 @@
   <changeSet id="MODFISTO-394@@create-tenant-table" author="singhadesh">
     <createTable tableName="tenant">
 
-      <column name="tenant_id" type="text">
+      <column name="id" type="text">
         <constraints primaryKey="true" primaryKeyName="pk_tenant_id" nullable="false"/>
       </column>
 

@@ -7,8 +7,11 @@
   <changeSet id="MODFISTO-400@@create-user-tenant-table" author="azizbekxm">
     <createTable tableName="user_tenant">
 
-      <column name="user_id" type="uuid">
+      <column name="id" type="uuid">
         <constraints primaryKey="true" unique="true" nullable="false"/>
+      </column>
+      <column name="user_id" type="uuid">
+        <constraints unique="false" nullable="false"/>
       </column>
       <column name="username" type="text">
         <constraints unique="false" nullable="false"/>
