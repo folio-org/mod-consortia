@@ -23,7 +23,7 @@ public class TenantServiceImpl implements TenantService {
     var result = new TenantCollection();
     Page<Tenant> page = repository.findAll(new OffsetRequest(offset, limit));
     result.setTenants(page.map(TenantServiceImpl::entityToDto).getContent());
-    result.setTotalRecords(page.map(TenantServiceImpl::entityToDto).getContent().size());
+    result.setTotalRecords((int) page.getTotalElements());
 
     return result;
   }
