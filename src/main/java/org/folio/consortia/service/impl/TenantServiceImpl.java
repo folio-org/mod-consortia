@@ -22,13 +22,13 @@ public class TenantServiceImpl implements TenantService {
   public TenantCollection get(Integer offset, Integer limit) {
     var result = new TenantCollection();
     Page<Tenant> page = repository.findAll(new OffsetRequest(offset, limit));
-    result.setTenants(page.map(TenantServiceImpl::entityToDto).getContent());
+    result.setTenants(page.map(this::entityToDto).getContent());
     result.setTotalRecords((int) page.getTotalElements());
 
     return result;
   }
 
-  private static org.folio.pv.domain.dto.Tenant entityToDto(Tenant entity) {
+  private org.folio.pv.domain.dto.Tenant entityToDto(Tenant entity) {
     var result = new org.folio.pv.domain.dto.Tenant();
 
     result.setTenantId(entity.getId());

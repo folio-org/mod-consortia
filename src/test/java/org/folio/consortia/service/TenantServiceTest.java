@@ -29,8 +29,7 @@ class TenantServiceTest {
   private TenantRepository repository;
 
   @Test
-  void shouldGetTenantList()
-  {
+  void shouldGetTenantList() {
     Tenant tenant1 = new Tenant();
     tenant1.setId("ABC1");
     tenant1.setName("TestName1");
@@ -49,8 +48,7 @@ class TenantServiceTest {
   }
 
   @Test
-  void shouldGetError()
-  {
-    Assertions.assertThrows(IllegalArgumentException.class,() -> tenantService.get(0, 0) );
+  void shouldGetError() {
+    Assertions.assertThrows(IllegalArgumentException.class,() -> tenantService.get(0, 0));
   }
 }
