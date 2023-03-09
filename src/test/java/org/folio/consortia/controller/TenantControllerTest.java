@@ -1,7 +1,7 @@
 package org.folio.consortia.controller;
 
 import org.folio.consortia.support.BaseTest;
-import org.folio.consortia.repository.entity.Tenant;
+import org.folio.consortia.domain.entity.Tenant;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.http.MediaType;

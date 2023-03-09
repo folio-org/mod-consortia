@@ -1,4 +1,4 @@
-package org.folio.consortia.repository.entity;
+package org.folio.consortia.domain.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

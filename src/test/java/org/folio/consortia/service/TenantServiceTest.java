@@ -1,7 +1,7 @@
 package org.folio.consortia.service;
 
-import org.folio.consortia.repository.TenantRepository;
-import org.folio.consortia.repository.entity.Tenant;
+import org.folio.consortia.domain.repository.TenantRepository;
+import org.folio.consortia.domain.entity.Tenant;
 import org.folio.consortia.service.impl.TenantServiceImpl;
 import org.folio.pv.domain.dto.TenantCollection;
 import org.folio.spring.data.OffsetRequest;
