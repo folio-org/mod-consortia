@@ -19,6 +19,7 @@ paths:
       summary: Get a list of user tenant associations
       operationId: getUserTenants
       parameters:
+        - $ref: "#/components/parameters/trait_search_query"
         - $ref: "#/components/parameters/trait_pageable_offset"
         - $ref: "#/components/parameters/trait_pageable_limit"
       responses:
@@ -40,6 +41,38 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/error"
+  /user-tenants/{userId}:
+    description: User Tenant Associations
+    get:
+      summary: Get a list of user tenant associations
+      operationId: getUserTenantsByUserId
+      parameters:
+        - $ref: "#/components/parameters/trait_path_user_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/userTenant"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        "500":
+          description: Internal server errors, e.g. due to misconfiguration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
 components:
   schemas:
     userTenant:
@@ -51,9 +84,23 @@ components:
     errors:
       $ref: 'schemas/error/errors.json#/Errors'
   parameters:
-    trait_pageable_offset:
-      name: offset
+    trait_path_user_id:
+      in: path
+      name: userId
+      schema:
+        type: string
+        format: uuid
+      required: true
+      description: UUID of the user to get and associated tenants.
+    trait_search_query:
       in: query
+      name: username
+      description: Username of the user to search for.
+      schema:
+        type: string
+    trait_pageable_offset:
+      in: query
+      name: offset
       description: Skip over a number of elements by specifying an offset value for
         the query
       schema:
@@ -62,8 +109,8 @@ components:
         maximum: 2147483647
         type: integer
     trait_pageable_limit:
-      name: limit
       in: query
+      name: limit
       description: Limit the number of elements returned in the response
       schema:
         default: 10

@@ -1,4 +1,4 @@
-package org.folio.consortia.entity;
+package org.folio.consortia.domain.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.Hibernate;
-import org.hibernate.annotations.Type;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -23,10 +22,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Entity
 @Table(name = "user_tenant")
-public class UserTenant {
+public class UserTenantEntity {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue
   @Column(name = "user_id", updatable = false, nullable = false)
   private UUID userId;
 
@@ -41,7 +40,7 @@ public class UserTenant {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-    UserTenant that = (UserTenant) o;
+    UserTenantEntity that = (UserTenantEntity) o;
     return getUserId() != null && Objects.equals(getUserId(), that.getUserId());
   }
 

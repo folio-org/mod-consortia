@@ -16,10 +16,10 @@ public class UserTenantController implements org.folio.pv.rest.resource.UserTena
   @Autowired
   private final UserTenantService userTenantService;
 
-  @Override
-  public ResponseEntity<UserTenantCollection> getUserTenants(Integer offset, Integer limit) {
-    return ResponseEntity.ok(userTenantService.get(offset, limit));
-  }
+//  @Override
+//  public ResponseEntity<UserTenantCollection> getUserTenants(Integer offset, Integer limit) {
+//    return ResponseEntity.ok(userTenantService.get(offset, limit));
+//  }
 
 
 
