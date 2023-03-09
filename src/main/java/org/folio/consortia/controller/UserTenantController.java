@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/consortia")
 @RequiredArgsConstructor
-public class UserTenantController implements UserTenantsApi{
+public class UserTenantController implements UserTenantsApi {
 
   @Autowired
   private final UserTenantService userTenantService;

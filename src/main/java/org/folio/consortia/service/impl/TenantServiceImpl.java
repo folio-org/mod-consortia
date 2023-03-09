@@ -2,10 +2,10 @@ package org.folio.consortia.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.folio.consortia.domain.entity.Tenant;
+import org.folio.consortia.domain.repository.TenantRepository;
 import org.folio.consortia.service.TenantService;
 import org.folio.pv.domain.dto.TenantCollection;
-import org.folio.consortia.domain.repository.TenantRepository;
-import org.folio.consortia.domain.entity.Tenant;
 import org.folio.spring.data.OffsetRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;

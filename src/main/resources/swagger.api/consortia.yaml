@@ -41,7 +41,6 @@ paths:
       summary: Get a list of user tenant associations
       operationId: getUserTenants
       parameters:
-        - $ref: "#/components/parameters/trait_search_query"
         - $ref: "#/components/parameters/trait_pageable_offset"
         - $ref: "#/components/parameters/trait_pageable_limit"
       responses:
