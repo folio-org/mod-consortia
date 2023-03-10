@@ -74,7 +74,7 @@ class UserTenantControllerTest extends BaseTest {
       .andExpectAll(
         status().is4xxClientError(),
         content().contentType(MediaType.TEXT_PLAIN + ";charset=UTF-8"),
-        jsonPath("$", is("Limit cannot be negative or zero: 0")));
+        jsonPath("$", is("Page size must not be less than one")));
   }
 
 }

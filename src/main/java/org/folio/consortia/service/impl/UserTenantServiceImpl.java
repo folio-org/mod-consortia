@@ -28,37 +28,49 @@ public class UserTenantServiceImpl implements UserTenantService {
   @Transactional(readOnly = true)
   @Override
   public UserTenantCollection get(UUID userId, String username, Integer offset, Integer limit) {
-    var result = new UserTenantCollection();
-    Page<UserTenantEntity> userTenantPage;
+
     if (userId != null) {
-      Optional<UserTenantEntity> userTenantEntity = userTenantRepository.findByUserId(userId);
-      if (userTenantEntity.isEmpty()) {
-        throw new UserTenantNotFoundException(userId);
-      }
-      result.setUserTenants(List.of(UserTenantConverter.toDto(userTenantEntity.get())));
-      result.setTotalRecords(result.getUserTenants().size());
-      return result;
+      return getByUserId(userId);
+    } else if (username != null) {
+      return getByUsername(username);
     }
-    if (username != null) {
-      List<UserTenant> userTenants = userTenantRepository.findByUsername(username)
-        .stream().map(UserTenantConverter::toDto).toList();
-      result.setUserTenants(userTenants);
-      result.setTotalRecords(result.getUserTenants().size());
-      return result;
-    }
-    userTenantPage = userTenantRepository.findAll(PageRequest.of(offset, limit));
-    result.setUserTenants(userTenantPage.stream().map(UserTenantConverter::toDto).toList());
-    result.setTotalRecords(userTenantPage.getSize());
-    return result;
+    return getAll(offset, limit);
+
   }
 
   @Override
   public UserTenant getById(UUID id) {
     Optional<UserTenantEntity> userTenantEntity = userTenantRepository.findById(id);
     if (userTenantEntity.isEmpty()) {
-      throw new UserTenantNotFoundException(id);
+      throw new UserTenantNotFoundException("associationId", id);
     }
     return UserTenantConverter.toDto(userTenantEntity.get());
+  }
+
+  public UserTenantCollection getByUserId(UUID userId) {
+    var result = new UserTenantCollection();
+    UserTenantEntity userTenantEntity = userTenantRepository.findByUserId(userId)
+      .orElseThrow(() -> new UserTenantNotFoundException("userId", userId));
+    result.setUserTenants(List.of(UserTenantConverter.toDto(userTenantEntity)));
+    result.setTotalRecords(1);
+    return result;
+  }
+
+  public UserTenantCollection getByUsername(String username) {
+    var result = new UserTenantCollection();
+    List<UserTenant> userTenants = userTenantRepository.findByUsername(username)
+      .stream().map(UserTenantConverter::toDto).toList();
+    result.setUserTenants(userTenants);
+    result.setTotalRecords(userTenants.size());
+    return result;
+  }
+
+  private UserTenantCollection getAll(Integer offset, Integer limit) {
+    var result = new UserTenantCollection();
+    Page<UserTenantEntity> userTenantPage = userTenantRepository.findAll(PageRequest.of(offset, limit));
+    result.setUserTenants(userTenantPage.stream().map(UserTenantConverter::toDto).toList());
+    result.setTotalRecords((int) userTenantPage.getTotalElements());
+    return result;
   }
 
 }
