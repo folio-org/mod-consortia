@@ -51,7 +51,7 @@ class UserTenantServiceTest {
 
     // then
     assertEquals(userTenantEntities.size(), result.getUserTenants().size());
-    assertEquals(limit, result.getTotalRecords());
+    assertEquals(2, result.getTotalRecords());
   }
 
   @Test
@@ -84,9 +84,7 @@ class UserTenantServiceTest {
     when(userTenantRepository.findByUserId(userId)).thenReturn(Optional.empty());
 
     // throw exception
-    assertThrows(UserTenantNotFoundException.class, () -> {
-      userTenantService.get(userId, null, null, null);
-    });
+    assertThrows(UserTenantNotFoundException.class, () -> userTenantService.get(userId, null, null, null));
   }
 
   private UserTenantEntity createUserTenantEntity(UUID userId, String username) {
