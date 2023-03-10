@@ -31,14 +31,18 @@ public class UserTenantServiceImpl implements UserTenantService {
     var result = new UserTenantCollection();
     Page<UserTenantEntity> userTenantPage;
     if (userId != null) {
-      UserTenant userTenant = UserTenantConverter.toDto(userTenantRepository.findByUserId(userId));
-      result.setUserTenants(List.of(userTenant));
+      Optional<UserTenantEntity> userTenantEntity = userTenantRepository.findByUserId(userId);
+      if (userTenantEntity.isEmpty()) {
+        throw new UserTenantNotFoundException(userId);
+      }
+      result.setUserTenants(List.of(UserTenantConverter.toDto(userTenantEntity.get())));
       result.setTotalRecords(result.getUserTenants().size());
       return result;
     }
     if (username != null) {
-      UserTenant userTenant = UserTenantConverter.toDto(userTenantRepository.findByUsername(username));
-      result.setUserTenants(List.of(userTenant));
+      List<UserTenant> userTenants = userTenantRepository.findByUsername(username)
+        .stream().map(UserTenantConverter::toDto).toList();
+      result.setUserTenants(userTenants);
       result.setTotalRecords(result.getUserTenants().size());
       return result;
     }

@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,7 +35,7 @@ class UserTenantServiceTest {
   private UserTenantServiceImpl userTenantService;
 
   @Test
-  public void shouldGetList() {
+  void shouldGetList() {
     // given
     int offset = 0;
     int limit = 10;
@@ -51,12 +52,12 @@ class UserTenantServiceTest {
   }
 
   @Test
-  public void shouldFail() {
+  void shouldFail() {
     // given
     UUID userId = UUID.randomUUID();
     String username = "testuser";
-    when(userTenantRepository.findByUserId(userId)).thenReturn(new UserTenantEntity());
-    when(userTenantRepository.findByUsername(username)).thenReturn(new UserTenantEntity());
+    when(userTenantRepository.findByUserId(userId)).thenReturn(Optional.of(new UserTenantEntity()));
+    when(userTenantRepository.findByUsername(username)).thenReturn(List.of(new UserTenantEntity()));
 
     // when
     UserTenantCollection result = userTenantService.get(userId, username, null, null);

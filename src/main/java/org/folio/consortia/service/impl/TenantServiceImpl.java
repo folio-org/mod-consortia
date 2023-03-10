@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Log4j2
 @RequiredArgsConstructor
 public class TenantServiceImpl implements TenantService {
+
   private final TenantRepository repository;
 
   @Transactional(readOnly = true)

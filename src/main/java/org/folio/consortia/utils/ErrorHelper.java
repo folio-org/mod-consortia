@@ -38,11 +38,8 @@ public class ErrorHelper {
 
   public enum ErrorType {
     INTERNAL("-1"),
-
     FOLIO_EXTERNAL_OR_UNDEFINED("-2"),
-
     EXTERNAL_OR_UNDEFINED("-3"),
-
     UNKNOWN("-4");
 
     private final String typeCode;
@@ -58,8 +55,6 @@ public class ErrorHelper {
   }
 
   public enum ErrorCode {
-    VALIDATION_ERROR,
-    NOT_FOUND_ERROR,
-    INTERACT_ERROR
+    VALIDATION_ERROR, NOT_FOUND_ERROR, INTERACT_ERROR
   }
 }
