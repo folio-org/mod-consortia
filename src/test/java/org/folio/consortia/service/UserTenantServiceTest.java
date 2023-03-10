@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -101,13 +102,22 @@ class UserTenantServiceTest {
   }
 
   @Test
-  void shouldReturn404NotFoundException() {
+  void shouldReturn404UserIdNotFoundException() {
     // given
     UUID userId = UUID.randomUUID();
     when(userTenantRepository.findByUserId(userId)).thenReturn(Optional.empty());
 
     // throw exception
     assertThrows(UserTenantNotFoundException.class, () -> userTenantService.get(userId, null, null, null));
+  }
+  @Test
+  void shouldReturn404UsernameNotFoundException() {
+    // given
+    String username = "testuser";
+    when(userTenantRepository.findByUsername(username)).thenReturn(new ArrayList<>());
+
+    // throw exception
+    assertThrows(UserTenantNotFoundException.class, () -> userTenantService.get(null, "testusername", null, null));
   }
 
   private UserTenantEntity createUserTenantEntity(UUID associationId, UUID userId, String username) {

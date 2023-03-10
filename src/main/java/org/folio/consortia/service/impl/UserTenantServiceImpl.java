@@ -42,7 +42,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   public UserTenant getById(UUID id) {
     Optional<UserTenantEntity> userTenantEntity = userTenantRepository.findById(id);
     if (userTenantEntity.isEmpty()) {
-      throw new UserTenantNotFoundException("associationId", id);
+      throw new UserTenantNotFoundException("associationId", String.valueOf(id));
     }
     return UserTenantConverter.toDto(userTenantEntity.get());
   }
@@ -50,7 +50,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   public UserTenantCollection getByUserId(UUID userId) {
     var result = new UserTenantCollection();
     UserTenantEntity userTenantEntity = userTenantRepository.findByUserId(userId)
-      .orElseThrow(() -> new UserTenantNotFoundException("userId", userId));
+      .orElseThrow(() -> new UserTenantNotFoundException("userId", String.valueOf(userId)));
     result.setUserTenants(List.of(UserTenantConverter.toDto(userTenantEntity)));
     result.setTotalRecords(1);
     return result;
@@ -60,6 +60,9 @@ public class UserTenantServiceImpl implements UserTenantService {
     var result = new UserTenantCollection();
     List<UserTenant> userTenants = userTenantRepository.findByUsername(username)
       .stream().map(UserTenantConverter::toDto).toList();
+    if (userTenants.isEmpty()) {
+      throw new UserTenantNotFoundException("username", username);
+    }
     result.setUserTenants(userTenants);
     result.setTotalRecords(userTenants.size());
     return result;
