@@ -23,7 +23,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
@@ -80,6 +82,7 @@ class UserTenantServiceTest {
     UUID associationId = UUID.randomUUID();
 
     UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser");
+    UserTenantEntity userTenant2 = createUserTenantEntity(associationId, userId, "testuser");
     List<UserTenantEntity> userTenantEntities = List.of(userTenant);
     when(userTenantRepository.findByUserId(userId)).thenReturn(Optional.of(userTenantEntities.get(0)));
 
@@ -87,6 +90,7 @@ class UserTenantServiceTest {
     UserTenantCollection result = userTenantService.get(userId, null, null, null);
 
     // then
+    assertEquals(userTenant2, userTenant);
     assertEquals(userTenantEntities.size(), result.getUserTenants().size());
     assertEquals(1, result.getTotalRecords());
   }

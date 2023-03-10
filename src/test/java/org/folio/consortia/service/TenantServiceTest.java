@@ -35,8 +35,8 @@ class TenantServiceTest {
     tenant1.setName("TestName1");
 
     Tenant tenant2 = new Tenant();
-    tenant1.setId("ABC2");
-    tenant1.setName("TestName2");
+    tenant1.setId("ABC1");
+    tenant1.setName("TestName1");
     List<Tenant> tenantList = new ArrayList<>();
     tenantList.add(tenant1);
     tenantList.add(tenant2);
@@ -44,6 +44,7 @@ class TenantServiceTest {
       .thenReturn(new PageImpl<>(tenantList) { });
 
     TenantCollection tenantCollection = tenantService.get(0, 2);
+    Assertions.assertNotEquals(tenant1, tenant2);
     Assertions.assertEquals(2, tenantCollection.getTotalRecords());
   }
 
