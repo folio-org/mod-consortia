@@ -5,7 +5,7 @@ import org.folio.pv.domain.dto.UserTenant;
 
 public class UserTenantConverter {
   private UserTenantConverter() {
-    throw new IllegalArgumentException("Faild to convert");
+    throw new IllegalArgumentException("Failed to convert");
   }
 
   public static UserTenant toDto(UserTenantEntity userTenantEntity) {
@@ -13,7 +13,9 @@ public class UserTenantConverter {
     userTenant.setId(userTenantEntity.getId());
     userTenant.setUserId(userTenantEntity.getUserId());
     userTenant.setUsername(userTenantEntity.getUsername());
-    userTenant.setTenantId(userTenantEntity.getTenantId());
+    if (userTenantEntity.getTenant() != null) {
+      userTenant.setTenantId(userTenantEntity.getTenant().getId());
+    }
     userTenant.setIsPrimary(userTenantEntity.getIsPrimary());
     return userTenant;
   }

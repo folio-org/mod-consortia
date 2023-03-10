@@ -41,6 +41,8 @@ paths:
       summary: Get a list of user tenant associations
       operationId: getUserTenants
       parameters:
+        - $ref: "#/components/parameters/trait_search_query_by_user_id"
+        - $ref: "#/components/parameters/trait_search_query_by_username"
         - $ref: "#/components/parameters/trait_pageable_offset"
         - $ref: "#/components/parameters/trait_pageable_limit"
       responses:
@@ -65,13 +67,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/error"
-  /user-tenants/{userId}:
+  /user-tenants/{associationId}:
     description: User Tenant Associations
     get:
       summary: Get a list of user tenant associations
       operationId: getUserTenantsByUserId
       parameters:
-        - $ref: "#/components/parameters/trait_path_user_id"
+        - $ref: "#/components/parameters/trait_path_association_id"
       responses:
         "200":
           description: OK
@@ -115,15 +117,23 @@ components:
     errors:
       $ref: 'schemas/error/errors.json#/Errors'
   parameters:
-    trait_path_user_id:
+
+    trait_path_association_id:
       in: path
-      name: userId
+      name: association_id
       schema:
         type: string
         format: uuid
       required: true
       description: UUID of the user to get and associated tenants.
-    trait_search_query:
+    trait_search_query_by_user_id:
+      in: query
+      name: userId
+      schema:
+        type: string
+        format: uuid
+      description: UUID of the user to get and associated tenants.
+    trait_search_query_by_username:
       in: query
       name: username
       description: Username of the user to search for.

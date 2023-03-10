@@ -14,7 +14,7 @@ public interface UserTenantService {
    * @param limit  the limit
    * @return the user tenant associations collection
    */
-  UserTenantCollection get(int offset, int limit);
+  UserTenantCollection get(UUID userId, String username, Integer offset, Integer limit);
 
   UserTenant getById(UUID id);
 

@@ -1,8 +1,10 @@
 package org.folio.consortia.domain.entity;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -17,15 +19,17 @@ import java.util.UUID;
 @ToString
 @RequiredArgsConstructor
 @Entity
+@Table(name = "user_tenant")
 public class UserTenantEntity {
 
   @Id
-  @GeneratedValue
   private UUID id;
-
   private UUID userId;
   private String username;
-  private String tenantId;
+  @ManyToOne
+  @JoinColumn(name = "tenant_id", referencedColumnName = "id")
+  private Tenant tenant;
+
   private Boolean isPrimary;
 
   @Override

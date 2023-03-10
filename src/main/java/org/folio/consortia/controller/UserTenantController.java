@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/consortia")
 @RequiredArgsConstructor
@@ -18,8 +20,11 @@ public class UserTenantController implements UserTenantsApi {
   private final UserTenantService userTenantService;
 
   @Override
-  public ResponseEntity<UserTenantCollection> getUserTenants(Integer offset, Integer limit) {
-    return ResponseEntity.ok(userTenantService.get(offset, limit));
+  public ResponseEntity<UserTenantCollection> getUserTenants(UUID userId,
+                                                             String username,
+                                                             Integer offset,
+                                                             Integer limit) {
+    return ResponseEntity.ok(userTenantService.get(userId, username, offset, limit));
   }
 
 }

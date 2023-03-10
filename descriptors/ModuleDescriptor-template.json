@@ -15,8 +15,18 @@
             "consortia.tenants.collection.get"
           ],
           "modulePermissions": []
-        }
 
+        },
+        {
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/consortia/user_tenants",
+          "permissionsRequired": [
+            "consortia.user_tenants.collection.get"
+          ],
+          "modulePermissions": []
+        }
       ]
     },
     {
@@ -46,7 +56,8 @@
       "displayName": "Consortia API module - all permissions",
       "description": "All permissions for consortia module",
       "subPermissions": [
-        "consortia.tenants.collection.get"
+        "consortia.tenants.collection.get",
+        "consortia.user_tenants.collection.get"
       ]
     },
     {

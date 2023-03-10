@@ -1,31 +1,33 @@
 {
-  "$schema" : "http://json-schema.org/draft-04/schema#",
-  "title" : "JSON Schema for the User Tenant association",
+  "$schema": "http://json-schema.org/draft-04/schema#",
   "description": "This schema is used to work with the User Tenant association",
   "UserTenant": {
-    "type" : "object",
-    "properties" : {
-      "id" : {
-        "type" : "UUID"
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "format": "uuid"
       },
-      "user_id" : {
-        "type" : "UUID"
+      "userId": {
+        "type": "string",
+        "format": "uuid"
       },
-      "username" : {
-        "type" : "string"
+      "username": {
+        "type": "string"
       },
-      "tenant_id" : {
-        "type" : "string"
+      "tenantId": {
+        "type": "string"
       },
-      "isPrimary" : {
-        "type" : "boolean"
+      "isPrimary": {
+        "type": "boolean"
       }
     },
-    "additionalProperties" : false,
-    "required" : [
-      "user_id",
+    "additionalProperties": false,
+    "required": [
+      "id",
+      "userId",
       "username",
-      "tenant_id",
+      "tenantId",
       "isPrimary"
     ]
   }
