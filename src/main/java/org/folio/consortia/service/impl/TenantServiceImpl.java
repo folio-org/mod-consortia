@@ -2,6 +2,7 @@ package org.folio.consortia.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.folio.consortia.domain.converter.TenantConverter;
 import org.folio.consortia.domain.entity.Tenant;
 import org.folio.consortia.domain.repository.TenantRepository;
 import org.folio.consortia.service.TenantService;
@@ -23,17 +24,8 @@ public class TenantServiceImpl implements TenantService {
   public TenantCollection get(Integer offset, Integer limit) {
     var result = new TenantCollection();
     Page<Tenant> page = repository.findAll(new OffsetRequest(offset, limit));
-    result.setTenants(page.map(this::entityToDto).getContent());
+    result.setTenants(page.map(TenantConverter::toDto).getContent());
     result.setTotalRecords((int) page.getTotalElements());
-
-    return result;
-  }
-
-  private org.folio.pv.domain.dto.Tenant entityToDto(Tenant entity) {
-    var result = new org.folio.pv.domain.dto.Tenant();
-
-    result.setTenantId(entity.getId());
-    result.setTenantName(entity.getName());
 
     return result;
   }

@@ -21,7 +21,7 @@
           "methods": [
             "GET"
           ],
-          "pathPattern": "/consortia/user_tenants",
+          "pathPattern": "/consortia/user-tenants",
           "permissionsRequired": [
             "consortia.user-tenants.collection.get"
           ],
@@ -31,7 +31,7 @@
           "methods": [
             "GET"
           ],
-          "pathPattern": "/consortia/user_tenants/{associationId}",
+          "pathPattern": "/consortia/user-tenants/{associationId}",
           "permissionsRequired": [
             "consortia.user-tenant.get"
           ],

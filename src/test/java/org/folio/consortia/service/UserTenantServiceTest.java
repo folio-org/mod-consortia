@@ -3,8 +3,10 @@ package org.folio.consortia.service;
 import org.folio.consortia.domain.entity.Tenant;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.domain.repository.UserTenantRepository;
+import org.folio.consortia.exception.UserTenantNotFoundException;
 import org.folio.consortia.service.impl.UserTenantServiceImpl;
 import org.folio.pv.domain.dto.UserTenantCollection;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -20,7 +22,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -35,7 +38,7 @@ class UserTenantServiceTest {
   private UserTenantServiceImpl userTenantService;
 
   @Test
-  void shouldGetList() {
+  void shouldGetUserTenantList() {
     // given
     int offset = 0;
     int limit = 10;
@@ -52,19 +55,46 @@ class UserTenantServiceTest {
   }
 
   @Test
-  void shouldFail() {
+  void shouldGetUserTenantListByUserId() {
     // given
     UUID userId = UUID.randomUUID();
-    String username = "testuser";
-    when(userTenantRepository.findByUserId(userId)).thenReturn(Optional.of(new UserTenantEntity()));
-    when(userTenantRepository.findByUsername(username)).thenReturn(List.of(new UserTenantEntity()));
+    //create a userTenantEntity and set data
+    UserTenantEntity userTenant = createUserTenantEntity(userId, "testuser");
+    List<UserTenantEntity> userTenantEntities = List.of(userTenant);
+    when(userTenantRepository.findByUserId(userId)).thenReturn(Optional.of(userTenantEntities.get(0)));
 
     // when
-    UserTenantCollection result = userTenantService.get(userId, username, null, null);
+    UserTenantCollection result = userTenantService.get(userId, null, null, null);
 
     // then
-    assertEquals(1, result.getUserTenants().size());
+    assertEquals(userTenantEntities.size(), result.getUserTenants().size());
     assertEquals(1, result.getTotalRecords());
+  }
+
+  @Test
+  void shouldThrowIllegalArgumentException() {
+    Assertions.assertThrows(IllegalArgumentException.class, () ->
+      userTenantService.get(null, null, 0, 0));
+  }
+
+  @Test
+  void shouldReturn404NotFoundException() {
+    // given
+    UUID userId = UUID.randomUUID();
+    when(userTenantRepository.findByUserId(userId)).thenReturn(Optional.empty());
+
+    // throw exception
+    assertThrows(UserTenantNotFoundException.class, () -> {
+      userTenantService.get(userId, null, null, null);
+    });
+  }
+
+  private UserTenantEntity createUserTenantEntity(UUID userId, String username) {
+    UserTenantEntity userTenantEntity = new UserTenantEntity();
+    userTenantEntity.setUserId(userId);
+    userTenantEntity.setTenant(new Tenant());
+    userTenantEntity.setUsername(username);
+    return userTenantEntity;
   }
 }
 

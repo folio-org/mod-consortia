@@ -11,16 +11,23 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @EntityScan(basePackageClasses = UserTenantEntity.class)
 class UserTenantControllerTest extends BaseTest {
+
   @Mock
   private UserTenantService userTenantService;
   @InjectMocks
@@ -49,6 +56,25 @@ class UserTenantControllerTest extends BaseTest {
     Assertions.assertEquals(userTenantCollection, response.getBody());
 
     verify(userTenantService).get(userId, null, offset, limit);
+  }
+
+  @Test
+  void shouldGetUserTenantList() throws Exception {
+    var headers = defaultHeaders();
+    this.mockMvc.perform(get("/consortia/user-tenants?limit=2&offset=1").headers(headers))
+      .andExpectAll(
+        status().isOk(),
+        content().contentType(MediaType.APPLICATION_JSON_VALUE));
+  }
+
+  @Test
+  void getBadRequest() throws Exception {
+    var headers = defaultHeaders();
+    this.mockMvc.perform(get("/consortia/user-tenants?limit=0&offset=0").headers(headers))
+      .andExpectAll(
+        status().is4xxClientError(),
+        content().contentType(MediaType.TEXT_PLAIN + ";charset=UTF-8"),
+        jsonPath("$", is("Limit cannot be negative or zero: 0")));
   }
 
 }

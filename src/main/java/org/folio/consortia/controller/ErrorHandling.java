@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import static org.folio.consortia.utils.ErrorHelper.ErrorCode.NOT_FOUND_ERROR;
 import static org.folio.consortia.utils.ErrorHelper.createInternalError;
 
-//@RestControllerAdvice
+@RestControllerAdvice
 public class ErrorHandling {
 
-//  @ResponseStatus(HttpStatus.NOT_FOUND)
-//  @ExceptionHandler(ResourceNotFoundException.class)
-//  public Errors handleNotFoundException(ResourceNotFoundException e) {
-//    return createInternalError(e.getMessage(), NOT_FOUND_ERROR);
-//  }
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public Errors handleNotFoundException(ResourceNotFoundException e) {
+    return createInternalError(e.getMessage(), NOT_FOUND_ERROR);
+  }
 }
