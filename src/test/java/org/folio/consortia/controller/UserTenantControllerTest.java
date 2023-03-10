@@ -59,6 +59,32 @@ class UserTenantControllerTest extends BaseTest {
   }
 
   @Test
+  void shouldGetUserTenantByAssociationId() {
+    // given
+    UUID associationId = UUID.randomUUID();
+
+    UserTenant userTenant = new UserTenant();
+    userTenant.setId(associationId);
+    userTenant.setUserId(UUID.randomUUID());
+    userTenant.setUsername("username");
+    userTenant.setTenantId(String.valueOf(UUID.randomUUID()));
+    userTenant.setIsPrimary(true);
+
+    when(userTenantService.getById(associationId))
+      .thenReturn(userTenant);
+
+    // when
+    ResponseEntity<UserTenant> response = userTenantController.getUserTenantByAssociationId(associationId);
+
+    // then
+    Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    Assertions.assertEquals(userTenant, response.getBody());
+
+    verify(userTenantService).getById(associationId);
+  }
+
+
+  @Test
   void shouldGetUserTenantList() throws Exception {
     var headers = defaultHeaders();
     this.mockMvc.perform(get("/consortia/user-tenants?limit=2&offset=1").headers(headers))
