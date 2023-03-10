@@ -77,4 +77,22 @@ class UserTenantControllerTest extends BaseTest {
         jsonPath("$", is("Page size must not be less than one")));
   }
 
+  @Test
+  void getNotFound() throws Exception {
+    var headers = defaultHeaders();
+    this.mockMvc.perform(get("/consortia/user-tenants?userId=8ad4c4b4-4d4c-4bf9-a8a0-7a30c1edf34b").headers(headers))
+      .andExpectAll(
+        status().is4xxClientError(),
+        content().contentType(MediaType.APPLICATION_JSON_VALUE));
+  }
+
+  @Test
+  void getValidationError() throws Exception {
+    var headers = defaultHeaders();
+    this.mockMvc.perform(get("/consortia/user-tenants?userId=90unnn").headers(headers))
+      .andExpectAll(
+        status().is4xxClientError(),
+        content().contentType(MediaType.APPLICATION_JSON_VALUE));
+  }
+
 }
