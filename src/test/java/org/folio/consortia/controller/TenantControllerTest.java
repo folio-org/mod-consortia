@@ -30,7 +30,7 @@ class TenantControllerTest extends BaseTest {
     this.mockMvc.perform(get("/consortia/tenants?limit=0&offset=0").headers(headers))
       .andExpectAll(
         status().is4xxClientError(),
-        content().contentType(MediaType.TEXT_PLAIN + ";charset=UTF-8"),
+        content().contentType(MediaType.APPLICATION_JSON_VALUE),
         jsonPath("$", is("Limit cannot be negative or zero: 0")));
   }
 }
