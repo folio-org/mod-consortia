@@ -27,4 +27,9 @@ public class UserTenantController implements UserTenantsApi {
     return ResponseEntity.ok(userTenantService.get(userId, username, offset, limit));
   }
 
+
+  @Override
+  public ResponseEntity<org.folio.pv.domain.dto.UserTenant> getUserTenantByAssociationId(UUID associationId) {
+    return ResponseEntity.ok(userTenantService.getById(associationId));
+  }
 }
