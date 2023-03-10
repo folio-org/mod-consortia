@@ -68,22 +68,36 @@ class UserTenantControllerTest extends BaseTest {
   }
 
   @Test
-  void getBadRequest() throws Exception {
+  void return404UserTenantNotFoundByAssociationId() throws Exception {
+    var headers = defaultHeaders();
+    this.mockMvc.perform(get("/consortia/user-tenants/cb28f43c-bf45-11ed-afa1-0242ac120002").headers(headers))
+      .andExpectAll(
+        status().is4xxClientError(),
+        content().contentType(MediaType.APPLICATION_JSON_VALUE),
+        jsonPath("$.errors[0].code",
+          is("NOT_FOUND_ERROR")));
+  }
+
+  @Test
+  void return400BadRequest() throws Exception {
     var headers = defaultHeaders();
     this.mockMvc.perform(get("/consortia/user-tenants?limit=0&offset=0").headers(headers))
       .andExpectAll(
         status().is4xxClientError(),
-        content().contentType(MediaType.TEXT_PLAIN + ";charset=UTF-8"),
-        jsonPath("$", is("Page size must not be less than one")));
+        content().contentType(MediaType.APPLICATION_JSON_VALUE),
+        jsonPath("$.errors[0].code",
+          is("VALIDATION_ERROR")));
   }
 
   @Test
-  void getNotFound() throws Exception {
+  void return404UserTenantNotFoundWithUserId() throws Exception {
     var headers = defaultHeaders();
     this.mockMvc.perform(get("/consortia/user-tenants?userId=8ad4c4b4-4d4c-4bf9-a8a0-7a30c1edf34b").headers(headers))
       .andExpectAll(
         status().is4xxClientError(),
-        content().contentType(MediaType.APPLICATION_JSON_VALUE));
+        content().contentType(MediaType.APPLICATION_JSON_VALUE),
+        jsonPath("$.errors[0].code",
+          is("NOT_FOUND_ERROR")));
   }
 
   @Test
@@ -92,7 +106,9 @@ class UserTenantControllerTest extends BaseTest {
     this.mockMvc.perform(get("/consortia/user-tenants?userId=90unnn").headers(headers))
       .andExpectAll(
         status().is4xxClientError(),
-        content().contentType(MediaType.APPLICATION_JSON_VALUE));
+        content().contentType(MediaType.APPLICATION_JSON_VALUE),
+        jsonPath("$.errors[0].code",
+          is("VALIDATION_ERROR")));
   }
 
 }

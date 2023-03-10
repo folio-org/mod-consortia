@@ -27,4 +27,11 @@ public class ErrorHandling {
     return createInternalError(e.getMessage(), VALIDATION_ERROR);
   }
 
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ExceptionHandler(IllegalArgumentException.class)
+  public Errors handleIllegalArgumentException(IllegalArgumentException e) {
+    return createInternalError(e.getMessage(), VALIDATION_ERROR);
+  }
+
+
 }

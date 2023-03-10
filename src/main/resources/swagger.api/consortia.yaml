@@ -119,7 +119,7 @@ components:
   parameters:
     trait_path_association_id:
       in: path
-      name: association_id
+      name: associationId
       schema:
         type: string
         format: uuid

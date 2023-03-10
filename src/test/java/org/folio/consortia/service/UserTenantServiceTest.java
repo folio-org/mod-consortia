@@ -5,6 +5,7 @@ import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.domain.repository.UserTenantRepository;
 import org.folio.consortia.exception.UserTenantNotFoundException;
 import org.folio.consortia.service.impl.UserTenantServiceImpl;
+import org.folio.pv.domain.dto.UserTenant;
 import org.folio.pv.domain.dto.UserTenantCollection;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -55,11 +56,30 @@ class UserTenantServiceTest {
   }
 
   @Test
+  void shouldGetUserTenantByAssociationId() {
+    // given
+    UUID associationId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+
+    UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser");
+    List<UserTenantEntity> userTenantEntities = List.of(userTenant);
+    when(userTenantRepository.findById(associationId)).thenReturn(Optional.of(userTenantEntities.get(0)));
+
+    // when
+    UserTenant result = userTenantService.getById(associationId);
+
+    // then
+    assertEquals(associationId, result.getId());
+    assertEquals("testuser", result.getUsername());
+  }
+
+  @Test
   void shouldGetUserTenantListByUserId() {
     // given
     UUID userId = UUID.randomUUID();
-    //create a userTenantEntity and set data
-    UserTenantEntity userTenant = createUserTenantEntity(userId, "testuser");
+    UUID associationId = UUID.randomUUID();
+
+    UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser");
     List<UserTenantEntity> userTenantEntities = List.of(userTenant);
     when(userTenantRepository.findByUserId(userId)).thenReturn(Optional.of(userTenantEntities.get(0)));
 
@@ -73,8 +93,7 @@ class UserTenantServiceTest {
 
   @Test
   void shouldThrowIllegalArgumentException() {
-    Assertions.assertThrows(IllegalArgumentException.class, () ->
-      userTenantService.get(null, null, 0, 0));
+    Assertions.assertThrows(IllegalArgumentException.class, () -> userTenantService.get(null, null, 0, 0));
   }
 
   @Test
@@ -87,8 +106,9 @@ class UserTenantServiceTest {
     assertThrows(UserTenantNotFoundException.class, () -> userTenantService.get(userId, null, null, null));
   }
 
-  private UserTenantEntity createUserTenantEntity(UUID userId, String username) {
+  private UserTenantEntity createUserTenantEntity(UUID associationId, UUID userId, String username) {
     UserTenantEntity userTenantEntity = new UserTenantEntity();
+    userTenantEntity.setId(associationId);
     userTenantEntity.setUserId(userId);
     userTenantEntity.setTenant(new Tenant());
     userTenantEntity.setUsername(username);
