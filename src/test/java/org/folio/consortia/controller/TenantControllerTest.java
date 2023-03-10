@@ -31,6 +31,6 @@ class TenantControllerTest extends BaseTest {
       .andExpectAll(
         status().is4xxClientError(),
         content().contentType(MediaType.APPLICATION_JSON_VALUE),
-        jsonPath("$", is("Limit cannot be negative or zero: 0")));
+        jsonPath("$.errors[0].message", is("Limit cannot be negative or zero: 0")));
   }
 }
