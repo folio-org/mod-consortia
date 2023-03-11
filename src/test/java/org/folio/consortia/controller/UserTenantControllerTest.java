@@ -1,10 +1,10 @@
 package org.folio.consortia.controller;
 
+import org.folio.consortia.domain.dto.UserTenant;
+import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.consortia.support.BaseTest;
-import org.folio.pv.domain.dto.UserTenant;
-import org.folio.pv.domain.dto.UserTenantCollection;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -45,17 +45,17 @@ class UserTenantControllerTest extends BaseTest {
     userTenantCollection.setUserTenants(userTenantDtos);
     userTenantCollection.setTotalRecords(userTenantDtos.size());
 
-    when(userTenantService.get(userId, null, offset, limit))
+    when(userTenantService.getByUserId(userId))
       .thenReturn(userTenantCollection);
 
     // when
-    ResponseEntity<UserTenantCollection> response = userTenantController.getUserTenants(userId, null, offset, limit);
+    ResponseEntity<UserTenantCollection> response = userTenantController.getUserTenants(userId, null, null, offset, limit);
 
     // then
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     Assertions.assertEquals(userTenantCollection, response.getBody());
 
-    verify(userTenantService).get(userId, null, offset, limit);
+    verify(userTenantService).getByUserId(userId);
   }
 
   @Test

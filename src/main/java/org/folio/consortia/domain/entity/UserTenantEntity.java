@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.Hibernate;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -28,20 +27,28 @@ public class UserTenantEntity {
   private String username;
   @ManyToOne
   @JoinColumn(name = "tenant_id", referencedColumnName = "id")
-  private Tenant tenant;
+  private TenantEntity tenant;
 
   private Boolean isPrimary;
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
     UserTenantEntity that = (UserTenantEntity) o;
-    return id != null && Objects.equals(id, that.id);
+    return Objects.equals(id, that.id)
+      && Objects.equals(userId, that.userId)
+      && Objects.equals(username, that.username)
+      && Objects.equals(tenant, that.tenant)
+      && Objects.equals(isPrimary, that.isPrimary);
   }
 
   @Override
   public int hashCode() {
-    return getClass().hashCode();
+    return Objects.hash(id, userId, username, tenant, isPrimary);
   }
 }

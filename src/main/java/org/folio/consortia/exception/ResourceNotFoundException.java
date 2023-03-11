@@ -1,6 +1,6 @@
 package org.folio.consortia.exception;
 
-public abstract class ResourceNotFoundException extends RuntimeException {
+public class ResourceNotFoundException extends RuntimeException {
 
   private static final String NOT_FOUND_MSG_TEMPLATE = "%s with %s [%s] was not found";
 

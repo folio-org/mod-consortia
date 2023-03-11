@@ -1,8 +1,8 @@
 package org.folio.consortia.utils;
 
 import lombok.experimental.UtilityClass;
-import org.folio.tenant.domain.dto.Error;
-import org.folio.tenant.domain.dto.Errors;
+import org.folio.consortia.domain.dto.Error;
+import org.folio.consortia.domain.dto.Errors;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ public class ErrorHelper {
   }
 
 
-  public static Errors createErrors(org.folio.tenant.domain.dto.Error error) {
+  public static Errors createErrors(Error error) {
     var e = new Errors();
     e.setErrors(List.of(error));
     return e;

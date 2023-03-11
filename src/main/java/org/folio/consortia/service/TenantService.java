@@ -1,6 +1,6 @@
 package org.folio.consortia.service;
 
-import org.folio.pv.domain.dto.TenantCollection;
+import org.folio.consortia.domain.dto.TenantCollection;
 
 public interface TenantService {
 

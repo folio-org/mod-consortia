@@ -1,7 +1,7 @@
 package org.folio.consortia.controller;
 
 import org.folio.consortia.exception.ResourceNotFoundException;
-import org.folio.tenant.domain.dto.Errors;
+import org.folio.consortia.domain.dto.Errors;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -13,7 +13,7 @@ import static org.folio.consortia.utils.ErrorHelper.ErrorCode.VALIDATION_ERROR;
 import static org.folio.consortia.utils.ErrorHelper.createInternalError;
 
 @RestControllerAdvice
-public class ErrorHandling {
+public class ErrorHandlingController {
 
   @ResponseStatus(HttpStatus.NOT_FOUND)
   @ExceptionHandler(ResourceNotFoundException.class)

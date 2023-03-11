@@ -1,6 +1,6 @@
 package org.folio.consortia.controller;
 
-import org.folio.consortia.domain.entity.Tenant;
+import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.support.BaseTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -12,7 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@EntityScan(basePackageClasses = Tenant.class)
+@EntityScan(basePackageClasses = TenantEntity.class)
 class TenantControllerTest extends BaseTest {
 
   @Test

@@ -43,6 +43,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/trait_search_query_by_user_id"
         - $ref: "#/components/parameters/trait_search_query_by_username"
+        - $ref: "#/components/parameters/trait_search_query_by_tenant_id"
         - $ref: "#/components/parameters/trait_pageable_offset"
         - $ref: "#/components/parameters/trait_pageable_limit"
       responses:
@@ -136,6 +137,12 @@ components:
       in: query
       name: username
       description: Username of the user to search for.
+      schema:
+        type: string
+    trait_search_query_by_tenant_id:
+      in: query
+      name: tenantId
+      description: Tenant ID of the tenant to search for.
       schema:
         type: string
     trait_pageable_offset:
