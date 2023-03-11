@@ -4,8 +4,10 @@ import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.entity.TenantEntity;
 
 public class TenantConverter {
+  private TenantConverter() {
+  }
 
-  public Tenant convert(TenantEntity source) {
+  public static Tenant toDto(TenantEntity source) {
     var tenantDto = new Tenant();
     tenantDto.setTenantId(source.getId());
     tenantDto.setTenantName(source.getName());

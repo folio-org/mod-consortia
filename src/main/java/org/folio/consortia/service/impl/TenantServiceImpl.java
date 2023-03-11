@@ -18,14 +18,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class TenantServiceImpl implements TenantService {
 
   private final TenantRepository repository;
-  private final TenantConverter tenantConverter;
 
   @Transactional(readOnly = true)
   @Override
   public TenantCollection get(Integer offset, Integer limit) {
     var result = new TenantCollection();
     Page<TenantEntity> page = repository.findAll(new OffsetRequest(offset, limit));
-    result.setTenants(page.map(tenantConverter::convert).getContent());
+    result.setTenants(page.map(TenantConverter::toDto).getContent());
     result.setTotalRecords((int) page.getTotalElements());
 
     return result;

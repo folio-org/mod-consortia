@@ -24,14 +24,13 @@ import java.util.UUID;
 public class UserTenantServiceImpl implements UserTenantService {
 
   private final UserTenantRepository userTenantRepository;
-  private final UserTenantConverter converter;
 
   @Transactional(readOnly = true)
   @Override
   public UserTenantCollection get(Integer offset, Integer limit) {
     var result = new UserTenantCollection();
     Page<UserTenantEntity> userTenantPage = userTenantRepository.findAll(PageRequest.of(offset, limit));
-    result.setUserTenants(userTenantPage.stream().map(converter::toDto).toList());
+    result.setUserTenants(userTenantPage.stream().map(UserTenantConverter::toDto).toList());
     result.setTotalRecords((int) userTenantPage.getTotalElements());
     return result;
   }
@@ -42,7 +41,7 @@ public class UserTenantServiceImpl implements UserTenantService {
     if (userTenantEntity.isEmpty()) {
       throw new UserTenantNotFoundException("associationId", String.valueOf(id));
     }
-    return converter.toDto(userTenantEntity.get());
+    return UserTenantConverter.toDto(userTenantEntity.get());
   }
 
   @Transactional(readOnly = true)
@@ -50,7 +49,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   public UserTenantCollection getByUserId(UUID userId) {
     var result = new UserTenantCollection();
     UserTenantEntity userTenantEntity = userTenantRepository.findByUserId(userId).orElseThrow(() -> new UserTenantNotFoundException("userId", String.valueOf(userId)));
-    result.setUserTenants(List.of(converter.toDto(userTenantEntity)));
+    result.setUserTenants(List.of(UserTenantConverter.toDto(userTenantEntity)));
     result.setTotalRecords(1);
     return result;
   }
@@ -69,7 +68,7 @@ public class UserTenantServiceImpl implements UserTenantService {
       throw new UserTenantNotFoundException("username", username);
     }
 
-    result.setUserTenants(userTenants.stream().map(converter::toDto).toList());
+    result.setUserTenants(userTenants.stream().map(UserTenantConverter::toDto).toList());
     result.setTotalRecords(userTenants.size());
     return result;
   }

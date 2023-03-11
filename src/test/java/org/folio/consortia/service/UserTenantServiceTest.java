@@ -97,6 +97,25 @@ class UserTenantServiceTest {
   }
 
   @Test
+  void shouldGetUserTenantByUsernameAndTenantId() {
+    // given
+    UUID userId = UUID.randomUUID();
+    UUID associationId = UUID.randomUUID();
+    String tenantId = String.valueOf(UUID.randomUUID());
+
+    UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser");
+    List<UserTenantEntity> userTenantEntities = List.of(userTenant);
+    when(userTenantRepository.findByUsernameAndTenantId("testuser", tenantId)).thenReturn(userTenantEntities);
+
+    // when
+    UserTenantCollection result = userTenantService.getByUsername("testuser", tenantId);
+
+    // then
+    assertEquals(userTenantEntities.size(), result.getUserTenants().size());
+    assertEquals(1, result.getTotalRecords());
+  }
+
+  @Test
   void shouldThrowIllegalArgumentException() {
     Assertions.assertThrows(IllegalArgumentException.class, () -> userTenantService.get(0, 0));
   }
