@@ -2,9 +2,9 @@ package org.folio.consortia.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.folio.consortia.domain.converter.TenantConverter;
 import org.folio.consortia.domain.dto.TenantCollection;
 import org.folio.consortia.domain.entity.TenantEntity;
+import org.folio.consortia.domain.mapper.TenantMapper;
 import org.folio.consortia.domain.repository.TenantRepository;
 import org.folio.consortia.service.TenantService;
 import org.folio.spring.data.OffsetRequest;
@@ -18,13 +18,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class TenantServiceImpl implements TenantService {
 
   private final TenantRepository repository;
+  private final TenantMapper tenantMapper;
+
 
   @Transactional(readOnly = true)
   @Override
   public TenantCollection get(Integer offset, Integer limit) {
     var result = new TenantCollection();
     Page<TenantEntity> page = repository.findAll(new OffsetRequest(offset, limit));
-    result.setTenants(page.map(TenantConverter::toDto).getContent());
+    result.setTenants(page.map(tenantMapper::toDto).getContent());
     result.setTotalRecords((int) page.getTotalElements());
 
     return result;

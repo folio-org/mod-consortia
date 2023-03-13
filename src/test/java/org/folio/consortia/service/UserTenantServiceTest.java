@@ -3,6 +3,7 @@ package org.folio.consortia.service;
 import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
+import org.folio.consortia.domain.mapper.UserTenantMapper;
 import org.folio.consortia.domain.repository.UserTenantRepository;
 import org.folio.consortia.exception.UserTenantNotFoundException;
 import org.folio.consortia.service.impl.UserTenantServiceImpl;
@@ -35,11 +36,12 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringRunner.class)
 class UserTenantServiceTest {
 
-  @Mock
-  private UserTenantRepository userTenantRepository;
-
   @InjectMocks
   private UserTenantServiceImpl userTenantService;
+  @Mock
+  private UserTenantRepository userTenantRepository;
+  @Mock
+  private UserTenantMapper mapper;
 
   @Test
   void shouldGetUserTenantList() {
@@ -48,6 +50,9 @@ class UserTenantServiceTest {
     int limit = 10;
     List<UserTenantEntity> userTenantEntities = List.of(new UserTenantEntity(), new UserTenantEntity());
     Page<UserTenantEntity> userTenantPage = new PageImpl<>(userTenantEntities, PageRequest.of(offset, limit), userTenantEntities.size());
+
+    when(mapper.toDto(userTenantEntities.get(0))).thenReturn(mapper.INSTANCE.toDto(userTenantEntities.get(0)));
+    when(mapper.toDto(userTenantEntities.get(1))).thenReturn(mapper.INSTANCE.toDto(userTenantEntities.get(1)));
     when(userTenantRepository.findAll(PageRequest.of(offset, limit))).thenReturn(userTenantPage);
 
     // when
@@ -63,9 +68,10 @@ class UserTenantServiceTest {
     // given
     UUID associationId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
-
     UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser");
     List<UserTenantEntity> userTenantEntities = List.of(userTenant);
+
+    when(mapper.toDto(userTenant)).thenReturn(mapper.INSTANCE.toDto(userTenant));
     when(userTenantRepository.findById(associationId)).thenReturn(Optional.of(userTenantEntities.get(0)));
 
     // when
@@ -81,10 +87,12 @@ class UserTenantServiceTest {
     // given
     UUID userId = UUID.randomUUID();
     UUID associationId = UUID.randomUUID();
-
     UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser");
     UserTenantEntity userTenant2 = createUserTenantEntity(associationId, userId, "testuser");
     List<UserTenantEntity> userTenantEntities = List.of(userTenant);
+
+    when(mapper.toDto(userTenant)).thenReturn(mapper.INSTANCE.toDto(userTenant));
+    when(mapper.toDto(userTenant2)).thenReturn(mapper.INSTANCE.toDto(userTenant2));
     when(userTenantRepository.findByUserId(userId)).thenReturn(Optional.of(userTenantEntities.get(0)));
 
     // when
@@ -102,9 +110,10 @@ class UserTenantServiceTest {
     UUID userId = UUID.randomUUID();
     UUID associationId = UUID.randomUUID();
     String tenantId = String.valueOf(UUID.randomUUID());
-
     UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser");
     List<UserTenantEntity> userTenantEntities = List.of(userTenant);
+
+    when(mapper.toDto(userTenant)).thenReturn(mapper.INSTANCE.toDto(userTenant));
     when(userTenantRepository.findByUsernameAndTenantId("testuser", tenantId)).thenReturn(userTenantEntities);
 
     // when

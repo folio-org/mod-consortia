@@ -2,10 +2,10 @@ package org.folio.consortia.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.folio.consortia.domain.converter.UserTenantConverter;
 import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.domain.entity.UserTenantEntity;
+import org.folio.consortia.domain.mapper.UserTenantMapper;
 import org.folio.consortia.domain.repository.UserTenantRepository;
 import org.folio.consortia.exception.UserTenantNotFoundException;
 import org.folio.consortia.service.UserTenantService;
@@ -24,13 +24,14 @@ import java.util.UUID;
 public class UserTenantServiceImpl implements UserTenantService {
 
   private final UserTenantRepository userTenantRepository;
+  private final UserTenantMapper userTenantMapper;
 
   @Transactional(readOnly = true)
   @Override
   public UserTenantCollection get(Integer offset, Integer limit) {
     var result = new UserTenantCollection();
     Page<UserTenantEntity> userTenantPage = userTenantRepository.findAll(PageRequest.of(offset, limit));
-    result.setUserTenants(userTenantPage.stream().map(UserTenantConverter::toDto).toList());
+    result.setUserTenants(userTenantPage.stream().map(userTenantMapper::toDto).toList());
     result.setTotalRecords((int) userTenantPage.getTotalElements());
     return result;
   }
@@ -41,7 +42,7 @@ public class UserTenantServiceImpl implements UserTenantService {
     if (userTenantEntity.isEmpty()) {
       throw new UserTenantNotFoundException("associationId", String.valueOf(id));
     }
-    return UserTenantConverter.toDto(userTenantEntity.get());
+    return userTenantMapper.toDto(userTenantEntity.get());
   }
 
   @Transactional(readOnly = true)
@@ -49,7 +50,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   public UserTenantCollection getByUserId(UUID userId) {
     var result = new UserTenantCollection();
     UserTenantEntity userTenantEntity = userTenantRepository.findByUserId(userId).orElseThrow(() -> new UserTenantNotFoundException("userId", String.valueOf(userId)));
-    result.setUserTenants(List.of(UserTenantConverter.toDto(userTenantEntity)));
+    result.setUserTenants(List.of(userTenantMapper.toDto(userTenantEntity)));
     result.setTotalRecords(1);
     return result;
   }
@@ -68,7 +69,7 @@ public class UserTenantServiceImpl implements UserTenantService {
       throw new UserTenantNotFoundException("username", username);
     }
 
-    result.setUserTenants(userTenants.stream().map(UserTenantConverter::toDto).toList());
+    result.setUserTenants(userTenants.stream().map(userTenantMapper::toDto).toList());
     result.setTotalRecords(userTenants.size());
     return result;
   }
