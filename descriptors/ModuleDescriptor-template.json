@@ -33,7 +33,7 @@
           ],
           "pathPattern": "/consortia/user-tenants/{associationId}",
           "permissionsRequired": [
-            "consortia.user-tenant.get"
+            "consortia.user-tenant.item.get"
           ],
           "modulePermissions": []
         }

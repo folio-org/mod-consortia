@@ -1,7 +1,6 @@
 package org.folio.consortia.service;
 
 import org.folio.consortia.domain.entity.TenantEntity;
-import org.folio.consortia.domain.mapper.TenantMapper;
 import org.folio.consortia.domain.repository.TenantRepository;
 import org.folio.consortia.service.impl.TenantServiceImpl;
 import org.folio.spring.data.OffsetRequest;
@@ -13,6 +12,8 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.PageImpl;
 
 import java.util.ArrayList;
@@ -31,10 +32,11 @@ class TenantServiceTest {
   private TenantRepository repository;
 
   @Mock
-  private TenantMapper mapper;
+  private ConversionService conversionService = new DefaultConversionService();
 
   @Test
   void shouldGetTenantList() {
+
     TenantEntity tenantEntity1 = new TenantEntity();
     tenantEntity1.setId("ABC1");
     tenantEntity1.setName("TestName1");
@@ -45,8 +47,6 @@ class TenantServiceTest {
     List<TenantEntity> tenantEntityList = new ArrayList<>();
     tenantEntityList.add(tenantEntity1);
     tenantEntityList.add(tenantEntity2);
-    when(mapper.toDto(tenantEntity1)).thenReturn(mapper.INSTANCE.toDto(tenantEntity1));
-    when(mapper.toDto(tenantEntity2)).thenReturn(mapper.INSTANCE.toDto(tenantEntity2));
     when(repository.findAll(new OffsetRequest(0, 2)))
       .thenReturn(new PageImpl<>(tenantEntityList) {
       });

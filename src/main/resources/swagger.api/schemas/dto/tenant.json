@@ -4,17 +4,17 @@
   "Tenant": {
     "type": "object",
     "properties": {
-      "id": {
+      "tenantId": {
         "type": "string"
       },
-      "name": {
+      "tenantName": {
         "type": "string"
       }
     },
     "additionalProperties": false,
     "required": [
-      "id",
-      "name"
+      "tenantId",
+      "tenantName"
     ]
   }
 }

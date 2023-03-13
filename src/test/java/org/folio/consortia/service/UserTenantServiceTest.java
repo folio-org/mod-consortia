@@ -3,23 +3,22 @@ package org.folio.consortia.service;
 import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
-import org.folio.consortia.domain.mapper.UserTenantMapper;
 import org.folio.consortia.domain.repository.UserTenantRepository;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.impl.UserTenantServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +32,6 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @EnableAutoConfiguration(exclude = BatchAutoConfiguration.class)
 @EntityScan(basePackageClasses = UserTenantEntity.class)
-@RunWith(SpringRunner.class)
 class UserTenantServiceTest {
 
   @InjectMocks
@@ -41,7 +39,7 @@ class UserTenantServiceTest {
   @Mock
   private UserTenantRepository userTenantRepository;
   @Mock
-  private UserTenantMapper mapper;
+  private ConversionService conversionService = new DefaultConversionService();
 
   @Test
   void shouldGetUserTenantList() {
@@ -51,8 +49,6 @@ class UserTenantServiceTest {
     List<UserTenantEntity> userTenantEntities = List.of(new UserTenantEntity(), new UserTenantEntity());
     Page<UserTenantEntity> userTenantPage = new PageImpl<>(userTenantEntities, PageRequest.of(offset, limit), userTenantEntities.size());
 
-    when(mapper.toDto(userTenantEntities.get(0))).thenReturn(mapper.INSTANCE.toDto(userTenantEntities.get(0)));
-    when(mapper.toDto(userTenantEntities.get(1))).thenReturn(mapper.INSTANCE.toDto(userTenantEntities.get(1)));
     when(userTenantRepository.findAll(PageRequest.of(offset, limit))).thenReturn(userTenantPage);
 
     // when
@@ -71,7 +67,6 @@ class UserTenantServiceTest {
     UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser");
     List<UserTenantEntity> userTenantEntities = List.of(userTenant);
 
-    when(mapper.toDto(userTenant)).thenReturn(mapper.INSTANCE.toDto(userTenant));
     when(userTenantRepository.findById(associationId)).thenReturn(Optional.of(userTenantEntities.get(0)));
 
     // when
@@ -91,8 +86,6 @@ class UserTenantServiceTest {
     UserTenantEntity userTenant2 = createUserTenantEntity(associationId, userId, "testuser");
     List<UserTenantEntity> userTenantEntities = List.of(userTenant);
 
-    when(mapper.toDto(userTenant)).thenReturn(mapper.INSTANCE.toDto(userTenant));
-    when(mapper.toDto(userTenant2)).thenReturn(mapper.INSTANCE.toDto(userTenant2));
     when(userTenantRepository.findByUserId(userId)).thenReturn(Optional.of(userTenantEntities.get(0)));
 
     // when
@@ -113,7 +106,6 @@ class UserTenantServiceTest {
     UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser");
     List<UserTenantEntity> userTenantEntities = List.of(userTenant);
 
-    when(mapper.toDto(userTenant)).thenReturn(mapper.INSTANCE.toDto(userTenant));
     when(userTenantRepository.findByUsernameAndTenantId("testuser", tenantId)).thenReturn(userTenantEntities);
 
     // when
