@@ -24,13 +24,13 @@ import java.util.UUID;
 public class UserTenantServiceImpl implements UserTenantService {
 
   private final UserTenantRepository userTenantRepository;
-  private ConversionService convert;
+  private final ConversionService converter;
 
   @Override
   public UserTenantCollection get(Integer offset, Integer limit) {
     var result = new UserTenantCollection();
     Page<UserTenantEntity> userTenantPage = userTenantRepository.findAll(PageRequest.of(offset, limit));
-    result.setUserTenants(userTenantPage.stream().map(o -> convert.convert(o, UserTenant.class)).toList());
+    result.setUserTenants(userTenantPage.stream().map(o -> converter.convert(o, UserTenant.class)).toList());
     result.setTotalRecords((int) userTenantPage.getTotalElements());
     return result;
   }
@@ -41,7 +41,7 @@ public class UserTenantServiceImpl implements UserTenantService {
     if (userTenantEntity.isEmpty()) {
       throw new ResourceNotFoundException("associationId", String.valueOf(id));
     }
-    return convert.convert(userTenantEntity.get(), UserTenant.class);
+    return converter.convert(userTenantEntity.get(), UserTenant.class);
   }
 
   @Override
@@ -49,7 +49,7 @@ public class UserTenantServiceImpl implements UserTenantService {
     var result = new UserTenantCollection();
     UserTenantEntity userTenantEntity = userTenantRepository.findByUserId(userId)
       .orElseThrow(() -> new ResourceNotFoundException("userId", String.valueOf(userId)));
-    result.setUserTenants(List.of(convert.convert(userTenantEntity, UserTenant.class)));
+    result.setUserTenants(List.of(converter.convert(userTenantEntity, UserTenant.class)));
     result.setTotalRecords(1);
     return result;
   }
@@ -68,7 +68,7 @@ public class UserTenantServiceImpl implements UserTenantService {
       throw new ResourceNotFoundException("username", username);
     }
 
-    result.setUserTenants(userTenants.stream().map(o -> convert.convert(o, UserTenant.class)).toList());
+    result.setUserTenants(userTenants.stream().map(o -> converter.convert(o, UserTenant.class)).toList());
     result.setTotalRecords(userTenants.size());
     return result;
   }
