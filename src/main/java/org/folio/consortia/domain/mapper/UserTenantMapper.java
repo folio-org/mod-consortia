@@ -17,5 +17,4 @@ public interface UserTenantMapper {
   @Mapping(target = "tenant.id", source = "tenantId")
   UserTenantEntity toEntity(UserTenant userTenant);
 
-
 }

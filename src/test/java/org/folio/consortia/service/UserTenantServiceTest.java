@@ -5,7 +5,7 @@ import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.domain.mapper.UserTenantMapper;
 import org.folio.consortia.domain.repository.UserTenantRepository;
-import org.folio.consortia.exception.UserTenantNotFoundException;
+import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.impl.UserTenantServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -136,7 +136,7 @@ class UserTenantServiceTest {
     when(userTenantRepository.findByUserId(userId)).thenReturn(Optional.empty());
 
     // throw exception
-    assertThrows(UserTenantNotFoundException.class, () -> userTenantService.getByUserId(userId));
+    assertThrows(ResourceNotFoundException.class, () -> userTenantService.getByUserId(userId));
   }
 
   @Test
@@ -146,7 +146,7 @@ class UserTenantServiceTest {
     when(userTenantRepository.findByUsername(username)).thenReturn(new ArrayList<>());
 
     // throw exception
-    assertThrows(UserTenantNotFoundException.class, () -> userTenantService.getByUsername("testusername", null));
+    assertThrows(ResourceNotFoundException.class, () -> userTenantService.getByUsername("testusername", null));
   }
 
   private UserTenantEntity createUserTenantEntity(UUID associationId, UUID userId, String username) {

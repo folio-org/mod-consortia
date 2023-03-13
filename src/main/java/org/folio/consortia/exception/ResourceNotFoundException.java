@@ -2,9 +2,9 @@ package org.folio.consortia.exception;
 
 public class ResourceNotFoundException extends RuntimeException {
 
-  private static final String NOT_FOUND_MSG_TEMPLATE = "%s with %s [%s] was not found";
+  private static final String NOT_FOUND_MSG_TEMPLATE = "Object with %s [%s] was not found";
 
-  protected ResourceNotFoundException(String resourceName, String attribute, String value) {
-    super(String.format(NOT_FOUND_MSG_TEMPLATE, resourceName, attribute, value));
+  public ResourceNotFoundException(String attribute, String value) {
+    super(String.format(NOT_FOUND_MSG_TEMPLATE, attribute, value));
   }
 }

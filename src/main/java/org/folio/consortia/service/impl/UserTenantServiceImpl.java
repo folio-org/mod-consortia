@@ -7,7 +7,7 @@ import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.domain.mapper.UserTenantMapper;
 import org.folio.consortia.domain.repository.UserTenantRepository;
-import org.folio.consortia.exception.UserTenantNotFoundException;
+import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.UserTenantService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -40,7 +40,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   public UserTenant getById(UUID id) {
     Optional<UserTenantEntity> userTenantEntity = userTenantRepository.findById(id);
     if (userTenantEntity.isEmpty()) {
-      throw new UserTenantNotFoundException("associationId", String.valueOf(id));
+      throw new ResourceNotFoundException("associationId", String.valueOf(id));
     }
     return userTenantMapper.toDto(userTenantEntity.get());
   }
@@ -49,7 +49,8 @@ public class UserTenantServiceImpl implements UserTenantService {
   @Override
   public UserTenantCollection getByUserId(UUID userId) {
     var result = new UserTenantCollection();
-    UserTenantEntity userTenantEntity = userTenantRepository.findByUserId(userId).orElseThrow(() -> new UserTenantNotFoundException("userId", String.valueOf(userId)));
+    UserTenantEntity userTenantEntity = userTenantRepository.findByUserId(userId)
+      .orElseThrow(() -> new ResourceNotFoundException("userId", String.valueOf(userId)));
     result.setUserTenants(List.of(userTenantMapper.toDto(userTenantEntity)));
     result.setTotalRecords(1);
     return result;
@@ -66,7 +67,7 @@ public class UserTenantServiceImpl implements UserTenantService {
         : userTenantRepository.findByUsername(username);
 
     if (userTenants.isEmpty()) {
-      throw new UserTenantNotFoundException("username", username);
+      throw new ResourceNotFoundException("username", username);
     }
 
     result.setUserTenants(userTenants.stream().map(userTenantMapper::toDto).toList());

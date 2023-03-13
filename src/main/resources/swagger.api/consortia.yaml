@@ -19,7 +19,7 @@ paths:
           content:
             application/json:
               schema:
-                 $ref: "#/components/schemas/tenantCollection"
+                $ref: "#/components/schemas/tenantCollection"
         "400":
           description:
             Bad request, e.g. malformed request body or query parameter.
@@ -28,7 +28,7 @@ paths:
           content:
             application/json:
               schema:
-                 $ref: "#/components/schemas/error"
+                $ref: "#/components/schemas/error"
         "500":
           description: Internal server errors, e.g. due to misconfiguration
           content:
@@ -41,9 +41,22 @@ paths:
       summary: Get a list of user tenant associations
       operationId: getUserTenants
       parameters:
-        - $ref: "#/components/parameters/trait_search_query_by_user_id"
-        - $ref: "#/components/parameters/trait_search_query_by_username"
-        - $ref: "#/components/parameters/trait_search_query_by_tenant_id"
+        - in: query
+          name: userId
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the user
+        - in: query
+          name: username
+          schema:
+            type: string
+            description: The username of the user
+        - in: query
+          name: tenantId
+          schema:
+              type: string
+          description: The ID of the tenant
         - $ref: "#/components/parameters/trait_pageable_offset"
         - $ref: "#/components/parameters/trait_pageable_limit"
       responses:
@@ -126,25 +139,6 @@ components:
         format: uuid
       required: true
       description: UUID of the user to get and associated tenants.
-    trait_search_query_by_user_id:
-      in: query
-      name: userId
-      schema:
-        type: string
-        format: uuid
-      description: UUID of the user to get and associated tenants.
-    trait_search_query_by_username:
-      in: query
-      name: username
-      description: Username of the user to search for.
-      schema:
-        type: string
-    trait_search_query_by_tenant_id:
-      in: query
-      name: tenantId
-      description: Tenant ID of the tenant to search for.
-      schema:
-        type: string
     trait_pageable_offset:
       name: offset
       in: query

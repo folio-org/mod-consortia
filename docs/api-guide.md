@@ -12,10 +12,10 @@
 
 ### Endpoints
 
-| METHOD | URL                           | DESCRIPTION                                                                  |
-|--------|-------------------------------|------------------------------------------------------------------------------|
-| GET    | /user-tenants                 | Return list of user tenant associations based on `param` , `limit`, `offset` |
-| GET    | /user-tenants/{associationId} | Return user-tenant with provided `associationId`                             |
+| METHOD | URL                           | DESCRIPTION                                                                                          |
+|--------|-------------------------------|------------------------------------------------------------------------------------------------------|
+| GET    | /user-tenants                 | Return list of user tenant associations based on `userId`, `username`, `tenantId`, `limit`, `offset` |
+| GET    | /user-tenants/{associationId} | Return user-tenant with provided `associationId`                                                     |
 
 ### Supported params options
 
