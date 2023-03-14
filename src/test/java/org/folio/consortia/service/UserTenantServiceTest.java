@@ -90,7 +90,7 @@ class UserTenantServiceTest {
 
     when(conversionService.convert(userTenant, UserTenant.class)).thenReturn(toDto(userTenant));
     when(conversionService.convert(userTenant2, UserTenant.class)).thenReturn(toDto(userTenant2));
-    when(userTenantRepository.findByUserId(userId)).thenReturn(Optional.of(userTenantEntities.get(0)));
+    when(userTenantRepository.findByUserId(userId)).thenReturn(userTenantEntities);
 
     // when
     UserTenantCollection result = userTenantService.getByUserId(userId);
@@ -129,7 +129,7 @@ class UserTenantServiceTest {
   void shouldReturn404UserIdNotFoundException() {
     // given
     UUID userId = UUID.randomUUID();
-    when(userTenantRepository.findByUserId(userId)).thenReturn(Optional.empty());
+    when(userTenantRepository.findByUserId(userId)).thenReturn(new ArrayList<>());
 
     // throw exception
     assertThrows(ResourceNotFoundException.class, () -> userTenantService.getByUserId(userId));
