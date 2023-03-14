@@ -1,5 +1,7 @@
 package org.folio.consortia.service;
 
+import org.folio.consortia.domain.converter.UserTenantConverter;
+import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
@@ -15,7 +17,6 @@ import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -39,7 +40,7 @@ class UserTenantServiceTest {
   @Mock
   private UserTenantRepository userTenantRepository;
   @Mock
-  private ConversionService conversionService = new DefaultConversionService();
+  private ConversionService conversionService;
 
   @Test
   void shouldGetUserTenantList() {
@@ -67,6 +68,7 @@ class UserTenantServiceTest {
     UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser");
     List<UserTenantEntity> userTenantEntities = List.of(userTenant);
 
+    when(conversionService.convert(userTenant, UserTenant.class)).thenReturn(toDto(userTenant));
     when(userTenantRepository.findById(associationId)).thenReturn(Optional.of(userTenantEntities.get(0)));
 
     // when
@@ -86,6 +88,8 @@ class UserTenantServiceTest {
     UserTenantEntity userTenant2 = createUserTenantEntity(associationId, userId, "testuser");
     List<UserTenantEntity> userTenantEntities = List.of(userTenant);
 
+    when(conversionService.convert(userTenant, UserTenant.class)).thenReturn(toDto(userTenant));
+    when(conversionService.convert(userTenant2, UserTenant.class)).thenReturn(toDto(userTenant2));
     when(userTenantRepository.findByUserId(userId)).thenReturn(Optional.of(userTenantEntities.get(0)));
 
     // when
@@ -148,6 +152,11 @@ class UserTenantServiceTest {
     userTenantEntity.setTenant(new TenantEntity());
     userTenantEntity.setUsername(username);
     return userTenantEntity;
+  }
+
+  private UserTenant toDto(UserTenantEntity userTenantEntity) {
+    UserTenantConverter tenantConverter = new UserTenantConverter();
+    return tenantConverter.convert(userTenantEntity);
   }
 }
 

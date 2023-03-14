@@ -13,7 +13,6 @@ import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.domain.PageImpl;
 
 import java.util.ArrayList;
@@ -32,7 +31,7 @@ class TenantServiceTest {
   private TenantRepository repository;
 
   @Mock
-  private ConversionService conversionService = new DefaultConversionService();
+  private ConversionService conversionService;
 
   @Test
   void shouldGetTenantList() {

@@ -11,10 +11,8 @@ public class TenantConverter implements Converter<TenantEntity, Tenant> {
   @Override
   public Tenant convert(TenantEntity source) {
     Tenant tenant = new Tenant();
-    tenant.setTenantId(source.getId());
-    tenant.setTenantName(source.getName());
+    tenant.setId(source.getId());
+    tenant.setName(source.getName());
     return tenant;
   }
-
-
 }

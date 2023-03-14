@@ -83,7 +83,6 @@ class UserTenantControllerTest extends BaseTest {
     verify(userTenantService).getById(associationId);
   }
 
-
   @Test
   void shouldGetUserTenantList() throws Exception {
     var headers = defaultHeaders();
@@ -136,5 +135,4 @@ class UserTenantControllerTest extends BaseTest {
         jsonPath("$.errors[0].code",
           is("VALIDATION_ERROR")));
   }
-
 }
