@@ -32,7 +32,7 @@ public class ErrorHandlingController {
     MethodArgumentNotValidException.class,
     IllegalArgumentException.class
   })
-  public Errors handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
+  public Errors handleMethodArgumentTypeMismatchException(Exception e) {
     return createInternalError(e.getMessage(), VALIDATION_ERROR);
   }
 
