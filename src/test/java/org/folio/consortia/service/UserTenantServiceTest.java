@@ -158,5 +158,6 @@ class UserTenantServiceTest {
     UserTenantConverter tenantConverter = new UserTenantConverter();
     return tenantConverter.convert(userTenantEntity);
   }
+
 }
 
