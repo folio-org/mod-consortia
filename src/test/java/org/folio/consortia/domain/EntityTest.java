@@ -2,7 +2,6 @@ package org.folio.consortia.domain;
 
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
