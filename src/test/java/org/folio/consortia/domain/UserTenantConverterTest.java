@@ -1,5 +1,6 @@
-package org.folio.consortia.domain.converter;
+package org.folio.consortia.domain;
 
+import org.folio.consortia.domain.converter.UserTenantConverter;
 import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;

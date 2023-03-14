@@ -1,5 +1,6 @@
-package org.folio.consortia.domain.converter;
+package org.folio.consortia.domain;
 
+import org.folio.consortia.domain.converter.TenantConverter;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.junit.jupiter.api.Test;
 
