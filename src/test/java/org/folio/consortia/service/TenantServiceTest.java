@@ -35,7 +35,6 @@ class TenantServiceTest {
 
   @Test
   void shouldGetTenantList() {
-
     TenantEntity tenantEntity1 = new TenantEntity();
     tenantEntity1.setId("ABC1");
     tenantEntity1.setName("TestName1");
