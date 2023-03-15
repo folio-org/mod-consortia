@@ -45,17 +45,18 @@ class UserTenantControllerTest extends BaseTest {
     userTenantCollection.setUserTenants(userTenantDtos);
     userTenantCollection.setTotalRecords(userTenantDtos.size());
 
-    when(userTenantService.getByUserId(userId))
+    when(userTenantService.getByUserId(userId, offset, limit))
       .thenReturn(userTenantCollection);
 
     // when
-    ResponseEntity<UserTenantCollection> response = userTenantController.getUserTenants(userId, null, null, offset, limit);
+    ResponseEntity<UserTenantCollection> response =
+      userTenantController.getUserTenants(null, null, null, offset, limit);
 
     // then
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     Assertions.assertEquals(userTenantCollection, response.getBody());
 
-    verify(userTenantService).getByUserId(userId);
+    verify(userTenantService).getByUserId(userId, offset, limit);
   }
 
   @Test

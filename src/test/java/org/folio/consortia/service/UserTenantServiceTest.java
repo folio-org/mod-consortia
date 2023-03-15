@@ -65,7 +65,8 @@ class UserTenantServiceTest {
     // given
     UUID associationId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
-    UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser");
+    String tenantId = String.valueOf(UUID.randomUUID());
+    UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser", tenantId);
     List<UserTenantEntity> userTenantEntities = List.of(userTenant);
 
     when(conversionService.convert(userTenant, UserTenant.class)).thenReturn(toDto(userTenant));
@@ -84,16 +85,20 @@ class UserTenantServiceTest {
     // given
     UUID userId = UUID.randomUUID();
     UUID associationId = UUID.randomUUID();
-    UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser");
-    UserTenantEntity userTenant2 = createUserTenantEntity(associationId, userId, "testuser");
+    String tenantId = String.valueOf(UUID.randomUUID());
+    int limit = 10;
+    int offset = 0;
+    UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser", tenantId);
+    UserTenantEntity userTenant2 = createUserTenantEntity(associationId, userId, "testuser", tenantId);
     List<UserTenantEntity> userTenantEntities = List.of(userTenant);
 
     when(conversionService.convert(userTenant, UserTenant.class)).thenReturn(toDto(userTenant));
     when(conversionService.convert(userTenant2, UserTenant.class)).thenReturn(toDto(userTenant2));
-    when(userTenantRepository.findByUserId(userId)).thenReturn(userTenantEntities);
+    when(userTenantRepository.findByUserId(userId, PageRequest.of(offset, limit)))
+      .thenReturn(new PageImpl<>(userTenantEntities, PageRequest.of(offset, limit), userTenantEntities.size()));
 
     // when
-    UserTenantCollection result = userTenantService.getByUserId(userId);
+    UserTenantCollection result = userTenantService.getByUserId(userId, offset, limit);
 
     // then
     assertEquals(userTenant2, userTenant);
@@ -107,16 +112,16 @@ class UserTenantServiceTest {
     UUID userId = UUID.randomUUID();
     UUID associationId = UUID.randomUUID();
     String tenantId = String.valueOf(UUID.randomUUID());
-    UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser");
-    List<UserTenantEntity> userTenantEntities = List.of(userTenant);
+    UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser", tenantId);
 
-    when(userTenantRepository.findByUsernameAndTenantId("testuser", tenantId)).thenReturn(userTenantEntities);
+    when(conversionService.convert(userTenant, UserTenant.class)).thenReturn(toDto(userTenant));
+    when(userTenantRepository.findByUsernameAndTenantId("testuser", tenantId)).thenReturn(Optional.of(userTenant));
 
     // when
-    UserTenantCollection result = userTenantService.getByUsername("testuser", tenantId);
+    UserTenantCollection result = userTenantService.getByUsernameAndTenantId("testuser", tenantId);
 
     // then
-    assertEquals(userTenantEntities.size(), result.getUserTenants().size());
+    assertEquals(tenantId, result.getUserTenants().get(0).getTenantId());
     assertEquals(1, result.getTotalRecords());
   }
 
@@ -129,27 +134,36 @@ class UserTenantServiceTest {
   void shouldReturn404UserIdNotFoundException() {
     // given
     UUID userId = UUID.randomUUID();
-    when(userTenantRepository.findByUserId(userId)).thenReturn(new ArrayList<>());
+    int limit = 10;
+    int offset = 0;
+    when(userTenantRepository.findByUserId(userId, PageRequest.of(offset, limit)))
+      .thenReturn(new PageImpl<>(new ArrayList<>()));
 
     // throw exception
-    assertThrows(ResourceNotFoundException.class, () -> userTenantService.getByUserId(userId));
+    assertThrows(ResourceNotFoundException.class, () -> userTenantService.getByUserId(userId, offset, limit));
   }
 
   @Test
   void shouldReturn404UsernameNotFoundException() {
     // given
     String username = "testuser";
-    when(userTenantRepository.findByUsername(username)).thenReturn(new ArrayList<>());
+    String tenantId = String.valueOf(UUID.randomUUID());
+    when(userTenantRepository.findByUsernameAndTenantId(username, tenantId))
+      .thenReturn(Optional.empty());
 
     // throw exception
-    assertThrows(ResourceNotFoundException.class, () -> userTenantService.getByUsername("testusername", null));
+    assertThrows(ResourceNotFoundException.class,
+      () -> userTenantService.getByUsernameAndTenantId("testusername", null));
   }
 
-  private UserTenantEntity createUserTenantEntity(UUID associationId, UUID userId, String username) {
+  private UserTenantEntity createUserTenantEntity(UUID associationId, UUID userId, String username, String tenantId) {
     UserTenantEntity userTenantEntity = new UserTenantEntity();
     userTenantEntity.setId(associationId);
     userTenantEntity.setUserId(userId);
-    userTenantEntity.setTenant(new TenantEntity());
+
+    var tenant = new TenantEntity();
+    tenant.setId(tenantId);
+    userTenantEntity.setTenant(tenant);
     userTenantEntity.setUsername(username);
     return userTenantEntity;
   }

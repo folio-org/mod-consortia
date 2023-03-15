@@ -21,13 +21,14 @@ public class UserTenantController implements UserTenantsApi {
   private final UserTenantService userTenantService;
 
   @Override
-  public ResponseEntity<UserTenantCollection> getUserTenants(UUID userId, String username, String tenantId,
+  public ResponseEntity<UserTenantCollection> getUserTenants(UUID userId, String username,
+                                                             String tenantId,
                                                              Integer offset, Integer limit) {
     UserTenantCollection userTenantCollection;
     if (userId != null) {
-      userTenantCollection = userTenantService.getByUserId(userId);
+      userTenantCollection = userTenantService.getByUserId(userId, offset, limit);
     } else if (username != null) {
-      userTenantCollection = userTenantService.getByUsername(username, tenantId);
+      userTenantCollection = userTenantService.getByUsernameAndTenantId(username, tenantId);
     } else {
       userTenantCollection = userTenantService.get(offset, limit);
     }

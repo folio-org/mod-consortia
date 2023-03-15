@@ -22,7 +22,7 @@ public interface UserTenantService {
    * @param userId the user id
    * @return the user tenant associations collection
    */
-  UserTenantCollection getByUserId(UUID userId);
+  UserTenantCollection getByUserId(UUID userId, Integer offset, Integer limit);
 
   /**
    * Get a user tenant associations collection by username
@@ -31,7 +31,7 @@ public interface UserTenantService {
    * @param tenantId the tenant id
    * @return the user tenant associations collection
    */
-  UserTenantCollection getByUsername(String username, String tenantId);
+  UserTenantCollection getByUsernameAndTenantId(String username, String tenantId);
 
   /**
    * Get user tenant association by id
