@@ -154,6 +154,12 @@ class UserTenantServiceTest {
 
     // throw exception
     assertThrows(ResourceNotFoundException.class,
+      () -> userTenantService.getByUsernameAndTenantId("testusername", tenantId));
+  }
+
+  @Test
+  void shouldReturn400BadRequest() {
+    assertThrows(IllegalArgumentException.class,
       () -> userTenantService.getByUsernameAndTenantId("testusername", null));
   }
 

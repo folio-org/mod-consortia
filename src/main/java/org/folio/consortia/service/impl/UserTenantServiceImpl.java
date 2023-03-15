@@ -8,13 +8,12 @@ import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.domain.repository.UserTenantRepository;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.UserTenantService;
-import org.folio.spring.data.OffsetRequest;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -28,7 +27,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   @Override
   public UserTenantCollection get(Integer offset, Integer limit) {
     var result = new UserTenantCollection();
-    Page<UserTenantEntity> userTenantPage = userTenantRepository.findAll(OffsetRequest.of(offset, limit));
+    Page<UserTenantEntity> userTenantPage = userTenantRepository.findAll(PageRequest.of(offset, limit));
     result.setUserTenants(userTenantPage.stream().map(o -> converter.convert(o, UserTenant.class)).toList());
     result.setTotalRecords((int) userTenantPage.getTotalElements());
     return result;
@@ -36,24 +35,22 @@ public class UserTenantServiceImpl implements UserTenantService {
 
   @Override
   public UserTenant getById(UUID id) {
-    Optional<UserTenantEntity> userTenantEntity = userTenantRepository.findById(id);
-    if (userTenantEntity.isEmpty()) {
-      throw new ResourceNotFoundException("associationId", String.valueOf(id));
-    }
-    return converter.convert(userTenantEntity.get(), UserTenant.class);
+    UserTenantEntity userTenantEntity = userTenantRepository.findById(id)
+      .orElseThrow(() -> new ResourceNotFoundException("id", String.valueOf(id)));
+    return converter.convert(userTenantEntity, UserTenant.class);
   }
 
   @Override
   public UserTenantCollection getByUserId(UUID userId, Integer offset, Integer limit) {
     var result = new UserTenantCollection();
-    Page<UserTenantEntity> userTenantPage = userTenantRepository.findByUserId(userId, OffsetRequest.of(offset, limit));
-    result.setUserTenants(userTenantPage.stream().map(o -> converter.convert(o, UserTenant.class)).toList());
-    result.setTotalRecords((int) userTenantPage.getTotalElements());
+    Page<UserTenantEntity> userTenantPage = userTenantRepository.findByUserId(userId, PageRequest.of(offset, limit));
 
     if (userTenantPage.getContent().isEmpty()) {
       throw new ResourceNotFoundException("userId", String.valueOf(userId));
     }
 
+    result.setUserTenants(userTenantPage.stream().map(o -> converter.convert(o, UserTenant.class)).toList());
+    result.setTotalRecords((int) userTenantPage.getTotalElements());
     return result;
   }
 
@@ -64,14 +61,10 @@ public class UserTenantServiceImpl implements UserTenantService {
     }
 
     var result = new UserTenantCollection();
+    UserTenantEntity userTenantEntity = userTenantRepository.findByUsernameAndTenantId(username, tenantId)
+      .orElseThrow(() -> new ResourceNotFoundException("username", username));
+    UserTenant userTenant = converter.convert(userTenantEntity, UserTenant.class);
 
-    Optional<UserTenantEntity> userTenantEntity = userTenantRepository.findByUsernameAndTenantId(username, tenantId);
-
-    if (userTenantEntity.isEmpty()) {
-      throw new ResourceNotFoundException("username", username);
-    }
-
-    UserTenant userTenant = converter.convert(userTenantEntity.get(), UserTenant.class);
     result.setUserTenants(List.of(userTenant));
     result.setTotalRecords(1);
     return result;
