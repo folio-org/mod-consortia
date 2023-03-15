@@ -88,6 +88,7 @@ class UserTenantServiceTest {
     String tenantId = String.valueOf(UUID.randomUUID());
     int limit = 10;
     int offset = 0;
+
     UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser", tenantId);
     UserTenantEntity userTenant2 = createUserTenantEntity(associationId, userId, "testuser", tenantId);
     List<UserTenantEntity> userTenantEntities = List.of(userTenant);
