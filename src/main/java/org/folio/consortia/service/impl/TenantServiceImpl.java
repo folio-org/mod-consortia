@@ -28,11 +28,29 @@ public class TenantServiceImpl implements TenantService {
     return result;
   }
 
+  @Transactional
+  @Override
+  public org.folio.pv.domain.dto.Tenant save(org.folio.pv.domain.dto.Tenant tenant) {
+    Tenant result = dtoToEntity(tenant);
+    Tenant tenantEntity =  repository.save(result);
+
+    return entityToDto(tenantEntity);
+  }
+
   private org.folio.pv.domain.dto.Tenant entityToDto(Tenant entity) {
     var result = new org.folio.pv.domain.dto.Tenant();
 
     result.setTenantId(entity.getId());
     result.setTenantName(entity.getName());
+
+    return result;
+  }
+
+  private Tenant dtoToEntity(org.folio.pv.domain.dto.Tenant tenantDto) {
+    var result = new Tenant();
+
+    result.setId(tenantDto.getTenantId());
+    result.setName(tenantDto.getTenantName());
 
     return result;
   }

@@ -51,4 +51,20 @@ class TenantServiceTest {
   void shouldGetError() {
     Assertions.assertThrows(IllegalArgumentException.class,() -> tenantService.get(0, 0));
   }
+
+  @Test
+  void shouldCreateTenant() {
+    Tenant tenantEntity = new Tenant();
+    tenantEntity.setId("ABC1");
+    tenantEntity.setName("TestName1");
+    org.folio.pv.domain.dto.Tenant tenantDto = new org.folio.pv.domain.dto.Tenant();
+    tenantDto.setTenantId("ABC1");
+    tenantDto.setTenantName("TestName1");
+
+    Mockito.when(repository.save(tenantEntity))
+      .thenReturn(tenantEntity);
+
+    org.folio.pv.domain.dto.Tenant tenant = tenantService.save(tenantDto);
+    Assertions.assertEquals(tenantDto.getTenantId(), tenant.getTenantId());
+  }
 }

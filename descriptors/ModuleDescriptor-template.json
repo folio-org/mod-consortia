@@ -15,6 +15,16 @@
             "consortia.tenants.collection.get"
           ],
           "modulePermissions": []
+        },
+        {
+          "methods": [
+            "POST"
+          ],
+          "pathPattern": "/consortia/tenants",
+          "permissionsRequired": [
+            "consortia.tenants.post"
+          ],
+          "modulePermissions": []
         }
 
       ]
@@ -46,13 +56,19 @@
       "displayName": "Consortia API module - all permissions",
       "description": "All permissions for consortia module",
       "subPermissions": [
-        "consortia.tenants.collection.get"
+        "consortia.tenants.collection.get",
+        "consortia.tenants.post"
       ]
     },
     {
       "permissionName": "consortia.tenants.collection.get",
       "displayName": "get tenants",
       "description": "Get list of tenants"
+    },
+    {
+      "permissionName": "consortia.tenants.post",
+      "displayName": "create tenant",
+      "description": "create tenant"
     }
   ],
   "requires": [],

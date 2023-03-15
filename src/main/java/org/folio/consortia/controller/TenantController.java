@@ -1,6 +1,7 @@
 package org.folio.consortia.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.folio.pv.domain.dto.Tenant;
 import org.folio.pv.domain.dto.TenantCollection;
 import org.folio.pv.rest.resource.TenantsApi;
 import org.folio.consortia.service.TenantService;
@@ -19,5 +20,10 @@ public class TenantController implements TenantsApi {
   @Override
   public ResponseEntity<TenantCollection> getTenants(Integer offset, Integer limit) {
     return ResponseEntity.ok(service.get(offset, limit));
+  }
+
+  @Override
+  public ResponseEntity<Tenant> saveTenant(Tenant tenant) {
+    return ResponseEntity.ok(service.save(tenant));
   }
 }

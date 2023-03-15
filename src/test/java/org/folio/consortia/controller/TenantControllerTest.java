@@ -3,12 +3,15 @@ package org.folio.consortia.controller;
 import org.folio.consortia.support.BaseTest;
 import org.folio.consortia.repository.entity.Tenant;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.http.MediaType;
 
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.ResultMatcher.matchAll;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -33,5 +36,36 @@ class TenantControllerTest extends BaseTest {
           status().is4xxClientError(),
           content().contentType(MediaType.TEXT_PLAIN+";charset=UTF-8"),
           jsonPath("$", is("Limit cannot be negative or zero: 0"))));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+    "{\"tenantId\":\"diku\",\"tenantName\":\"diku_tenant_name\"}"
+  })
+  void saveTenant(String contentString) throws Exception {
+    var headers = defaultHeaders();
+    this.mockMvc.perform(
+      post("/consortia/tenants")
+      .headers(headers)
+      .content(contentString))
+      .andExpect(
+        matchAll(
+          status().isOk(),
+          content().contentType(MediaType.APPLICATION_JSON_VALUE)));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+    "{\"tenantName\":\"diku_tenant_name\"}"
+  })
+  void ShouldGet4xxErrorWhileSaving(String contentString) throws Exception {
+    var headers = defaultHeaders();
+    this.mockMvc.perform(
+        post("/consortia/tenants")
+          .headers(headers)
+          .content(contentString))
+      .andExpect(
+        matchAll(
+          status().is4xxClientError()));
   }
 }
