@@ -63,7 +63,6 @@ class UserTenantControllerTest extends BaseTest {
   void shouldGetUserTenantByAssociationId() {
     // given
     UUID associationId = UUID.randomUUID();
-
     UserTenant userTenant = new UserTenant();
     userTenant.setId(associationId);
     userTenant.setUserId(UUID.randomUUID());
