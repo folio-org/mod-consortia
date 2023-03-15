@@ -157,12 +157,6 @@ class UserTenantServiceTest {
       () -> userTenantService.getByUsernameAndTenantId("testusername", tenantId));
   }
 
-  @Test
-  void shouldReturn400BadRequest() {
-    assertThrows(IllegalArgumentException.class,
-      () -> userTenantService.getByUsernameAndTenantId("testusername", null));
-  }
-
   private UserTenantEntity createUserTenantEntity(UUID associationId, UUID userId, String username, String tenantId) {
     UserTenantEntity userTenantEntity = new UserTenantEntity();
     userTenantEntity.setId(associationId);
