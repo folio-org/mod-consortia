@@ -45,37 +45,6 @@ class TenantControllerTest extends BaseTest {
   void saveTenant(String contentString) throws Exception {
     var headers = defaultHeaders();
     this.mockMvc.perform(
-        post("/consortia/tenants")
-          .headers(headers)
-          .content(contentString))
-      .andExpect(
-        matchAll(
-          status().isOk(),
-          content().contentType(MediaType.APPLICATION_JSON_VALUE)));
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = {
-    "{\"name\":\"diku_tenant_name\"}"
-  })
-  void ShouldGet4xxErrorWhileSaving(String contentString) throws Exception {
-    var headers = defaultHeaders();
-    this.mockMvc.perform(
-        post("/consortia/tenants")
-          .headers(headers)
-          .content(contentString))
-      .andExpect(
-        matchAll(
-          status().is4xxClientError()));
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = {
-    "{\"tenantId\":\"diku\",\"tenantName\":\"diku_tenant_name\"}"
-  })
-  void saveTenant(String contentString) throws Exception {
-    var headers = defaultHeaders();
-    this.mockMvc.perform(
       post("/consortia/tenants")
       .headers(headers)
       .content(contentString))
@@ -87,7 +56,7 @@ class TenantControllerTest extends BaseTest {
 
   @ParameterizedTest
   @ValueSource(strings = {
-    "{\"tenantName\":\"diku_tenant_name\"}"
+    "{\"name\":\"diku_tenant_name\"}"
   })
   void ShouldGet4xxErrorWhileSaving(String contentString) throws Exception {
     var headers = defaultHeaders();
