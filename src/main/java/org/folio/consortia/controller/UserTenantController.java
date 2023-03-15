@@ -1,6 +1,7 @@
 package org.folio.consortia.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.rest.resource.UserTenantsApi;
@@ -21,13 +22,14 @@ public class UserTenantController implements UserTenantsApi {
   private final UserTenantService userTenantService;
 
   @Override
-  public ResponseEntity<UserTenantCollection> getUserTenants(UUID userId, String username,
-                                                             String tenantId,
-                                                             Integer offset, Integer limit) {
+  public ResponseEntity<UserTenantCollection> getUserTenants(UUID userId, String username, String tenantId, Integer offset, Integer limit) {
     UserTenantCollection userTenantCollection;
     if (userId != null) {
       userTenantCollection = userTenantService.getByUserId(userId, offset, limit);
-    } else if (username != null) {
+    } else if (StringUtils.isNotBlank(username)) {
+      if (StringUtils.isBlank(tenantId)) {
+        throw new IllegalArgumentException("tenantId is required when username is provided");
+      }
       userTenantCollection = userTenantService.getByUsernameAndTenantId(username, tenantId);
     } else {
       userTenantCollection = userTenantService.get(offset, limit);

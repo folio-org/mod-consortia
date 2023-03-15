@@ -56,10 +56,6 @@ public class UserTenantServiceImpl implements UserTenantService {
 
   @Override
   public UserTenantCollection getByUsernameAndTenantId(String username, String tenantId) {
-    if (tenantId == null) {
-      throw new IllegalArgumentException("tenantId must be provided");
-    }
-
     var result = new UserTenantCollection();
     UserTenantEntity userTenantEntity = userTenantRepository.findByUsernameAndTenantId(username, tenantId)
       .orElseThrow(() -> new ResourceNotFoundException("username", username));
