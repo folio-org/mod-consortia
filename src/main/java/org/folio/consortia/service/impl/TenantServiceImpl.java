@@ -31,4 +31,10 @@ public class TenantServiceImpl implements TenantService {
     return result;
   }
 
+  @Override
+  public Tenant save(Tenant tenantDto) {
+    TenantEntity tenantEntity = repository.save(converter.convert(tenantDto, TenantEntity.class));
+    return converter.convert(tenantEntity, Tenant.class);
+  }
+
 }

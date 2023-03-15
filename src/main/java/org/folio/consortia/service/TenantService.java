@@ -1,5 +1,6 @@
 package org.folio.consortia.service;
 
+import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
 
 public interface TenantService {
@@ -12,4 +13,12 @@ public interface TenantService {
    * @return tenant collection
    */
   TenantCollection get(Integer offset, Integer limit);
+
+  /**
+   * Inserts single tenant.
+   *
+   * @param tenantDto  the tenantDto
+   * @return tenantDto
+   */
+  Tenant save(Tenant tenantDto);
 }
