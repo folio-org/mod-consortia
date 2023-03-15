@@ -34,7 +34,7 @@ class UserTenantControllerTest extends BaseTest {
   private UserTenantController userTenantController;
 
   @Test
-  void shouldGetUserTenants() {
+  void shouldGetUserTenantsByUserId() {
     // given
     UUID userId = UUID.randomUUID();
     int offset = 0;
@@ -50,7 +50,7 @@ class UserTenantControllerTest extends BaseTest {
 
     // when
     ResponseEntity<UserTenantCollection> response =
-      userTenantController.getUserTenants(null, null, null, offset, limit);
+      userTenantController.getUserTenants(userId, null, null, offset, limit);
 
     // then
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
