@@ -18,6 +18,9 @@
       "tenantId": {
         "type": "string"
       },
+      "tenantName": {
+        "type": "string"
+      },
       "isPrimary": {
         "type": "boolean"
       }

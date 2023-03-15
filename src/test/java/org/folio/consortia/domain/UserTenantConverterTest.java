@@ -35,5 +35,6 @@ class UserTenantConverterTest {
     assertEquals(entity.getUsername(), dto.getUsername());
     assertEquals(entity.getIsPrimary(), dto.getIsPrimary());
     assertEquals(entity.getTenant().getId(), dto.getTenantId());
+    assertEquals(entity.getTenant().getName(), dto.getTenantName());
   }
 }

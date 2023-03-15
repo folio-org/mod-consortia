@@ -164,6 +164,7 @@ class UserTenantServiceTest {
 
     var tenant = new TenantEntity();
     tenant.setId(tenantId);
+    tenant.setName("testtenant");
     userTenantEntity.setTenant(tenant);
     userTenantEntity.setUsername(username);
     return userTenantEntity;
