@@ -12,6 +12,8 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
 @Log4j2
 @RequiredArgsConstructor
@@ -33,7 +35,7 @@ public class TenantServiceImpl implements TenantService {
 
   @Override
   public Tenant save(Tenant tenantDto) {
-    TenantEntity tenantEntity = repository.save(converter.convert(tenantDto, TenantEntity.class));
+    TenantEntity tenantEntity = repository.save(Objects.requireNonNull(converter.convert(tenantDto, TenantEntity.class)));
     return converter.convert(tenantEntity, Tenant.class);
   }
 
