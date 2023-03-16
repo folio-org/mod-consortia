@@ -15,12 +15,6 @@
       </column>
     </createTable>
 
-    <createIndex indexName="id_idx" tableName="consortium">
-      <column name="id"/>
-    </createIndex>
-    <createIndex indexName="name_idx" tableName="consortium">
-      <column name="name"/>
-    </createIndex>
-  </changeSet>
+    </changeSet>
 
 </databaseChangeLog>
