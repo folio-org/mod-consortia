@@ -20,6 +20,18 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "500":
           $ref: "#/components/responses/InternalServerError"
+    post:
+      description: Create a new tenant
+      operationId: createTenant
+      requestBody:
+        $ref: "#/components/requestBodies/TenantBody"
+      responses:
+        "201":
+          $ref: "#/components/responses/Tenant"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /{consortiumId}/user-tenants:
     get:
       description: User Tenant Associations
