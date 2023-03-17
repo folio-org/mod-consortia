@@ -7,7 +7,6 @@ import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.rest.resource.ConsortiumIdApi;
 import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.UserTenantService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
