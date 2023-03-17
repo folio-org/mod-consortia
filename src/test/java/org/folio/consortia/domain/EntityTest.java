@@ -1,5 +1,6 @@
 package org.folio.consortia.domain;
 
+import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.junit.jupiter.api.Test;
@@ -62,6 +63,20 @@ class EntityTest {
 
     assertNotEquals(userTenant1, userTenant2);
     assertNotEquals(userTenant1.hashCode(), userTenant2.hashCode());
+  }
+
+  @Test
+  void testEqualsAndHashCodeForConsortiumEntity() {
+    UUID id = UUID.randomUUID();
+    ConsortiumEntity entity1 = new ConsortiumEntity(id, "ABC Consortium");
+    ConsortiumEntity entity2 = new ConsortiumEntity(id, "ABC Consortium");
+    ConsortiumEntity entity3 = new ConsortiumEntity(UUID.randomUUID(), "XYZ Consortium");
+
+    assertEquals(entity1, entity2); // check equality of two objects with same id and name
+    assertNotEquals(entity1, entity3); // check inequality of two objects with different id and name
+    assertNotEquals(null, entity1); // check inequality of object and null
+
+    assertEquals(entity1.hashCode(), entity2.hashCode()); // check that two equal objects have same hash code
   }
 
 
