@@ -3,6 +3,8 @@ package org.folio.consortia.controller;
 import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.domain.entity.UserTenantEntity;
+import org.folio.consortia.domain.repository.ConsortiumRepository;
+import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.consortia.support.BaseTest;
 import org.junit.jupiter.api.Assertions;
@@ -30,6 +32,10 @@ class UserTenantControllerTest extends BaseTest {
 
   @Mock
   private UserTenantService userTenantService;
+  @Mock
+  private ConsortiumRepository consortiumRepository;
+  @Mock
+  private ConsortiumService consortiumService;
   @InjectMocks
   private UserTenantController userTenantController;
 
@@ -46,9 +52,8 @@ class UserTenantControllerTest extends BaseTest {
     userTenantCollection.setUserTenants(userTenantDtos);
     userTenantCollection.setTotalRecords(userTenantDtos.size());
 
-    when(userTenantService.getByUserId(consortiumId, userId, offset, limit))
-      .thenReturn(userTenantCollection);
-
+    when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
+    when(userTenantService.getByUserId(consortiumId, userId, offset, limit)).thenReturn(userTenantCollection);
     // when
     ResponseEntity<UserTenantCollection> response =
       userTenantController.getUserTenants(consortiumId, userId, null, null, offset, limit);
@@ -72,8 +77,8 @@ class UserTenantControllerTest extends BaseTest {
     userTenant.setTenantId(String.valueOf(UUID.randomUUID()));
     userTenant.setIsPrimary(true);
 
-    when(userTenantService.getById(consortiumId, associationId))
-      .thenReturn(userTenant);
+    when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
+    when(userTenantService.getById(consortiumId, associationId)).thenReturn(userTenant);
 
     // when
     ResponseEntity<UserTenant> response = userTenantController.getUserTenantByAssociationId(consortiumId, associationId);
@@ -90,7 +95,7 @@ class UserTenantControllerTest extends BaseTest {
     var headers = defaultHeaders();
     this.mockMvc.perform(get("/consortia/cb28f43c-bf45-11ed-afa1-0242ac120002/user-tenants?limit=2&offset=1").headers(headers))
       .andExpectAll(
-        status().isOk(),
+        status().isNotFound(),
         content().contentType(MediaType.APPLICATION_JSON_VALUE));
   }
 
@@ -108,7 +113,7 @@ class UserTenantControllerTest extends BaseTest {
   @Test
   void return400BadRequest() throws Exception {
     var headers = defaultHeaders();
-    this.mockMvc.perform(get("/consortia/cb28f43c-bf45-11ed-afa1-0242ac120002/user-tenants?limit=0&offset=0").headers(headers))
+    this.mockMvc.perform(get("/consortia/c43dasdas/user-tenants?limit=0&offset=0").headers(headers))
       .andExpectAll(
         status().is4xxClientError(),
         content().contentType(MediaType.APPLICATION_JSON_VALUE),
