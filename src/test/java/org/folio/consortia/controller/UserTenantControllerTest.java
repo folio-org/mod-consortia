@@ -76,7 +76,7 @@ class UserTenantControllerTest extends BaseTest {
       .thenReturn(userTenant);
 
     // when
-    ResponseEntity<UserTenant> response = userTenantController.getUserTenantByAssociationId(associationId, consortiumId);
+    ResponseEntity<UserTenant> response = userTenantController.getUserTenantByAssociationId(consortiumId, associationId);
 
     // then
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -130,7 +130,7 @@ class UserTenantControllerTest extends BaseTest {
   @Test
   void getValidationError() throws Exception {
     var headers = defaultHeaders();
-    this.mockMvc.perform(get("/consortia/user-tenants?userId=90unnn").headers(headers))
+    this.mockMvc.perform(get("/consortia/cb28f43c-bf45-11ed-afa1-0242ac120002/user-tenants?userId=90unnn").headers(headers))
       .andExpectAll(
         status().is4xxClientError(),
         content().contentType(MediaType.APPLICATION_JSON_VALUE),

@@ -51,7 +51,7 @@ class UserTenantServiceTest {
     List<UserTenantEntity> userTenantEntities = List.of(new UserTenantEntity(), new UserTenantEntity());
     Page<UserTenantEntity> userTenantPage = new PageImpl<>(userTenantEntities, PageRequest.of(offset, limit), userTenantEntities.size());
 
-    when(userTenantRepository.findAll(PageRequest.of(offset, limit))).thenReturn(userTenantPage);
+    when(userTenantRepository.findAllByTenantConsortiumId(consortiumId, PageRequest.of(offset, limit))).thenReturn(userTenantPage);
 
     // when
     var result = userTenantService.get(consortiumId, offset, limit);
