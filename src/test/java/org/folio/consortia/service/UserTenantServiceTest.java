@@ -123,7 +123,7 @@ class UserTenantServiceTest {
     when(userTenantRepository.findByUsernameAndTenantIdAndTenantConsortiumId(consortiumId, "testuser", tenantId)).thenReturn(Optional.of(userTenant));
 
     // when
-    UserTenantCollection result = userTenantService.getByUsernameAndTenantId(consortiumId,"testuser", tenantId);
+    UserTenantCollection result = userTenantService.getByUsernameAndTenantId(consortiumId, "testuser", tenantId);
 
     // then
     assertEquals(tenantId, result.getUserTenants().get(0).getTenantId());
@@ -133,7 +133,7 @@ class UserTenantServiceTest {
   @Test
   void shouldThrowIllegalArgumentException() {
     UUID consortiumId = UUID.randomUUID();
-    Assertions.assertThrows(IllegalArgumentException.class, () -> userTenantService.get(consortiumId,0, 0));
+    Assertions.assertThrows(IllegalArgumentException.class, () -> userTenantService.get(consortiumId, 0, 0));
   }
 
   @Test
