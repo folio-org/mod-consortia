@@ -2,8 +2,6 @@ package org.folio.consortia.domain.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -11,31 +9,23 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.util.Objects;
+import java.util.UUID;
 
 @Getter
 @Setter
 @ToString
 @RequiredArgsConstructor
 @Entity
-@Table(name = "tenant")
-public class TenantEntity {
+@Table(name = "consortium")
+public class ConsortiumEntity {
   @Id
-  private String id;
+  private UUID id;
   private String name;
-
-  @ManyToOne
-  @JoinColumn(name = "consortium_id")
-  private ConsortiumEntity consortium;
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    TenantEntity that = (TenantEntity) o;
+    if (this == o) return true;
+    if (!(o instanceof ConsortiumEntity that)) return false;
     return Objects.equals(id, that.id) && Objects.equals(name, that.name);
   }
 

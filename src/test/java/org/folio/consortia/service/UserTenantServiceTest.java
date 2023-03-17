@@ -47,13 +47,14 @@ class UserTenantServiceTest {
     // given
     int offset = 0;
     int limit = 10;
+    UUID consortiumId = UUID.randomUUID();
     List<UserTenantEntity> userTenantEntities = List.of(new UserTenantEntity(), new UserTenantEntity());
     Page<UserTenantEntity> userTenantPage = new PageImpl<>(userTenantEntities, PageRequest.of(offset, limit), userTenantEntities.size());
 
     when(userTenantRepository.findAll(PageRequest.of(offset, limit))).thenReturn(userTenantPage);
 
     // when
-    var result = userTenantService.get(offset, limit);
+    var result = userTenantService.get(consortiumId, offset, limit);
 
     // then
     assertEquals(userTenantEntities.size(), result.getUserTenants().size());
@@ -63,6 +64,7 @@ class UserTenantServiceTest {
   @Test
   void shouldGetUserTenantByAssociationId() {
     // given
+    UUID consortiumId = UUID.randomUUID();
     UUID associationId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
     String tenantId = String.valueOf(UUID.randomUUID());
@@ -70,10 +72,10 @@ class UserTenantServiceTest {
     List<UserTenantEntity> userTenantEntities = List.of(userTenant);
 
     when(conversionService.convert(userTenant, UserTenant.class)).thenReturn(toDto(userTenant));
-    when(userTenantRepository.findById(associationId)).thenReturn(Optional.of(userTenantEntities.get(0)));
+    when(userTenantRepository.findByIdAndTenantConsortiumId(consortiumId, associationId)).thenReturn(Optional.of(userTenantEntities.get(0)));
 
     // when
-    var result = userTenantService.getById(associationId);
+    var result = userTenantService.getById(consortiumId, associationId);
 
     // then
     assertEquals(associationId, result.getId());
@@ -83,6 +85,7 @@ class UserTenantServiceTest {
   @Test
   void shouldGetUserTenantListByUserId() {
     // given
+    UUID consortiumId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
     UUID associationId = UUID.randomUUID();
     String tenantId = String.valueOf(UUID.randomUUID());
@@ -95,11 +98,11 @@ class UserTenantServiceTest {
 
     when(conversionService.convert(userTenant, UserTenant.class)).thenReturn(toDto(userTenant));
     when(conversionService.convert(userTenant2, UserTenant.class)).thenReturn(toDto(userTenant2));
-    when(userTenantRepository.findByUserId(userId, PageRequest.of(offset, limit)))
+    when(userTenantRepository.findByUserIdAndTenantConsortiumId(consortiumId, userId, PageRequest.of(offset, limit)))
       .thenReturn(new PageImpl<>(userTenantEntities, PageRequest.of(offset, limit), userTenantEntities.size()));
 
     // when
-    UserTenantCollection result = userTenantService.getByUserId(userId, offset, limit);
+    UserTenantCollection result = userTenantService.getByUserId(consortiumId, userId, offset, limit);
 
     // then
     assertEquals(userTenant2, userTenant);
@@ -110,16 +113,17 @@ class UserTenantServiceTest {
   @Test
   void shouldGetUserTenantByUsernameAndTenantId() {
     // given
+    UUID consortiumId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
     UUID associationId = UUID.randomUUID();
     String tenantId = String.valueOf(UUID.randomUUID());
     UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser", tenantId);
 
     when(conversionService.convert(userTenant, UserTenant.class)).thenReturn(toDto(userTenant));
-    when(userTenantRepository.findByUsernameAndTenantId("testuser", tenantId)).thenReturn(Optional.of(userTenant));
+    when(userTenantRepository.findByUsernameAndTenantIdAndTenantConsortiumId(consortiumId, "testuser", tenantId)).thenReturn(Optional.of(userTenant));
 
     // when
-    UserTenantCollection result = userTenantService.getByUsernameAndTenantId("testuser", tenantId);
+    UserTenantCollection result = userTenantService.getByUsernameAndTenantId(consortiumId,"testuser", tenantId);
 
     // then
     assertEquals(tenantId, result.getUserTenants().get(0).getTenantId());
@@ -128,33 +132,36 @@ class UserTenantServiceTest {
 
   @Test
   void shouldThrowIllegalArgumentException() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> userTenantService.get(0, 0));
+    UUID consortiumId = UUID.randomUUID();
+    Assertions.assertThrows(IllegalArgumentException.class, () -> userTenantService.get(consortiumId,0, 0));
   }
 
   @Test
   void shouldReturn404UserIdNotFoundException() {
     // given
+    UUID consortiumId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
     int limit = 10;
     int offset = 0;
-    when(userTenantRepository.findByUserId(userId, PageRequest.of(offset, limit)))
+    when(userTenantRepository.findByUserIdAndTenantConsortiumId(consortiumId, userId, PageRequest.of(offset, limit)))
       .thenReturn(new PageImpl<>(new ArrayList<>()));
 
     // throw exception
-    assertThrows(ResourceNotFoundException.class, () -> userTenantService.getByUserId(userId, offset, limit));
+    assertThrows(ResourceNotFoundException.class, () -> userTenantService.getByUserId(consortiumId, userId, offset, limit));
   }
 
   @Test
   void shouldReturn404UsernameNotFoundException() {
     // given
+    UUID consortiumId = UUID.randomUUID();
     String username = "testuser";
     String tenantId = String.valueOf(UUID.randomUUID());
-    when(userTenantRepository.findByUsernameAndTenantId(username, tenantId))
+    when(userTenantRepository.findByUsernameAndTenantIdAndTenantConsortiumId(consortiumId, username, tenantId))
       .thenReturn(Optional.empty());
 
     // throw exception
     assertThrows(ResourceNotFoundException.class,
-      () -> userTenantService.getByUsernameAndTenantId("testusername", tenantId));
+      () -> userTenantService.getByUsernameAndTenantId(consortiumId, "testusername", tenantId));
   }
 
   private UserTenantEntity createUserTenantEntity(UUID associationId, UUID userId, String username, String tenantId) {

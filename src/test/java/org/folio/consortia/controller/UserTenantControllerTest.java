@@ -37,6 +37,7 @@ class UserTenantControllerTest extends BaseTest {
   void shouldGetUserTenantsByUserId() {
     // given
     UUID userId = UUID.randomUUID();
+    UUID consortiumId = UUID.randomUUID();
     int offset = 0;
     int limit = 10;
 
@@ -45,24 +46,25 @@ class UserTenantControllerTest extends BaseTest {
     userTenantCollection.setUserTenants(userTenantDtos);
     userTenantCollection.setTotalRecords(userTenantDtos.size());
 
-    when(userTenantService.getByUserId(userId, offset, limit))
+    when(userTenantService.getByUserId(consortiumId, userId, offset, limit))
       .thenReturn(userTenantCollection);
 
     // when
     ResponseEntity<UserTenantCollection> response =
-      userTenantController.getUserTenants(userId, null, null, offset, limit);
+      userTenantController.getUserTenants(consortiumId, userId, null, null, offset, limit);
 
     // then
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     Assertions.assertEquals(userTenantCollection, response.getBody());
 
-    verify(userTenantService).getByUserId(userId, offset, limit);
+    verify(userTenantService).getByUserId(consortiumId, userId, offset, limit);
   }
 
   @Test
   void shouldGetUserTenantByAssociationId() {
     // given
     UUID associationId = UUID.randomUUID();
+    UUID consortiumId = UUID.randomUUID();
     UserTenant userTenant = new UserTenant();
     userTenant.setId(associationId);
     userTenant.setUserId(UUID.randomUUID());
@@ -70,23 +72,23 @@ class UserTenantControllerTest extends BaseTest {
     userTenant.setTenantId(String.valueOf(UUID.randomUUID()));
     userTenant.setIsPrimary(true);
 
-    when(userTenantService.getById(associationId))
+    when(userTenantService.getById(consortiumId, associationId))
       .thenReturn(userTenant);
 
     // when
-    ResponseEntity<UserTenant> response = userTenantController.getUserTenantByAssociationId(associationId);
+    ResponseEntity<UserTenant> response = userTenantController.getUserTenantByAssociationId(associationId, consortiumId);
 
     // then
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     Assertions.assertEquals(userTenant, response.getBody());
 
-    verify(userTenantService).getById(associationId);
+    verify(userTenantService).getById(consortiumId, associationId);
   }
 
   @Test
   void shouldGetUserTenantList() throws Exception {
     var headers = defaultHeaders();
-    this.mockMvc.perform(get("/consortia/user-tenants?limit=2&offset=1").headers(headers))
+    this.mockMvc.perform(get("/consortia/cb28f43c-bf45-11ed-afa1-0242ac120002/user-tenants?limit=2&offset=1").headers(headers))
       .andExpectAll(
         status().isOk(),
         content().contentType(MediaType.APPLICATION_JSON_VALUE));
@@ -95,7 +97,7 @@ class UserTenantControllerTest extends BaseTest {
   @Test
   void return404UserTenantNotFoundByAssociationId() throws Exception {
     var headers = defaultHeaders();
-    this.mockMvc.perform(get("/consortia/user-tenants/cb28f43c-bf45-11ed-afa1-0242ac120002").headers(headers))
+    this.mockMvc.perform(get("/consortia/cb28f43c-bf45-11ed-afa1-0242ac120002/user-tenants/cb28f43c-bf45-11ed-afa1-0242ac120002").headers(headers))
       .andExpectAll(
         status().is4xxClientError(),
         content().contentType(MediaType.APPLICATION_JSON_VALUE),
@@ -106,7 +108,7 @@ class UserTenantControllerTest extends BaseTest {
   @Test
   void return400BadRequest() throws Exception {
     var headers = defaultHeaders();
-    this.mockMvc.perform(get("/consortia/user-tenants?limit=0&offset=0").headers(headers))
+    this.mockMvc.perform(get("/consortia/cb28f43c-bf45-11ed-afa1-0242ac120002/user-tenants?limit=0&offset=0").headers(headers))
       .andExpectAll(
         status().is4xxClientError(),
         content().contentType(MediaType.APPLICATION_JSON_VALUE),
@@ -117,7 +119,7 @@ class UserTenantControllerTest extends BaseTest {
   @Test
   void return404UserTenantNotFoundWithUserId() throws Exception {
     var headers = defaultHeaders();
-    this.mockMvc.perform(get("/consortia/user-tenants?userId=8ad4c4b4-4d4c-4bf9-a8a0-7a30c1edf34b").headers(headers))
+    this.mockMvc.perform(get("/consortia/cb28f43c-bf45-11ed-afa1-0242ac120002/user-tenants?userId=8ad4c4b4-4d4c-4bf9-a8a0-7a30c1edf34b").headers(headers))
       .andExpectAll(
         status().is4xxClientError(),
         content().contentType(MediaType.APPLICATION_JSON_VALUE),

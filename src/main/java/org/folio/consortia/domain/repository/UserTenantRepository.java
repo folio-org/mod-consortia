@@ -12,8 +12,12 @@ import java.util.UUID;
 
 @Repository
 public interface UserTenantRepository extends JpaRepository<UserTenantEntity, UUID> {
-  Page<UserTenantEntity> findByUserId(UUID userId, Pageable pageable);
+  @Query("SELECT ut FROM UserTenantEntity ut WHERE ut.tenant.consortium.id = :consortiumId AND ut.userId = :userId")
+  Page<UserTenantEntity> findByUserIdAndTenantConsortiumId(UUID consortiumId, UUID userId, Pageable pageable);
 
-  @Query("SELECT ut FROM UserTenantEntity ut WHERE ut.username= ?1 AND ut.tenant.id= ?2")
-  Optional<UserTenantEntity> findByUsernameAndTenantId(String username, String tenantId);
+  @Query("SELECT ut FROM UserTenantEntity ut WHERE ut.tenant.consortium.id = :consortiumId AND ut.username = :username AND ut.tenant.id = :tenantId")
+  Optional<UserTenantEntity> findByUsernameAndTenantIdAndTenantConsortiumId(UUID consortiumId, String username, String tenantId);
+
+  @Query("SELECT ut FROM UserTenantEntity ut WHERE ut.tenant.consortium.id = :consortiumId AND ut.id = :associationId")
+  Optional<UserTenantEntity> findByIdAndTenantConsortiumId(UUID consortiumId, UUID associationId);
 }

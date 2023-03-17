@@ -25,7 +25,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   private final ConversionService converter;
 
   @Override
-  public UserTenantCollection get(Integer offset, Integer limit) {
+  public UserTenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
     var result = new UserTenantCollection();
     Page<UserTenantEntity> userTenantPage = userTenantRepository.findAll(PageRequest.of(offset, limit));
     result.setUserTenants(userTenantPage.stream().map(o -> converter.convert(o, UserTenant.class)).toList());
@@ -34,16 +34,17 @@ public class UserTenantServiceImpl implements UserTenantService {
   }
 
   @Override
-  public UserTenant getById(UUID id) {
-    UserTenantEntity userTenantEntity = userTenantRepository.findById(id)
+  public UserTenant getById(UUID consortiumId, UUID id) {
+    UserTenantEntity userTenantEntity = userTenantRepository.findByIdAndTenantConsortiumId(consortiumId, id)
       .orElseThrow(() -> new ResourceNotFoundException("id", String.valueOf(id)));
     return converter.convert(userTenantEntity, UserTenant.class);
   }
 
   @Override
-  public UserTenantCollection getByUserId(UUID userId, Integer offset, Integer limit) {
+  public UserTenantCollection getByUserId(UUID consortiumId, UUID userId, Integer offset, Integer limit) {
     var result = new UserTenantCollection();
-    Page<UserTenantEntity> userTenantPage = userTenantRepository.findByUserId(userId, PageRequest.of(offset, limit));
+    Page<UserTenantEntity> userTenantPage = userTenantRepository
+      .findByUserIdAndTenantConsortiumId(consortiumId, userId, PageRequest.of(offset, limit));
 
     if (userTenantPage.getContent().isEmpty()) {
       throw new ResourceNotFoundException("userId", String.valueOf(userId));
@@ -55,10 +56,11 @@ public class UserTenantServiceImpl implements UserTenantService {
   }
 
   @Override
-  public UserTenantCollection getByUsernameAndTenantId(String username, String tenantId) {
+  public UserTenantCollection getByUsernameAndTenantId(UUID consortiumId, String username, String tenantId) {
     var result = new UserTenantCollection();
-    UserTenantEntity userTenantEntity = userTenantRepository.findByUsernameAndTenantId(username, tenantId)
-      .orElseThrow(() -> new ResourceNotFoundException("username", username));
+    UserTenantEntity userTenantEntity = userTenantRepository
+      .findByUsernameAndTenantIdAndTenantConsortiumId(consortiumId,username, tenantId)
+      .orElseThrow(() -> new ResourceNotFoundException("username or/and tenant id", username + ", " + tenantId));
     UserTenant userTenant = converter.convert(userTenantEntity, UserTenant.class);
 
     result.setUserTenants(List.of(userTenant));
