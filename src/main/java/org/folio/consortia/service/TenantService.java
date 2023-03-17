@@ -1,6 +1,10 @@
 package org.folio.consortia.service;
 
+
 import org.folio.consortia.domain.dto.TenantCollection;
+import org.folio.consortia.domain.dto.Tenant;
+
+import java.util.UUID;
 
 public interface TenantService {
 
@@ -12,4 +16,12 @@ public interface TenantService {
    * @return tenant collection
    */
   TenantCollection get(Integer offset, Integer limit);
+
+  /**
+   * Update tenant.
+   * @param consortiumId the consortium id
+   * @param tenant the tenant
+   * @return tenant
+   */
+  Tenant update(UUID consortiumId, Tenant tenant);
 }

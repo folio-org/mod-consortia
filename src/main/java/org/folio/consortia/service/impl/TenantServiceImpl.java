@@ -12,6 +12,8 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @Log4j2
 @RequiredArgsConstructor
@@ -31,4 +33,9 @@ public class TenantServiceImpl implements TenantService {
     return result;
   }
 
+  @Override
+  public Tenant update(UUID consortiumId, Tenant tenant) {
+    TenantEntity entity = converter.convert(tenant, TenantEntity.class);
+    return converter.convert(repository.save(entity), Tenant.class);
+  }
 }
