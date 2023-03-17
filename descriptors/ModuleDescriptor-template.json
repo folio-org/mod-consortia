@@ -10,9 +10,20 @@
           "methods": [
             "GET"
           ],
-          "pathPattern": "/consortia/tenants",
+          "pathPattern": "/consortia/{consortiumId}/tenants",
           "permissionsRequired": [
             "consortia.tenants.collection.get"
+          ],
+          "modulePermissions": []
+
+        },
+        {
+          "methods": [
+            "PUT"
+          ],
+          "pathPattern": "/consortia/{consortiumId}/tenants",
+          "permissionsRequired": [
+            "consortia.tenants.item.put"
           ],
           "modulePermissions": []
 
@@ -67,6 +78,7 @@
       "description": "All permissions for consortia module",
       "subPermissions": [
         "consortia.tenants.collection.get",
+        "consortia.tenants.item.put",
         "consortia.user-tenants.collection.get",
         "consortia.user-tenants.item.get"
       ]
@@ -75,6 +87,11 @@
       "permissionName": "consortia.tenants.collection.get",
       "displayName": "get tenants",
       "description": "Get list of tenants"
+    },
+    {
+      "permissionName": "consortia.tenants.item.put",
+      "displayName": "put tenant",
+      "description": "Put tenant"
     },
     {
       "permissionName": "consortia.user-tenants.collection.get",
