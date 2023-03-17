@@ -43,4 +43,5 @@ public class UserTenantController implements ConsortiumIdApi {
     return ResponseEntity.ok(userTenantService.getById(consortiumId, associationId));
   }
 
+
 }

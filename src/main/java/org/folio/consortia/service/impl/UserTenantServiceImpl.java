@@ -27,7 +27,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   @Override
   public UserTenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
     var result = new UserTenantCollection();
-    Page<UserTenantEntity> userTenantPage = userTenantRepository.findAll(PageRequest.of(offset, limit));
+    Page<UserTenantEntity> userTenantPage = userTenantRepository.findAllByTenantConsortiumId(consortiumId,PageRequest.of(offset, limit));
     result.setUserTenants(userTenantPage.stream().map(o -> converter.convert(o, UserTenant.class)).toList());
     result.setTotalRecords((int) userTenantPage.getTotalElements());
     return result;
