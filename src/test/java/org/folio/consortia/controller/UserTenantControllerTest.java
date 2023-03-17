@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -88,6 +89,17 @@ class UserTenantControllerTest extends BaseTest {
     Assertions.assertEquals(userTenant, response.getBody());
 
     verify(userTenantService).getById(consortiumId, associationId);
+  }
+
+  @Test
+  void shouldReturn400TenantIdShouldProvided() {
+    // given
+    UUID consortiumId = UUID.randomUUID();
+    String username = "testuser";
+    when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
+    // throw exception
+    assertThrows(IllegalArgumentException.class, () -> userTenantController
+      .getUserTenants(consortiumId, null, username, null, null, null));
   }
 
   @Test
