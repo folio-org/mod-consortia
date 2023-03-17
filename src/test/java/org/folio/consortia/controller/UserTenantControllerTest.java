@@ -92,6 +92,37 @@ class UserTenantControllerTest extends BaseTest {
   }
 
   @Test
+  void shouldGetUserTenantByUsernameAndTenantId() {
+    // given
+    UUID associationId = UUID.randomUUID();
+    UUID consortiumId = UUID.randomUUID();
+    String username = "username";
+    String tenantId = String.valueOf(UUID.randomUUID());
+    UserTenant userTenant = new UserTenant();
+    userTenant.setId(associationId);
+    userTenant.setUserId(UUID.randomUUID());
+    userTenant.setUsername("username");
+    userTenant.setTenantId(String.valueOf(UUID.randomUUID()));
+    userTenant.setIsPrimary(true);
+
+    List<UserTenant> userTenantDtos = List.of(userTenant);
+    UserTenantCollection userTenantCollection = new UserTenantCollection();
+    userTenantCollection.setUserTenants(userTenantDtos);
+    userTenantCollection.setTotalRecords(userTenantDtos.size());
+    when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
+    when(userTenantService.getByUsernameAndTenantId(consortiumId, username, tenantId)).thenReturn(userTenantCollection);
+
+    // when
+    ResponseEntity<UserTenantCollection> response = userTenantController
+      .getUserTenants(consortiumId, null, username, tenantId, null, null);
+
+    // then
+    Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    Assertions.assertEquals(userTenantCollection, response.getBody());
+    verify(userTenantService).getByUsernameAndTenantId(consortiumId, username, tenantId);
+  }
+
+  @Test
   void shouldReturn400TenantIdShouldProvided() {
     // given
     UUID consortiumId = UUID.randomUUID();
