@@ -62,8 +62,8 @@ public class TenantServiceImpl implements TenantService {
         },
         () -> tenantEntityList.stream().filter(t ->
           StringUtils.equals(t.getName(), tenant.getName()))
-          .findAny().
-          ifPresent(e -> {
+          .findAny()
+          .ifPresent(e -> {
             throw  new ResourceAlreadyExistException("name", tenant.getName());
           })
       );
