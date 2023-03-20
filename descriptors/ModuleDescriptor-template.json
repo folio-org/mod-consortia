@@ -10,7 +10,7 @@
           "methods": [
             "GET"
           ],
-          "pathPattern": "/consortia/tenants",
+          "pathPattern": "/consortia/{consortiumId}/tenants",
           "permissionsRequired": [
             "consortia.tenants.collection.get"
           ],
@@ -20,7 +20,7 @@
           "methods": [
             "POST"
           ],
-          "pathPattern": "/consortia/tenants",
+          "pathPattern": "/consortia/{consortiumId}/tenants",
           "permissionsRequired": [
             "consortia.tenants.item.post"
           ],

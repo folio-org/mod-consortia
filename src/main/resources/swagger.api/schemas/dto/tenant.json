@@ -9,6 +9,9 @@
       },
       "name": {
         "type": "string"
+      },
+      "consortiumId": {
+        "type": "string"
       }
     },
     "additionalProperties": false,

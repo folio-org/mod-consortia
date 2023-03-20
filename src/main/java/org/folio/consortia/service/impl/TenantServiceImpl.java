@@ -4,15 +4,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
+import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.entity.TenantEntity;
+import org.folio.consortia.domain.repository.ConsortiumRepository;
 import org.folio.consortia.domain.repository.TenantRepository;
+import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.TenantService;
-import org.folio.spring.data.OffsetRequest;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @Log4j2
@@ -20,23 +24,29 @@ import java.util.Objects;
 public class TenantServiceImpl implements TenantService {
 
   private final TenantRepository repository;
+  private final ConsortiumRepository consortiumRepository;
   private final ConversionService converter;
 
   @Override
-  public TenantCollection get(Integer offset, Integer limit) {
-
+  public TenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
     var result = new TenantCollection();
-    Page<TenantEntity> page = repository.findAll(new OffsetRequest(offset, limit));
+    validateConsortiumId(consortiumId);
+    Page<TenantEntity> page = repository.findByConsortiumId(consortiumId, PageRequest.of(offset, limit));
     result.setTenants(page.map(o -> converter.convert(o, Tenant.class)).getContent());
     result.setTotalRecords((int) page.getTotalElements());
-
     return result;
   }
 
   @Override
-  public Tenant save(Tenant tenantDto) {
+  public Tenant save(UUID consortiumId, Tenant tenantDto) {
+    validateConsortiumId(consortiumId);
+    tenantDto.setConsortiumId(consortiumId.toString());
     TenantEntity tenantEntity = repository.save(Objects.requireNonNull(converter.convert(tenantDto, TenantEntity.class)));
     return converter.convert(tenantEntity, Tenant.class);
   }
 
+  private ConsortiumEntity validateConsortiumId(UUID consortiumId) {
+    return consortiumRepository.findById(consortiumId).orElseThrow(() ->
+      new ResourceNotFoundException("id", String.valueOf(consortiumId)));
+  }
 }

@@ -58,6 +58,7 @@ class ConverterTest {
     Tenant entity = new Tenant();
     entity.setId("id");
     entity.setName("name");
+    entity.setConsortiumId(UUID.randomUUID().toString());
     var tenant = tenantEntityConverter.convert(entity);
     assertEquals("id", tenant.getId());
     assertEquals("name", tenant.getName());
