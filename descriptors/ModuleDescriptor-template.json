@@ -89,7 +89,7 @@
     {
       "permissionName": "consortia.tenants.item.post",
       "displayName": "create tenant",
-      "description": "create tenant"
+      "description": "Create tenant"
     },
     {
       "permissionName": "consortia.user-tenants.collection.get",
