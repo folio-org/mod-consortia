@@ -16,7 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -40,9 +39,11 @@ public class TenantServiceImpl implements TenantService {
 
   @Override
   public Tenant save(UUID consortiumId, Tenant tenantDto) {
+    TenantEntity entity = new TenantEntity();
     checkConsortiumExists(consortiumId);
     checkTenantExists(tenantDto.getId());
-    TenantEntity entity = Objects.requireNonNull(converter.convert(tenantDto, TenantEntity.class));
+    entity.setId(tenantDto.getId());
+    entity.setName(tenantDto.getName());
     entity.setConsortiumId(consortiumId);
     TenantEntity tenantEntity = repository.save(entity);
     return converter.convert(tenantEntity, Tenant.class);
