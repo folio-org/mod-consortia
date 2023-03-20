@@ -31,7 +31,7 @@ public class TenantServiceImpl implements TenantService {
   @Override
   public TenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
     var result = new TenantCollection();
-    validateConsortiumId(consortiumId);
+    checkConsortiumExists(consortiumId);
     Page<TenantEntity> page = repository.findByConsortiumId(consortiumId, PageRequest.of(offset, limit));
     result.setTenants(page.map(o -> converter.convert(o, Tenant.class)).getContent());
     result.setTotalRecords((int) page.getTotalElements());
@@ -40,19 +40,19 @@ public class TenantServiceImpl implements TenantService {
 
   @Override
   public Tenant save(UUID consortiumId, Tenant tenantDto) {
-    validateConsortiumId(consortiumId);
-    validateTenant(tenantDto.getId());
+    checkConsortiumExists(consortiumId);
+    checkTenantExists(tenantDto.getId());
     TenantEntity entity = Objects.requireNonNull(converter.convert(tenantDto, TenantEntity.class));
     entity.setConsortiumId(consortiumId);
     TenantEntity tenantEntity = repository.save(entity);
     return converter.convert(tenantEntity, Tenant.class);
   }
 
-  private ConsortiumEntity validateConsortiumId(UUID consortiumId) {
+  private ConsortiumEntity checkConsortiumExists(UUID consortiumId) {
     return consortiumRepository.findById(consortiumId).orElseThrow(() -> new ResourceNotFoundException("id", String.valueOf(consortiumId)));
   }
 
-  private void validateTenant(String tenantId) {
+  private void checkTenantExists(String tenantId) {
     repository.findById(tenantId).ifPresent(s -> { throw new ResourceAlreadyExistException("id", tenantId); });
   }
 }
