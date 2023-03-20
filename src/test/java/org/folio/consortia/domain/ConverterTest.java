@@ -1,9 +1,7 @@
 package org.folio.consortia.domain;
 
 import org.folio.consortia.domain.converter.TenantConverter;
-import org.folio.consortia.domain.converter.TenantEntityConverter;
 import org.folio.consortia.domain.converter.UserTenantConverter;
-import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
@@ -16,7 +14,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class ConverterTest {
 
   private final TenantConverter tenantConverter = new TenantConverter();
-  private final TenantEntityConverter tenantEntityConverter = new TenantEntityConverter();
   private final UserTenantConverter converter = new UserTenantConverter();
 
   @Test
@@ -49,16 +46,6 @@ class ConverterTest {
     entity.setId("id");
     entity.setName("name");
     var tenant = tenantConverter.convert(entity);
-    assertEquals("id", tenant.getId());
-    assertEquals("name", tenant.getName());
-  }
-
-  @Test
-  void shouldConvertDtoToTenantEntity() {
-    Tenant entity = new Tenant();
-    entity.setId("id");
-    entity.setName("name");
-    var tenant = tenantEntityConverter.convert(entity);
     assertEquals("id", tenant.getId());
     assertEquals("name", tenant.getName());
   }
