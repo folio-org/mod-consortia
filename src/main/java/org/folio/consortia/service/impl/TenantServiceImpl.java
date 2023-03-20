@@ -2,7 +2,6 @@ package org.folio.consortia.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
 import org.folio.consortia.domain.entity.ConsortiumEntity;
@@ -17,7 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -43,9 +41,10 @@ public class TenantServiceImpl implements TenantService {
   @Override
   public Tenant save(UUID consortiumId, Tenant tenantDto) {
     validateConsortiumId(consortiumId);
-    validateTenant(tenantDto);
-    tenantDto.setConsortiumId(consortiumId.toString());
-    TenantEntity tenantEntity = repository.save(Objects.requireNonNull(converter.convert(tenantDto, TenantEntity.class)));
+    validateTenant(tenantDto.getId());
+    TenantEntity entity = Objects.requireNonNull(converter.convert(tenantDto, TenantEntity.class));
+    entity.setConsortiumId(consortiumId);
+    TenantEntity tenantEntity = repository.save(entity);
     return converter.convert(tenantEntity, Tenant.class);
   }
 
@@ -53,19 +52,7 @@ public class TenantServiceImpl implements TenantService {
     return consortiumRepository.findById(consortiumId).orElseThrow(() -> new ResourceNotFoundException("id", String.valueOf(consortiumId)));
   }
 
-  private void validateTenant(Tenant tenant) {
-    List<TenantEntity> tenantEntityList = repository.findAll();
-    tenantEntityList.stream().filter(t -> StringUtils.equals(t.getId(), tenant.getId()))
-      .findAny()
-      .ifPresentOrElse(e -> {
-        throw new ResourceAlreadyExistException("id", tenant.getId());
-        },
-        () -> tenantEntityList.stream().filter(t ->
-          StringUtils.equals(t.getName(), tenant.getName()))
-          .findAny()
-          .ifPresent(e -> {
-            throw  new ResourceAlreadyExistException("name", tenant.getName());
-          })
-      );
+  private void validateTenant(String tenantId) {
+    repository.findById(tenantId).ifPresent(s -> { throw new ResourceAlreadyExistException("id", tenantId); });
   }
 }

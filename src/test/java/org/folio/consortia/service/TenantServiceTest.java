@@ -84,7 +84,6 @@ class TenantServiceTest {
     Tenant tenant = new Tenant();
     tenant.setId("TestID");
     tenant.setName("Test");
-    tenant.setConsortiumId("7698e46-c3e3-11ed-afa1-0242ac120002");
 
     ConsortiumEntity consortiumEntity = new ConsortiumEntity();
     consortiumEntity.setId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
@@ -107,7 +106,6 @@ class TenantServiceTest {
     Tenant tenant = new Tenant();
     tenant.setId("TestID");
     tenant.setName("Testq");
-    tenant.setConsortiumId("7698e46-c3e3-11ed-afa1-0242ac120002");
 
     ConsortiumEntity consortiumEntity = new ConsortiumEntity();
     consortiumEntity.setId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
@@ -115,36 +113,11 @@ class TenantServiceTest {
 
     when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"))).thenReturn(Optional.of(consortiumEntity));
 
-    when(repository.findAll()).thenReturn((List.of(tenantEntity1)));
+    when(repository.findById(tenant.getId())).thenReturn(Optional.of(tenantEntity1));
     when(conversionService.convert(tenant, TenantEntity.class)).thenReturn(tenantEntity1);
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
 
     Assertions.assertThrows(org.folio.consortia.exception.ResourceAlreadyExistException.class,
       () -> tenantService.save(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), tenant));
   }
-
-  @Test
-  void shouldNotSaveTenantForDuplicateName() {
-    TenantEntity tenantEntity1 = new TenantEntity();
-    tenantEntity1.setId("TestID");
-    tenantEntity1.setName("Test");
-    Tenant tenant = new Tenant();
-    tenant.setId("Test");
-    tenant.setName("Test");
-    tenant.setConsortiumId("7698e46-c3e3-11ed-afa1-0242ac120002");
-
-    ConsortiumEntity consortiumEntity = new ConsortiumEntity();
-    consortiumEntity.setId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
-    consortiumEntity.setName("TestConsortium");
-
-    when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"))).thenReturn(Optional.of(consortiumEntity));
-
-    when(repository.findAll()).thenReturn((List.of(tenantEntity1)));
-    when(conversionService.convert(tenant, TenantEntity.class)).thenReturn(tenantEntity1);
-    when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
-
-    Assertions.assertThrows(org.folio.consortia.exception.ResourceAlreadyExistException.class,
-      () -> tenantService.save(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), tenant));
-  }
-
 }
