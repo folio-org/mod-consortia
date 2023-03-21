@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
+import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
+import org.folio.consortia.domain.repository.ConsortiumRepository;
 import org.folio.consortia.domain.repository.UserTenantRepository;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.UserTenantService;
@@ -22,10 +24,12 @@ import java.util.UUID;
 public class UserTenantServiceImpl implements UserTenantService {
 
   private final UserTenantRepository userTenantRepository;
+  private final ConsortiumRepository consortiumRepository;
   private final ConversionService converter;
 
   @Override
-  public UserTenantCollection get(Integer offset, Integer limit) {
+  public UserTenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
+    checkConsortiumExistsOrThrow(consortiumId);
     var result = new UserTenantCollection();
     Page<UserTenantEntity> userTenantPage = userTenantRepository.findAll(PageRequest.of(offset, limit));
     result.setUserTenants(userTenantPage.stream().map(o -> converter.convert(o, UserTenant.class)).toList());
@@ -34,14 +38,16 @@ public class UserTenantServiceImpl implements UserTenantService {
   }
 
   @Override
-  public UserTenant getById(UUID id) {
+  public UserTenant getById(UUID consortiumId, UUID id) {
+    checkConsortiumExistsOrThrow(consortiumId);
     UserTenantEntity userTenantEntity = userTenantRepository.findById(id)
       .orElseThrow(() -> new ResourceNotFoundException("id", String.valueOf(id)));
     return converter.convert(userTenantEntity, UserTenant.class);
   }
 
   @Override
-  public UserTenantCollection getByUserId(UUID userId, Integer offset, Integer limit) {
+  public UserTenantCollection getByUserId(UUID consortiumId, UUID userId, Integer offset, Integer limit) {
+    checkConsortiumExistsOrThrow(consortiumId);
     var result = new UserTenantCollection();
     Page<UserTenantEntity> userTenantPage = userTenantRepository.findByUserId(userId, PageRequest.of(offset, limit));
 
@@ -55,7 +61,8 @@ public class UserTenantServiceImpl implements UserTenantService {
   }
 
   @Override
-  public UserTenantCollection getByUsernameAndTenantId(String username, String tenantId) {
+  public UserTenantCollection getByUsernameAndTenantId(UUID consortiumId, String username, String tenantId) {
+    checkConsortiumExistsOrThrow(consortiumId);
     var result = new UserTenantCollection();
     UserTenantEntity userTenantEntity = userTenantRepository.findByUsernameAndTenantId(username, tenantId)
       .orElseThrow(() -> new ResourceNotFoundException("username", username));
@@ -64,6 +71,10 @@ public class UserTenantServiceImpl implements UserTenantService {
     result.setUserTenants(List.of(userTenant));
     result.setTotalRecords(1);
     return result;
+  }
+
+  private ConsortiumEntity checkConsortiumExistsOrThrow(UUID consortiumId) {
+    return consortiumRepository.findById(consortiumId).orElseThrow(() -> new ResourceNotFoundException("id", String.valueOf(consortiumId)));
   }
 
 }
