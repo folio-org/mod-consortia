@@ -47,19 +47,25 @@ class UserTenantControllerTest extends BaseTest {
     UserTenantCollection userTenantCollection = new UserTenantCollection();
     userTenantCollection.setUserTenants(userTenantDtos);
     userTenantCollection.setTotalRecords(userTenantDtos.size());
+    ConsortiumEntity consortiumEntity = new ConsortiumEntity();
+    consortiumEntity.setId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
+    consortiumEntity.setName("TestConsortium");
 
-    when(userTenantService.getByUserId(null, userId, 0, 10))
+    when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
+      .thenReturn(Optional.of(consortiumEntity));
+
+    when(userTenantService.getByUserId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), userId, 0, 10))
       .thenReturn(userTenantCollection);
 
     // when
     ResponseEntity<UserTenantCollection> response =
-      userTenantController.getUserTenants(null, userId, null, null, 0, 10);
+      userTenantController.getUserTenants(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), userId, null, null, 0, 10);
 
     // then
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     Assertions.assertEquals(userTenantCollection, response.getBody());
 
-    verify(userTenantService).getByUserId(null, userId, 0, 10);
+    verify(userTenantService).getByUserId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), userId, 0, 10);
   }
 
   @Test
@@ -72,18 +78,24 @@ class UserTenantControllerTest extends BaseTest {
     userTenant.setUsername("username");
     userTenant.setTenantId(String.valueOf(UUID.randomUUID()));
     userTenant.setIsPrimary(true);
+    ConsortiumEntity consortiumEntity = new ConsortiumEntity();
+    consortiumEntity.setId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
+    consortiumEntity.setName("TestConsortium");
 
-    when(userTenantService.getById(null, associationId))
+    when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
+      .thenReturn(Optional.of(consortiumEntity));
+
+    when(userTenantService.getById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), associationId))
       .thenReturn(userTenant);
 
     // when
-    ResponseEntity<UserTenant> response = userTenantController.getUserTenantByAssociationId(null, associationId);
+    ResponseEntity<UserTenant> response = userTenantController.getUserTenantByAssociationId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), associationId);
 
     // then
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     Assertions.assertEquals(userTenant, response.getBody());
 
-    verify(userTenantService).getById(null, associationId);
+    verify(userTenantService).getById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), associationId);
   }
 
   @Test
