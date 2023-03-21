@@ -11,8 +11,12 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,10 +39,22 @@ class TenantControllerTest extends BaseTest {
 
   @Test
   void getTenants() throws Exception {
+    TenantEntity tenantEntity1 = new TenantEntity();
+    tenantEntity1.setId("ABC1");
+    tenantEntity1.setName("TestName1");
+
+    TenantEntity tenantEntity2 = new TenantEntity();
+    tenantEntity1.setId("ABC1");
+    tenantEntity1.setName("TestName1");
+    List<TenantEntity> tenantEntityList = new ArrayList<>();
+    tenantEntityList.add(tenantEntity1);
+    tenantEntityList.add(tenantEntity2);
     ConsortiumEntity consortiumEntity = new ConsortiumEntity();
     consortiumEntity.setId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
     consortiumEntity.setName("TestConsortium");
 
+    when(tenantRepository.findByConsortiumId(any(), any(PageRequest.of(0, 2).getClass())))
+      .thenReturn(new PageImpl<>(tenantEntityList, PageRequest.of(0, 2), tenantEntityList.size()));
     when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
       .thenReturn(Optional.of(consortiumEntity));
     var headers = defaultHeaders();
