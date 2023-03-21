@@ -43,26 +43,23 @@ class UserTenantControllerTest extends BaseTest {
   void shouldGetUserTenantsByUserId() {
     // given
     UUID userId = UUID.randomUUID();
-    int offset = 0;
-    int limit = 10;
-
     List<UserTenant> userTenantDtos = List.of(new UserTenant(), new UserTenant());
     UserTenantCollection userTenantCollection = new UserTenantCollection();
     userTenantCollection.setUserTenants(userTenantDtos);
     userTenantCollection.setTotalRecords(userTenantDtos.size());
 
-    when(userTenantService.getByUserId(null, userId, offset, limit))
+    when(userTenantService.getByUserId(null, userId, 0, 10))
       .thenReturn(userTenantCollection);
 
     // when
     ResponseEntity<UserTenantCollection> response =
-      userTenantController.getUserTenants(null, userId, null, null, offset, limit);
+      userTenantController.getUserTenants(null, userId, null, null, 0, 10);
 
     // then
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     Assertions.assertEquals(userTenantCollection, response.getBody());
 
-    verify(userTenantService).getByUserId(null, userId, offset, limit);
+    verify(userTenantService).getByUserId(null, userId, 0, 10);
   }
 
   @Test
