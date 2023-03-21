@@ -47,12 +47,9 @@ class UserTenantControllerTest extends BaseTest {
     UserTenantCollection userTenantCollection = new UserTenantCollection();
     userTenantCollection.setUserTenants(userTenantDtos);
     userTenantCollection.setTotalRecords(userTenantDtos.size());
-    ConsortiumEntity consortiumEntity = new ConsortiumEntity();
-    consortiumEntity.setId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
-    consortiumEntity.setName("TestConsortium");
 
     when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
-      .thenReturn(Optional.of(consortiumEntity));
+      .thenReturn(Optional.of(createConsortiumEntity()));
 
     when(userTenantService.getByUserId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), userId, 0, 10))
       .thenReturn(userTenantCollection);
@@ -78,12 +75,9 @@ class UserTenantControllerTest extends BaseTest {
     userTenant.setUsername("username");
     userTenant.setTenantId(String.valueOf(UUID.randomUUID()));
     userTenant.setIsPrimary(true);
-    ConsortiumEntity consortiumEntity = new ConsortiumEntity();
-    consortiumEntity.setId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
-    consortiumEntity.setName("TestConsortium");
 
     when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
-      .thenReturn(Optional.of(consortiumEntity));
+      .thenReturn(Optional.of(createConsortiumEntity()));
 
     when(userTenantService.getById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), associationId))
       .thenReturn(userTenant);
@@ -101,12 +95,9 @@ class UserTenantControllerTest extends BaseTest {
   @Test
   void shouldGetUserTenantList() throws Exception {
     var headers = defaultHeaders();
-    ConsortiumEntity consortiumEntity = new ConsortiumEntity();
-    consortiumEntity.setId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
-    consortiumEntity.setName("TestConsortium");
 
     when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
-      .thenReturn(Optional.of(consortiumEntity));
+      .thenReturn(Optional.of(createConsortiumEntity()));
     this.mockMvc.perform(get("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/user-tenants?limit=2&offset=1").headers(headers))
       .andExpectAll(
         status().isOk(),
@@ -116,12 +107,9 @@ class UserTenantControllerTest extends BaseTest {
   @Test
   void return404UserTenantNotFoundByAssociationId() throws Exception {
     var headers = defaultHeaders();
-    ConsortiumEntity consortiumEntity = new ConsortiumEntity();
-    consortiumEntity.setId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
-    consortiumEntity.setName("TestConsortium");
 
     when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
-      .thenReturn(Optional.of(consortiumEntity));
+      .thenReturn(Optional.of(createConsortiumEntity()));
     this.mockMvc.perform(get("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/user-tenants/cb28f43c-bf45-11ed-afa1-0242ac120002").headers(headers))
       .andExpectAll(
         status().is4xxClientError(),
@@ -133,12 +121,9 @@ class UserTenantControllerTest extends BaseTest {
   @Test
   void return400BadRequest() throws Exception {
     var headers = defaultHeaders();
-    ConsortiumEntity consortiumEntity = new ConsortiumEntity();
-    consortiumEntity.setId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
-    consortiumEntity.setName("TestConsortium");
 
     when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
-      .thenReturn(Optional.of(consortiumEntity));
+      .thenReturn(Optional.of(createConsortiumEntity()));
     this.mockMvc.perform(get("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/user-tenants?limit=0&offset=0").headers(headers))
       .andExpectAll(
         status().is4xxClientError(),
@@ -150,12 +135,9 @@ class UserTenantControllerTest extends BaseTest {
   @Test
   void return404UserTenantNotFoundWithUserId() throws Exception {
     var headers = defaultHeaders();
-    ConsortiumEntity consortiumEntity = new ConsortiumEntity();
-    consortiumEntity.setId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
-    consortiumEntity.setName("TestConsortium");
 
     when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
-      .thenReturn(Optional.of(consortiumEntity));
+      .thenReturn(Optional.of(createConsortiumEntity()));
     this.mockMvc.perform(get("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/user-tenants?userId=8ad4c4b4-4d4c-4bf9-a8a0-7a30c1edf34b").headers(headers))
       .andExpectAll(
         status().is4xxClientError(),
@@ -167,17 +149,21 @@ class UserTenantControllerTest extends BaseTest {
   @Test
   void getValidationError() throws Exception {
     var headers = defaultHeaders();
-    ConsortiumEntity consortiumEntity = new ConsortiumEntity();
-    consortiumEntity.setId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
-    consortiumEntity.setName("TestConsortium");
 
     when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
-      .thenReturn(Optional.of(consortiumEntity));
+      .thenReturn(Optional.of(createConsortiumEntity()));
     this.mockMvc.perform(get("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/user-tenants?userId=90unnn").headers(headers))
       .andExpectAll(
         status().is4xxClientError(),
         content().contentType(MediaType.APPLICATION_JSON_VALUE),
         jsonPath("$.errors[0].code",
           is("VALIDATION_ERROR")));
+  }
+
+  private ConsortiumEntity createConsortiumEntity() {
+    ConsortiumEntity consortiumEntity = new ConsortiumEntity();
+    consortiumEntity.setId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
+    consortiumEntity.setName("TestConsortium");
+    return consortiumEntity;
   }
 }
