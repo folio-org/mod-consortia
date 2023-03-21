@@ -126,4 +126,25 @@ class TenantControllerTest extends BaseTest {
           .content(contentString))
       .andExpect(matchAll(status().is4xxClientError()));
   }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+    "{\"id\":\"diku1234\",\"name\":\"diku_tenant_name1234\"}"
+  })
+  void ShouldSaveTenant(String contentString) throws Exception {
+    var headers = defaultHeaders();
+    ConsortiumEntity consortiumEntity = new ConsortiumEntity();
+    consortiumEntity.setId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
+    consortiumEntity.setName("TestConsortium");
+
+    when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
+      .thenReturn(Optional.of(consortiumEntity));
+    when(tenantRepository.save(any(TenantEntity.class))).thenReturn(TenantEntity.class.newInstance());
+
+    this.mockMvc.perform(
+        post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants")
+          .headers(headers)
+          .content(contentString))
+      .andExpect(matchAll(status().isOk()));
+  }
 }
