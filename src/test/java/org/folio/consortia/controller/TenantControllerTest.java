@@ -95,7 +95,7 @@ class TenantControllerTest extends BaseTest {
   @ValueSource(strings = {
     "{\"id\":\"diku\",\"name\":\"diku_tenant_name\"}"
   })
-  void ShouldGet4xxErrorWhileSaving(String contentString) throws Exception {
+  void shouldGet4xxErrorWhileSaving(String contentString) throws Exception {
     var headers = defaultHeaders();
     this.mockMvc.perform(
         post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants")
@@ -108,7 +108,7 @@ class TenantControllerTest extends BaseTest {
   @ValueSource(strings = {
     "{\"id\":\"diku\",\"name\":\"diku_tenant_name\"}"
   })
-  void ShouldGet4xxErrorWhileSavingDuplicateName(String contentString) throws Exception {
+  void shouldGet4xxErrorWhileSavingDuplicateName(String contentString) throws Exception {
     var headers = defaultHeaders();
     ConsortiumEntity consortiumEntity = new ConsortiumEntity();
     consortiumEntity.setId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
@@ -131,7 +131,7 @@ class TenantControllerTest extends BaseTest {
   @ValueSource(strings = {
     "{\"id\":\"diku1234\",\"name\":\"diku_tenant_name1234\"}"
   })
-  void ShouldSaveTenant(String contentString) throws Exception {
+  void shouldSaveTenant(String contentString) throws Exception {
     var headers = defaultHeaders();
     ConsortiumEntity consortiumEntity = new ConsortiumEntity();
     consortiumEntity.setId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
