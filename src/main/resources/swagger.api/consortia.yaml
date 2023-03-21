@@ -42,7 +42,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/error"
     post:
-      description: save tenant
+      description: Save tenant
       operationId: saveTenant
       parameters:
         - in: path

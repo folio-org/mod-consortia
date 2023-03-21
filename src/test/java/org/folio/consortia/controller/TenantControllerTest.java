@@ -3,18 +3,21 @@ package org.folio.consortia.controller;
 import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.repository.ConsortiumRepository;
+import org.folio.consortia.domain.repository.TenantRepository;
 import org.folio.consortia.support.BaseTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.ResultMatcher.matchAll;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -27,6 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class TenantControllerTest extends BaseTest {
   @MockBean
   ConsortiumRepository consortiumRepository;
+  @MockBean
+  TenantRepository tenantRepository;
 
   @Test
   void getTenants() throws Exception {
@@ -81,5 +86,28 @@ class TenantControllerTest extends BaseTest {
           .headers(headers)
           .content(contentString))
         .andExpect(matchAll(status().is4xxClientError()));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+    "{\"id\":\"diku\",\"name\":\"diku_tenant_name\"}"
+  })
+  void ShouldGet4xxErrorWhileSavingDuplicateName(String contentString) throws Exception {
+    var headers = defaultHeaders();
+    ConsortiumEntity consortiumEntity = new ConsortiumEntity();
+    consortiumEntity.setId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
+    consortiumEntity.setName("TestConsortium");
+    TenantEntity tenant = new TenantEntity();
+
+    when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
+      .thenReturn(Optional.of(consortiumEntity));
+    when(tenantRepository.findById(any(String.class))).thenReturn(Optional.of(tenant));
+    when(tenantRepository.save(any(TenantEntity.class))).thenThrow(DataIntegrityViolationException.class);
+
+    this.mockMvc.perform(
+        post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants")
+          .headers(headers)
+          .content(contentString))
+      .andExpect(matchAll(status().is4xxClientError()));
   }
 }
