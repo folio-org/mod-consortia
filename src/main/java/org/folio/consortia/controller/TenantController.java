@@ -32,7 +32,7 @@ public class TenantController implements TenantsApi {
 
   @Override
   @PutMapping("/tenants/{tenantId}")
-  public ResponseEntity<Tenant> updateTenant(UUID consortiumId, Tenant tenant, String tenantId) {
+  public ResponseEntity<Tenant> updateTenant(UUID consortiumId, String tenantId, Tenant tenant) {
     return ResponseEntity.ok(service.update(consortiumId, tenant, tenantId));
   }
 }

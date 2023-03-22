@@ -91,6 +91,7 @@ paths:
             $ref: "#/components/schemas/UUID"
         - in: path
           name: tenantId
+          required: true
           schema:
             type: string
           description: The ID of the tenant
