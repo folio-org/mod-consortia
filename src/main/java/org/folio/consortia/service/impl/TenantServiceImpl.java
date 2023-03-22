@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+import static org.folio.consortia.utils.HelperUtils.isIdentical;
+
 @Service
 @Log4j2
 @RequiredArgsConstructor
@@ -41,10 +43,17 @@ public class TenantServiceImpl implements TenantService {
   public Tenant save(UUID consortiumId, Tenant tenantDto) {
     checkConsortiumExistsOrThrow(consortiumId);
     checkTenantNotExistsOrThrow(tenantDto.getId());
-    TenantEntity entity = new TenantEntity();
-    entity.setId(tenantDto.getId());
-    entity.setName(tenantDto.getName());
-    entity.setConsortiumId(consortiumId);
+    var entity = toEntity(consortiumId, tenantDto);
+    TenantEntity tenantEntity = repository.save(entity);
+    return converter.convert(tenantEntity, Tenant.class);
+  }
+
+  @Override
+  public Tenant update(UUID consortiumId, Tenant tenantDto, String tenantId) {
+    checkConsortiumExistsOrThrow(consortiumId);
+    checkTenantExistsOrThrow(tenantId);
+    isIdentical(tenantId, tenantDto.getId());
+    var entity = toEntity(consortiumId, tenantDto);
     TenantEntity tenantEntity = repository.save(entity);
     return converter.convert(tenantEntity, Tenant.class);
   }
@@ -55,5 +64,17 @@ public class TenantServiceImpl implements TenantService {
 
   private void checkTenantNotExistsOrThrow(String tenantId) {
     repository.findById(tenantId).ifPresent(s -> { throw new ResourceAlreadyExistException("id", tenantId); });
+  }
+
+  private TenantEntity checkTenantExistsOrThrow(String tenantId) {
+    return repository.findById(tenantId).orElseThrow(() ->  new ResourceNotFoundException("tenantId", tenantId));
+  }
+
+  private TenantEntity toEntity(UUID consortiumId, Tenant tenantDto) {
+    TenantEntity entity = new TenantEntity();
+    entity.setId(tenantDto.getId());
+    entity.setName(tenantDto.getName());
+    entity.setConsortiumId(consortiumId);
+    return entity;
   }
 }
