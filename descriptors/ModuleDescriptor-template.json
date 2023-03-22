@@ -105,7 +105,7 @@
     {
       "permissionName": "consortia.tenants.item.put",
       "displayName": "update tenant",
-      "description": "update tenant"
+      "description": "Update tenant"
     },
     {
       "permissionName": "consortia.user-tenants.collection.get",
