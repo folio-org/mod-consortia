@@ -22,6 +22,11 @@ import java.util.UUID;
 @Log4j2
 @RequiredArgsConstructor
 public class UserTenantServiceImpl implements UserTenantService {
+/*
+  Consortium table will contain only single record and it will be prohibited to add another record in this table.
+  If other consortium will be created - the new separate DB schema for it will be created that also store only single record in consortium table.
+  So to simplify logic and source code it was decided that we will not store consortiumId in user_tenant table
+*/
 
   private final UserTenantRepository userTenantRepository;
   private final ConsortiumRepository consortiumRepository;
