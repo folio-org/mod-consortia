@@ -6,9 +6,9 @@ public class HelperUtils {
 
   private HelperUtils() {}
 
-  public static void isIdentical(String firstString, String secondString)
+  public static void isIdentical(String first, String second)
   {
-    if(!StringUtils.equals(firstString, secondString)) {
+    if(!StringUtils.equals(first, second)) {
       throw new IllegalArgumentException("Arguments are not matching");
     }
   }
