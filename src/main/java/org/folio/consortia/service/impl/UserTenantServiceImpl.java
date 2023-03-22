@@ -74,7 +74,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   }
 
   private ConsortiumEntity checkConsortiumExistsOrThrow(UUID consortiumId) {
-    return consortiumRepository.findById(consortiumId).orElseThrow(() -> new ResourceNotFoundException("id", String.valueOf(consortiumId)));
+    return consortiumRepository.findById(consortiumId).orElseThrow(() -> new ResourceNotFoundException("consortiumId", String.valueOf(consortiumId)));
   }
 
 }
