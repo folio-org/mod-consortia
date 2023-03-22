@@ -17,17 +17,16 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
-
+/*
+Consortium table will contain only a single record and it will be prohibited to add another record in this table.
+If another consortium will be created - a new separate DB schema for it will be created that also stores only a
+single record in the consortium table. So to simplify logic and source code it was decided that we will not store
+consortiumId in user_tenant table.
+*/
 @Service
 @Log4j2
 @RequiredArgsConstructor
 public class UserTenantServiceImpl implements UserTenantService {
-/*
-  Consortium table will contain only single record and it will be prohibited to add another record in this table.
-  If other consortium will be created - the new separate DB schema for it will be created that also store only single record in consortium table.
-  So to simplify logic and source code it was decided that we will not store consortiumId in user_tenant table
-*/
-
   private final UserTenantRepository userTenantRepository;
   private final ConsortiumRepository consortiumRepository;
   private final ConversionService converter;
