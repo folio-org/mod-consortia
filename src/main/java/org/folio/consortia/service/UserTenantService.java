@@ -5,6 +5,14 @@ import org.folio.consortia.domain.dto.UserTenantCollection;
 
 import java.util.UUID;
 
+/**
+ * Service to work with user tenant associations, it provides ability to add association between user and tenant
+ * and search tenants that user assigned to.
+ *
+ * In methods internal implementation there is checking if consortia exists without joins to the consortium table.
+ * Also, user_tenant table does not contain field consortiumId because consortium table will always contain only single
+ * consortium. Other consortiums will be stored in separate DB schema.
+ */
 public interface UserTenantService {
 
   /**
