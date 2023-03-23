@@ -99,7 +99,9 @@ class TenantControllerTest extends BaseTest {
         post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants")
           .headers(headers)
           .content(contentString))
-        .andExpect(matchAll(status().is4xxClientError()));
+        .andExpect(matchAll(status().is4xxClientError(),
+          jsonPath("$.errors[0].message", is("Object with consortiumId [07698e46-c3e3-11ed-afa1-0242ac120002] was not found")),
+          jsonPath("$.errors[0].code", is("NOT_FOUND_ERROR"))));
   }
 
   @ParameterizedTest
@@ -119,7 +121,9 @@ class TenantControllerTest extends BaseTest {
         post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants")
           .headers(headers)
           .content(contentString))
-      .andExpect(matchAll(status().is4xxClientError()));
+      .andExpect(matchAll(status().is4xxClientError(),
+        jsonPath("$.errors[0].message", is("Object with id [diku] is already presented in the system")),
+        jsonPath("$.errors[0].code", is("RESOURCE_ALREADY_EXIST"))));
   }
 
   @ParameterizedTest
@@ -158,7 +162,9 @@ class TenantControllerTest extends BaseTest {
         put("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants/TestID")
           .headers(headers)
           .content(contentString))
-      .andExpect(matchAll(status().is4xxClientError()));
+      .andExpect(matchAll(status().is4xxClientError(),
+        jsonPath("$.errors[0].message", is("Arguments are not matching")),
+        jsonPath("$.errors[0].code", is("VALIDATION_ERROR"))));
   }
 
 
@@ -181,7 +187,8 @@ class TenantControllerTest extends BaseTest {
         put("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants/diku1234")
           .headers(headers)
           .content(contentString))
-      .andExpect(matchAll(status().is4xxClientError()));
+      .andExpect(matchAll(status().is4xxClientError(),
+        jsonPath("$.errors[0].code", is("NOT_FOUND_ERROR"))));
   }
 
   @ParameterizedTest

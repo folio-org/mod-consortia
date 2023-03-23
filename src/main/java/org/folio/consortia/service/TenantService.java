@@ -34,5 +34,5 @@ public interface TenantService {
    * @param tenantId the tenantId
    * @return tenantDto
    */
-  Tenant update(UUID consortiumId, Tenant tenantDto, String tenantId);
+  Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto);
 }

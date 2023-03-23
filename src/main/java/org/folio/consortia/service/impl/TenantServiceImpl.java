@@ -49,7 +49,7 @@ public class TenantServiceImpl implements TenantService {
   }
 
   @Override
-  public Tenant update(UUID consortiumId, Tenant tenantDto, String tenantId) {
+  public Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto) {
     checkConsortiumExistsOrThrow(consortiumId);
     checkTenantExistsOrThrow(tenantId);
     isIdentical(tenantId, tenantDto.getId());
