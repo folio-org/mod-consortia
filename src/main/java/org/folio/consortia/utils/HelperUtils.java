@@ -6,10 +6,10 @@ public class HelperUtils {
 
   private HelperUtils() {}
 
-  public static void isIdentical(String firstString, String secondString)
+  public static void isIdentical(String firstString, String secondString, String errorMsg)
   {
     if(!StringUtils.equals(firstString, secondString)) {
-      throw new IllegalArgumentException("Arguments are not matching");
+      throw new IllegalArgumentException(errorMsg);
     }
   }
 }

@@ -29,6 +29,8 @@ public class TenantServiceImpl implements TenantService {
   private final ConsortiumRepository consortiumRepository;
   private final ConversionService converter;
 
+  private static final String ERROR_MSG = "Request body tenantId and path param tenantId should be identical";
+
   @Override
   public TenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
     TenantCollection result = new TenantCollection();
@@ -52,7 +54,7 @@ public class TenantServiceImpl implements TenantService {
   public Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto) {
     checkConsortiumExistsOrThrow(consortiumId);
     checkTenantExistsOrThrow(tenantId);
-    isIdentical(tenantId, tenantDto.getId());
+    isIdentical(tenantId, tenantDto.getId(), ERROR_MSG);
     TenantEntity entity = toEntity(consortiumId, tenantDto);
     TenantEntity tenantEntity = repository.save(entity);
     return converter.convert(tenantEntity, Tenant.class);
