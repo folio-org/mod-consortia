@@ -28,6 +28,26 @@
         },
         {
           "methods": [
+            "GET"
+          ],
+          "pathPattern": "/consortia/{consortiumId}",
+          "permissionsRequired": [
+            "consortia.consortium.item.get"
+          ],
+          "modulePermissions": []
+        },
+        {
+          "methods": [
+            "PUT"
+          ],
+          "pathPattern": "/consortia/{consortiumId}",
+          "permissionsRequired": [
+            "consortia.consortium.item.put"
+          ],
+          "modulePermissions": []
+        },
+        {
+          "methods": [
             "POST"
           ],
           "pathPattern": "/consortia/{consortiumId}/tenants",
@@ -100,7 +120,9 @@
         "consortia.tenants.item.put",
         "consortia.user-tenants.collection.get",
         "consortia.user-tenants.item.get",
-        "consortia.consortium.item.post"
+        "consortia.consortium.item.post",
+        "consortia.consortium.item.put",
+        "consortia.consortium.item.get"
       ]
     },
     {
@@ -132,6 +154,16 @@
       "permissionName": "consortia.consortium.item.post",
       "displayName": "create consortium",
       "description": "Create consortium"
+    },
+    {
+      "permissionName": "consortia.consortium.item.get",
+      "displayName": "get consortium",
+      "description": "Get consortium"
+    },
+    {
+      "permissionName": "consortia.consortium.item.put",
+      "displayName": "update consortium",
+      "description": "Update consortium"
     }
   ],
   "requires": [],

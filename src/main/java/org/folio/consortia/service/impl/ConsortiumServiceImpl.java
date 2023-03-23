@@ -6,14 +6,20 @@ import org.folio.consortia.domain.dto.Consortium;
 import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.repository.ConsortiumRepository;
 import org.folio.consortia.exception.ResourceAlreadyExistException;
+import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.ConsortiumService;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
+
+import static org.folio.consortia.utils.HelperUtils.checkIdenticalOrThrow;
 
 @Service
 @Log4j2
 @RequiredArgsConstructor
 public class ConsortiumServiceImpl implements ConsortiumService {
+  private static final String CONSORTIUM_IDS_NOT_MATCHED_ERROR_MSG = "Request body consortiumId and path param consortiumId should be identical";
   private static final String CONSORTIUM_RESOURCE_EXIST_MSG_TEMPLATE = "System can not have more than one consortium record";
 
   private final ConsortiumRepository repository;
@@ -29,9 +35,36 @@ public class ConsortiumServiceImpl implements ConsortiumService {
     return converter.convert(consortiumEntity, Consortium.class);
   }
 
+  @Override
+  public Consortium get(UUID consortiumId) {
+    ConsortiumEntity entity = repository.findById(consortiumId)
+      .orElseThrow(() -> new ResourceNotFoundException("consortiumId", String.valueOf(consortiumId)));
+    return converter.convert(entity, Consortium.class);
+  }
+
+  @Override
+  public Consortium update(UUID consortiumId, Consortium consortiumDto) {
+    checkConsortiumExistsOrThrow(consortiumId);
+    checkIdenticalOrThrow(consortiumId.toString(), consortiumDto.getId().toString(), CONSORTIUM_IDS_NOT_MATCHED_ERROR_MSG);
+    ConsortiumEntity entity = toEntity(consortiumDto);
+    ConsortiumEntity consortiumEntity = repository.save(entity);
+    return converter.convert(consortiumEntity, Consortium.class);
+  }
+
+  private ConsortiumEntity checkConsortiumExistsOrThrow(UUID consortiumId) {
+    return repository.findById(consortiumId).orElseThrow(() -> new ResourceNotFoundException("consortiumId", String.valueOf(consortiumId)));
+  }
+
   private void checkConsortiumNotExistsOrThrow() {
     if (repository.count() > 0) {
       throw new ResourceAlreadyExistException(CONSORTIUM_RESOURCE_EXIST_MSG_TEMPLATE);
     }
+  }
+
+  private ConsortiumEntity toEntity(Consortium consortium) {
+    ConsortiumEntity entity = new ConsortiumEntity();
+    entity.setId(consortium.getId());
+    entity.setName(consortium.getName());
+    return entity;
   }
 }

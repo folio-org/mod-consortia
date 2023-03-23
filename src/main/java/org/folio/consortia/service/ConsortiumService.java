@@ -2,6 +2,8 @@ package org.folio.consortia.service;
 
 import org.folio.consortia.domain.dto.Consortium;
 
+import java.util.UUID;
+
 public interface ConsortiumService {
 
   /**
@@ -11,4 +13,21 @@ public interface ConsortiumService {
    * @return consortiumDto
    */
   Consortium save(Consortium consortiumDto);
+
+  /**
+   * Gets consortium based on consortiumId.
+   *
+   * @param consortiumId  the consortiumId
+   * @return consortiumDto
+   */
+  Consortium get(UUID consortiumId);
+
+  /**
+   * Updates single consortium based on consortiumId.
+   *
+   * @param consortiumId  the consortiumId
+   * @param consortiumDto  the consortiumDto
+   * @return consortiumDto
+   */
+  Consortium update(UUID consortiumId, Consortium consortiumDto);
 }
