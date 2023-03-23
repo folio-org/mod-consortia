@@ -31,7 +31,7 @@ public class TenantServiceImpl implements TenantService {
 
   @Override
   public TenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
-    var result = new TenantCollection();
+    TenantCollection result = new TenantCollection();
     checkConsortiumExistsOrThrow(consortiumId);
     Page<TenantEntity> page = repository.findByConsortiumId(consortiumId, PageRequest.of(offset, limit));
     result.setTenants(page.map(o -> converter.convert(o, Tenant.class)).getContent());
@@ -43,7 +43,7 @@ public class TenantServiceImpl implements TenantService {
   public Tenant save(UUID consortiumId, Tenant tenantDto) {
     checkConsortiumExistsOrThrow(consortiumId);
     checkTenantNotExistsOrThrow(tenantDto.getId());
-    var entity = toEntity(consortiumId, tenantDto);
+    TenantEntity entity = toEntity(consortiumId, tenantDto);
     TenantEntity tenantEntity = repository.save(entity);
     return converter.convert(tenantEntity, Tenant.class);
   }
@@ -53,7 +53,7 @@ public class TenantServiceImpl implements TenantService {
     checkConsortiumExistsOrThrow(consortiumId);
     checkTenantExistsOrThrow(tenantId);
     isIdentical(tenantId, tenantDto.getId());
-    var entity = toEntity(consortiumId, tenantDto);
+    TenantEntity entity = toEntity(consortiumId, tenantDto);
     TenantEntity tenantEntity = repository.save(entity);
     return converter.convert(tenantEntity, Tenant.class);
   }
