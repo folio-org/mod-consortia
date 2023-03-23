@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 @Log4j2
 @RequiredArgsConstructor
 public class ConsortiumServiceImpl implements ConsortiumService {
+  private static final String CONSORTIUM_RESOURCE_EXIST_MSG_TEMPLATE = "System can not have more than one consortium record";
+
   private final ConsortiumRepository repository;
   private final ConversionService converter;
 
@@ -28,8 +30,8 @@ public class ConsortiumServiceImpl implements ConsortiumService {
   }
 
   private void checkConsortiumNotExistsOrThrow() {
-    if (!repository.findAll().isEmpty()) {
-      throw new ResourceAlreadyExistException();
+    if (repository.count() > 0) {
+      throw new ResourceAlreadyExistException(CONSORTIUM_RESOURCE_EXIST_MSG_TEMPLATE);
     }
   }
 }

@@ -44,7 +44,7 @@ class ConsortiumServiceTest {
   void shouldGetErrorWhileSavingConsortium() {
     ConsortiumEntity consortiumEntity = createConsortiumEntity("111841e3-e6fb-4191-8fd8-5674a5107c33", "Test");
     Consortium consortium = createConsortium("111941e3-e6fb-4191-8fd8-5674a5107c33", "Test");
-    when(repository.findAll()).thenThrow(ResourceAlreadyExistException.class);
+    when(repository.count()).thenThrow(ResourceAlreadyExistException.class);
     when(conversionService.convert(consortiumEntity, Consortium.class)).thenReturn(consortium);
 
     Assertions.assertThrows(org.folio.consortia.exception.ResourceAlreadyExistException.class,

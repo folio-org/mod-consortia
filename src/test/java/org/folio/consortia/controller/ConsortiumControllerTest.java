@@ -18,6 +18,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 class ConsortiumControllerTest extends BaseTest {
+  private static final String CONSORTIUM_RESOURCE_EXIST_MSG_TEMPLATE = "System can not have more than one consortium record";
+
   @MockBean
   ConsortiumRepository consortiumRepository;
 
@@ -27,13 +29,14 @@ class ConsortiumControllerTest extends BaseTest {
   })
   void shouldGet4xxErrorWhileSaving(String contentString) throws Exception {
     var headers = defaultHeaders();
-    when(consortiumRepository.findAll()).thenThrow(ResourceAlreadyExistException.class);
+    when(consortiumRepository.count()).thenThrow(new ResourceAlreadyExistException(CONSORTIUM_RESOURCE_EXIST_MSG_TEMPLATE));
     this.mockMvc.perform(
         post("/consortia")
           .headers(headers)
           .content(contentString))
         .andExpect(matchAll(status().is4xxClientError(),
-          jsonPath("$.errors[0].code", is("RESOURCE_ALREADY_EXIST"))));
+          jsonPath("$.errors[0].code", is("RESOURCE_ALREADY_EXIST")),
+          jsonPath("$.errors[0].message", is("System can not have more than one consortium record"))));
   }
 
   @ParameterizedTest
