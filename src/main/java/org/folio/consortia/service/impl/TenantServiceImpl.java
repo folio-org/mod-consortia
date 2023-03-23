@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
-import static org.folio.consortia.utils.HelperUtils.isIdentical;
+import static org.folio.consortia.utils.HelperUtils.checkIdenticalOrThrow;
 
 @Service
 @Log4j2
@@ -29,7 +29,7 @@ public class TenantServiceImpl implements TenantService {
   private final ConsortiumRepository consortiumRepository;
   private final ConversionService converter;
 
-  private static final String ERROR_MSG = "Request body tenantId and path param tenantId should be identical";
+  private static final String TENANTS_NOT_MATCHED_ERROR_MSG = "Request body tenantId and path param tenantId should be identical";
 
   @Override
   public TenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
@@ -54,7 +54,7 @@ public class TenantServiceImpl implements TenantService {
   public Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto) {
     checkConsortiumExistsOrThrow(consortiumId);
     checkTenantExistsOrThrow(tenantId);
-    isIdentical(tenantId, tenantDto.getId(), ERROR_MSG);
+    checkIdenticalOrThrow(tenantId, tenantDto.getId(), TENANTS_NOT_MATCHED_ERROR_MSG);
     TenantEntity entity = toEntity(consortiumId, tenantDto);
     TenantEntity tenantEntity = repository.save(entity);
     return converter.convert(tenantEntity, Tenant.class);
