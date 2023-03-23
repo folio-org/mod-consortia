@@ -163,7 +163,7 @@ class TenantControllerTest extends BaseTest {
           .headers(headers)
           .content(contentString))
       .andExpect(matchAll(status().is4xxClientError(),
-        jsonPath("$.errors[0].message", is("Arguments are not matching")),
+        jsonPath("$.errors[0].message", is("Request body tenantId and path param tenantId should be identical")),
         jsonPath("$.errors[0].code", is("VALIDATION_ERROR"))));
   }
 
