@@ -78,7 +78,8 @@
         "consortia.tenants.collection.get",
         "consortia.tenants.item.post",
         "consortia.user-tenants.collection.get",
-        "consortia.user-tenants.item.get"
+        "consortia.user-tenants.item.get",
+        "consortia.consortium.item.post"
       ]
     },
     {
@@ -100,6 +101,11 @@
       "permissionName": "consortia.user-tenants.item.get",
       "displayName": "get user tenant",
       "description": "Get user and tenant association"
+    },
+    {
+      "permissionName": "consortia.consortium.item.post",
+      "displayName": "create consortium",
+      "description": "Create consortium"
     }
   ],
   "requires": [],
