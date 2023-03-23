@@ -178,7 +178,7 @@ paths:
   /user-tenants/{associationId}:
     description: User Tenant Associations
     get:
-      summary: Get a list of user tenant associations
+      summary: Get a list of user tenant associations by associationId
       operationId: getUserTenantByAssociationId
       parameters:
         - in: path

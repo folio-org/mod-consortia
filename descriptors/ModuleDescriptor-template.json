@@ -20,6 +20,16 @@
           "methods": [
             "POST"
           ],
+          "pathPattern": "/consortia",
+          "permissionsRequired": [
+            "consortia.consortium.item.post"
+          ],
+          "modulePermissions": []
+        },
+        {
+          "methods": [
+            "POST"
+          ],
           "pathPattern": "/consortia/{consortiumId}/tenants",
           "permissionsRequired": [
             "consortia.tenants.item.post"
