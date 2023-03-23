@@ -33,7 +33,7 @@ public class ConsortiumController implements ConsortiaApi {
 
   @Override
   @PutMapping("/consortia/{consortiumId}")
-  public ResponseEntity<Consortium> updateConsortia(UUID consortiumId, Consortium consortium) {
+  public ResponseEntity<Consortium> updateConsortium(UUID consortiumId, Consortium consortium) {
     return ResponseEntity.ok(consortiumService.update(consortiumId, consortium));
   }
 }

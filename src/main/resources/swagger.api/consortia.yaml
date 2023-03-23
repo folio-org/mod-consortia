@@ -71,8 +71,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/error"
     put:
-      description: Update consortia name
-      operationId: updateConsortia
+      description: Update consortium name
+      operationId: updateConsortium
       parameters:
         - in: path
           name: consortiumId
