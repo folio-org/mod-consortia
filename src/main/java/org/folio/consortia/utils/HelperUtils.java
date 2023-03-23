@@ -6,9 +6,8 @@ public class HelperUtils {
 
   private HelperUtils() {}
 
-  public static void checkIdenticalOrThrow(String firstString, String secondString, String errorMsg)
-  {
-    if(!StringUtils.equals(firstString, secondString)) {
+  public static void checkIdenticalOrThrow(String firstString, String secondString, String errorMsg) {
+    if (!StringUtils.equals(firstString, secondString)) {
       throw new IllegalArgumentException(errorMsg);
     }
   }

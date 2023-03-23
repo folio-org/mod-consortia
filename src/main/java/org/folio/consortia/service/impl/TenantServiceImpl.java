@@ -24,12 +24,11 @@ import static org.folio.consortia.utils.HelperUtils.checkIdenticalOrThrow;
 @Log4j2
 @RequiredArgsConstructor
 public class TenantServiceImpl implements TenantService {
+  private static final String TENANTS_IDS_NOT_MATCHED_ERROR_MSG = "Request body tenantId and path param tenantId should be identical";
 
   private final TenantRepository repository;
   private final ConsortiumRepository consortiumRepository;
   private final ConversionService converter;
-
-  private static final String TENANTS_NOT_MATCHED_ERROR_MSG = "Request body tenantId and path param tenantId should be identical";
 
   @Override
   public TenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
@@ -54,7 +53,7 @@ public class TenantServiceImpl implements TenantService {
   public Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto) {
     checkConsortiumExistsOrThrow(consortiumId);
     checkTenantExistsOrThrow(tenantId);
-    checkIdenticalOrThrow(tenantId, tenantDto.getId(), TENANTS_NOT_MATCHED_ERROR_MSG);
+    checkIdenticalOrThrow(tenantId, tenantDto.getId(), TENANTS_IDS_NOT_MATCHED_ERROR_MSG);
     TenantEntity entity = toEntity(consortiumId, tenantDto);
     TenantEntity tenantEntity = repository.save(entity);
     return converter.convert(tenantEntity, Tenant.class);
