@@ -7,11 +7,10 @@ import org.folio.consortia.domain.entity.ConsortiumEntity;
 import java.util.UUID;
 
 public interface ConsortiumService {
-/*
-ConsortiumService SAVE() Can be used to store one and only one record.
-*/
+
   /**
-   * Inserts single consortium.
+   * Inserts single consortium. It is prohibited to have more than consortium in the table.
+   * All new consortia will be created in separate new consortia tenants and so in separate DB schemas.
    *
    * @param consortiumDto  the consortiumDto
    * @return consortiumDto
@@ -35,11 +34,9 @@ ConsortiumService SAVE() Can be used to store one and only one record.
    */
   Consortium update(UUID consortiumId, Consortium consortiumDto);
 
-/*
-ConsortiumService getAll() Can return one and only one record.
-*/
   /**
-   * Gets consortiums.
+   * Gets consortiums. Will returns only single record, because consortium table can persist only 1 consortium.
+   * All new consortia will be created in separate new consortia tenants and so in separate DB schemas.
    *
    * @return consortiums collection
    */
