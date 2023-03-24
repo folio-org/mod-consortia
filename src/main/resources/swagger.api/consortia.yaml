@@ -26,13 +26,13 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
       requestBody:
-        $ref: '#/components/requestBodies/Consortium'
-  /consortia:/{consortiumId}:
+        $ref: '#/components/requestBodies/ConsortiumBody'
+  /consortia/{consortiumId}:
     get:
       summary: Get consortium record based on consortiumId
       operationId: getConsortium
       parameters:
-        - $ref: '#/components/parameters/ConsortiumId'
+        - $ref: '#/components/parameters/consortiumId'
       responses:
         '200':
           $ref: '#/components/responses/Consortium'
@@ -44,7 +44,7 @@ paths:
       summary: Update consortium name
       operationId: updateConsortium
       parameters:
-        - $ref: '#/components/parameters/ConsortiumId'
+        - $ref: '#/components/parameters/consortiumId'
       responses:
         '204':
           $ref: '#/components/responses/Consortium'
@@ -53,7 +53,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
       requestBody:
-        $ref: '#/components/requestBodies/Consortium'
+        $ref: '#/components/requestBodies/ConsortiumBody'
 components:
   requestBodies:
     ConsortiumBody:
@@ -70,6 +70,12 @@ components:
         application/json:
           schema:
             $ref: "schemas/consortium.yaml#/Consortium"
+    ConsortiumCollection:
+      description: Collection of Consortium Object
+      content:
+        application/json:
+          schema:
+            $ref: "schemas/consortium.yaml#/ConsortiumCollection"
     NotFound:
       description: Resource not found
       content:
@@ -99,15 +105,6 @@ components:
         application/json:
           schema:
             $ref: "schemas/common.yaml#/Error"
-  schemas:
-    consortiumCollection:
-      $ref: 'schemas/consortium.yaml#/ConsortiumCollection'
-    consortium:
-      $ref: 'schemas/consortium.yaml#/Consortium'
-    error:
-      $ref: 'schemas/error.yaml#/Error'
-    errors:
-      $ref: 'schemas/errors.yaml#/Errors'
   parameters:
     consortiumId:
       in: path

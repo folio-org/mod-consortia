@@ -12,7 +12,6 @@ paths:
       operationId: getTenants
       parameters:
         - $ref: "#/components/parameters/consortiumId"
-        - in: path
         - $ref: "#/components/parameters/trait_pageable_offset"
         - $ref: "#/components/parameters/trait_pageable_limit"
       responses:
@@ -37,17 +36,16 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
-          description: Internal server errors, e.g. due to misconfiguration
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/errors"
+          $ref: "#/components/responses/InternalServerError"
+  /tenants/{tenantId}:
     put:
       description: Update tenant name
       operationId: updateTenant
       parameters:
         - $ref: "#/components/parameters/consortiumId"
         - $ref: "#/components/parameters/tenantId"
+      requestBody:
+        $ref: "#/components/requestBodies/TenantBody"
       responses:
         "204":
           $ref: "#/components/responses/Tenant"
@@ -57,6 +55,7 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
+
 components:
   requestBodies:
     TenantBody:
@@ -117,10 +116,11 @@ components:
       required: true
       description: The ID of consortium
     tenantId:
-      in: query
+      in: path
       name: tenantId
       schema:
         type: string
+      required: true
       description: The ID of the tenant
     trait_pageable_offset:
       name: offset
