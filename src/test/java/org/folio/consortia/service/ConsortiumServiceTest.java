@@ -78,6 +78,19 @@ class ConsortiumServiceTest {
   }
 
   @Test
+  void shouldGetErrorWhileGetConsortiumById() {
+    when(repository.findById(any())).thenThrow(ResourceNotFoundException.class);
+    Assertions.assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class,
+      () -> consortiumService.checkConsortiumExistsOrThrow(UUID.fromString("111941e3-e6fb-4191-8fd8-5674a5107c33")));
+  }
+
+  @Test
+  void shouldValidateConsortiumById() {
+    when(repository.findById(any())).thenReturn(Optional.of(new ConsortiumEntity()));
+    Assertions.assertEquals(new ConsortiumEntity(), consortiumService.checkConsortiumExistsOrThrow(UUID.fromString("111941e3-e6fb-4191-8fd8-5674a5107c33")));
+  }
+
+  @Test
   void shouldGetConsortium() {
     ConsortiumEntity consortiumEntity = createConsortiumEntity("111841e3-e6fb-4191-8fd8-5674a5107c33", "Test");
     Consortium consortium = createConsortium("111941e3-e6fb-4191-8fd8-5674a5107c33", "Test");

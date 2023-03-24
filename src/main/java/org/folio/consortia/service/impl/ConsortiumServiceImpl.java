@@ -64,7 +64,8 @@ public class ConsortiumServiceImpl implements ConsortiumService {
     return result;
   }
 
-  private ConsortiumEntity checkConsortiumExistsOrThrow(UUID consortiumId) {
+  @Override
+  public ConsortiumEntity checkConsortiumExistsOrThrow(UUID consortiumId) {
     return repository.findById(consortiumId).orElseThrow(() -> new ResourceNotFoundException("consortiumId", String.valueOf(consortiumId)));
   }
 
