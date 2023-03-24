@@ -43,27 +43,7 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
 components:
-  requestBodies:
-    TenantBody:
-      description: Tenant object
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: "schemas/tenant.yaml#/Tenant"
   responses:
-    Tenant:
-      description: Returns a tenant object
-      content:
-        application/json:
-          schema:
-            $ref: "schemas/tenant.yaml#/Tenant"
-    TenantCollection:
-      description: Returns a tenant collection object
-      content:
-        application/json:
-          schema:
-            $ref: "schemas/tenant.yaml#/TenantCollection"
     UserTenant:
       description: Returns a user tenant association object
       content:

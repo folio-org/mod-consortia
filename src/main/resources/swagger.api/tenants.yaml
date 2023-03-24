@@ -78,18 +78,6 @@ components:
         application/json:
           schema:
             $ref: "schemas/tenant.yaml#/TenantCollection"
-    UserTenant:
-      description: Returns a user tenant association object
-      content:
-        application/json:
-          schema:
-            $ref: "schemas/userTenant.yaml#/UserTenant"
-    UserTenantCollection:
-      description: Returns a user tenant association collection object
-      content:
-        application/json:
-          schema:
-            $ref: "schemas/userTenant.yaml#/UserTenantCollection"
     NotFound:
       description: Resource not found
       content:
@@ -133,25 +121,6 @@ components:
       schema:
         type: string
       description: The ID of the tenant
-    associationId:
-      in: path
-      name: associationId
-      schema:
-        $ref: "schemas/common.yaml#/uuid"
-      required: true
-      description: UUID of the user to get and associated tenants.
-    userId:
-      in: query
-      name: userId
-      schema:
-        $ref: "schemas/common.yaml#/uuid"
-      description: The UUID of the user
-    username:
-      in: query
-      name: username
-      schema:
-        type: string
-        description: The username of the user
     trait_pageable_offset:
       name: offset
       in: query
