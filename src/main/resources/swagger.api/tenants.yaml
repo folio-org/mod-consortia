@@ -12,6 +12,7 @@ paths:
       operationId: getTenants
       parameters:
         - $ref: "#/components/parameters/consortiumId"
+        - in: path
         - $ref: "#/components/parameters/trait_pageable_offset"
         - $ref: "#/components/parameters/trait_pageable_limit"
       responses:
@@ -140,4 +141,3 @@ components:
         minimum: 0
         maximum: 2147483647
         type: integer
-
