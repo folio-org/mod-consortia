@@ -21,7 +21,7 @@ ConsortiumCollection:
       description: "The list of consortia"
       items:
         type: "object"
-        $ref: "consortium.json#/Consortium"
+        $ref: "consortium.yaml#/Consortium"
     totalRecords:
       type: "integer"
   additionalProperties: false

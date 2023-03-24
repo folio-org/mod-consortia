@@ -99,6 +99,15 @@ components:
         application/json:
           schema:
             $ref: "schemas/common.yaml#/Error"
+  schemas:
+    consortiumCollection:
+      $ref: 'schemas/consortium.yaml#/ConsortiumCollection'
+    consortium:
+      $ref: 'schemas/consortium.yaml#/Consortium'
+    error:
+      $ref: 'schemas/error.yaml#/Error'
+    errors:
+      $ref: 'schemas/errors.yaml#/Errors'
   parameters:
     consortiumId:
       in: path
