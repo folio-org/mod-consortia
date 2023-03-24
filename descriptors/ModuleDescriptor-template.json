@@ -30,6 +30,16 @@
           "methods": [
             "GET"
           ],
+          "pathPattern": "/consortia",
+          "permissionsRequired": [
+            "consortia.consortium.collection.get"
+          ],
+          "modulePermissions": []
+        },
+        {
+          "methods": [
+            "GET"
+          ],
           "pathPattern": "/consortia/{consortiumId}",
           "permissionsRequired": [
             "consortia.consortium.item.get"
@@ -122,7 +132,8 @@
         "consortia.user-tenants.item.get",
         "consortia.consortium.item.post",
         "consortia.consortium.item.put",
-        "consortia.consortium.item.get"
+        "consortia.consortium.item.get",
+        "consortia.consortium.collection.get"
       ]
     },
     {
@@ -164,6 +175,11 @@
       "permissionName": "consortia.consortium.item.put",
       "displayName": "update consortium",
       "description": "Update consortium"
+    },
+    {
+      "permissionName": "consortia.consortium.collection.get",
+      "displayName": "get consortiums",
+      "description": "Get consortiums"
     }
   ],
   "requires": [],

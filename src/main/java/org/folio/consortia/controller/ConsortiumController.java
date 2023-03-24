@@ -2,6 +2,7 @@ package org.folio.consortia.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.folio.consortia.domain.dto.Consortium;
+import org.folio.consortia.domain.dto.ConsortiumCollection;
 import org.folio.consortia.rest.resource.ConsortiaApi;
 import org.folio.consortia.service.ConsortiumService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,5 +36,11 @@ public class ConsortiumController implements ConsortiaApi {
   @PutMapping("/consortia/{consortiumId}")
   public ResponseEntity<Consortium> updateConsortium(UUID consortiumId, Consortium consortium) {
     return ResponseEntity.ok(consortiumService.update(consortiumId, consortium));
+  }
+
+  @Override
+  @GetMapping("/consortia")
+  public ResponseEntity<ConsortiumCollection> getConsortiumCollection() {
+    return ResponseEntity.ok(consortiumService.getAll());
   }
 }

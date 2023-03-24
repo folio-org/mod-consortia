@@ -3,12 +3,15 @@ package org.folio.consortia.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.consortia.domain.dto.Consortium;
+import org.folio.consortia.domain.dto.ConsortiumCollection;
 import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.repository.ConsortiumRepository;
 import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.ConsortiumService;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -49,6 +52,16 @@ public class ConsortiumServiceImpl implements ConsortiumService {
     ConsortiumEntity entity = toEntity(consortiumDto);
     ConsortiumEntity consortiumEntity = repository.save(entity);
     return converter.convert(consortiumEntity, Consortium.class);
+  }
+
+  @Override
+  public ConsortiumCollection getAll() {
+    var result = new ConsortiumCollection();
+
+    Page<ConsortiumEntity> consortiaPage = repository.findAll(PageRequest.of(0, 1));
+    result.setConsortia(consortiaPage.stream().map(o -> converter.convert(o, Consortium.class)).toList());
+    result.setTotalRecords((int) consortiaPage.getTotalElements());
+    return result;
   }
 
   private ConsortiumEntity checkConsortiumExistsOrThrow(UUID consortiumId) {

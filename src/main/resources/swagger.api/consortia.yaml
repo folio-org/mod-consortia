@@ -3,10 +3,33 @@ info:
   title: Consortium integration API
   description: "Consortium integration API"
   version: 0.0.1
-servers:
-  - url: /consortia/
 paths:
   /consortia:
+    get:
+      description: Get consortium collection
+      operationId: getConsortiumCollection
+      responses:
+        "200":
+          description: 'Consortia successfully retrieved'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/consortiumCollection"
+        "400":
+          description:
+            Bad request, e.g. malformed request body or query parameter.
+            Details of the errors (e.g. name of the parameter or line/character number
+            with malformed data) provided in the response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        "500":
+          description: Internal server errors, e.g. due to misconfiguration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
     post:
       description: Save consortium
       operationId: saveConsortium
@@ -38,6 +61,7 @@ paths:
             schema:
               $ref: "#/components/schemas/consortium"
         required: true
+  /consortia/{consortiumId}:
     get:
       description: Get consortium record based on consortiumId
       operationId: getConsortium
@@ -110,6 +134,8 @@ paths:
         required: true
 components:
   schemas:
+    consortiumCollection:
+      $ref: 'schemas/dto/consortiumCollection.json#/ConsortiumCollection'
     consortium:
       $ref: 'schemas/dto/consortium.json#/Consortium'
     error:

@@ -14,7 +14,11 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,6 +34,19 @@ class ConsortiumServiceTest {
   private ConsortiumRepository repository;
   @Mock
   private ConversionService conversionService;
+
+  @Test
+  void shouldGetConsortiumList() {
+    ConsortiumEntity consortiumEntity = createConsortiumEntity("111841e3-e6fb-4191-8fd8-5674a5107c33", "Test");
+    List<ConsortiumEntity> consortiumEntityList = new ArrayList<>();
+    consortiumEntityList.add(consortiumEntity);
+
+    when(repository.findAll(PageRequest.of(0, 1)))
+      .thenReturn(new PageImpl<>(consortiumEntityList, PageRequest.of(0, 1), consortiumEntityList.size()));
+
+    var consortiumCollection = consortiumService.getAll();
+    Assertions.assertEquals(1, consortiumCollection.getTotalRecords());
+  }
 
   @Test
   void shouldSaveConsortium() {

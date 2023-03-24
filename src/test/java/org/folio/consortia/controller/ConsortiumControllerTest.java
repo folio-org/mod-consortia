@@ -5,10 +5,15 @@ import org.folio.consortia.domain.repository.ConsortiumRepository;
 import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.support.BaseTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -142,6 +147,21 @@ class ConsortiumControllerTest extends BaseTest {
         put("/consortia/111841e3-e6fb-4191-8fd8-5674a5107c33")
           .headers(headers)
           .content(contentString))
+      .andExpect(matchAll(status().isOk()));
+  }
+
+  @Test
+  void shouldGetConsortiumCollection() throws Exception {
+    var headers = defaultHeaders();
+    ConsortiumEntity consortiumEntity = createConsortiumEntity("111841e3-e6fb-4191-8fd8-5674a5107c33", "Test");
+    List<ConsortiumEntity> consortiumEntityList = new ArrayList<>();
+    consortiumEntityList.add(consortiumEntity);
+
+    when(consortiumRepository.findAll(PageRequest.of(0, 1)))
+      .thenReturn(new PageImpl<>(consortiumEntityList, PageRequest.of(0, 1), consortiumEntityList.size()));
+    this.mockMvc.perform(
+        get("/consortia")
+          .headers(headers))
       .andExpect(matchAll(status().isOk()));
   }
 
