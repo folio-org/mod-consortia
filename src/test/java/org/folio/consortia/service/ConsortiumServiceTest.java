@@ -3,6 +3,7 @@ package org.folio.consortia.service;
 import org.folio.consortia.domain.dto.Consortium;
 import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.repository.ConsortiumRepository;
+import org.folio.consortia.domain.repository.TenantRepository;
 import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.impl.ConsortiumServiceImpl;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,10 +30,11 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @EnableAutoConfiguration(exclude = BatchAutoConfiguration.class)
 class ConsortiumServiceTest {
+
   @InjectMocks
   private ConsortiumServiceImpl consortiumService;
   @Mock
-  private ConsortiumRepository repository;
+  private ConsortiumRepository consortiumRepository;
   @Mock
   private ConversionService conversionService;
 
@@ -41,7 +44,7 @@ class ConsortiumServiceTest {
     List<ConsortiumEntity> consortiumEntityList = new ArrayList<>();
     consortiumEntityList.add(consortiumEntity);
 
-    when(repository.findAll(PageRequest.of(0, 1)))
+    when(consortiumRepository.findAll(PageRequest.of(0, 1)))
       .thenReturn(new PageImpl<>(consortiumEntityList, PageRequest.of(0, 1), consortiumEntityList.size()));
 
     var consortiumCollection = consortiumService.getAll();
@@ -52,7 +55,7 @@ class ConsortiumServiceTest {
   void shouldSaveConsortium() {
     ConsortiumEntity consortiumEntity = createConsortiumEntity("111841e3-e6fb-4191-8fd8-5674a5107c33", "Test");
     Consortium consortium = createConsortium("111941e3-e6fb-4191-8fd8-5674a5107c33", "Test");
-    when(repository.save(any(ConsortiumEntity.class))).thenReturn(consortiumEntity);
+    when(consortiumRepository.save(any(ConsortiumEntity.class))).thenReturn(consortiumEntity);
     when(conversionService.convert(consortiumEntity, Consortium.class)).thenReturn(consortium);
 
     var consortium1 = consortiumService.save(consortium);
@@ -63,7 +66,7 @@ class ConsortiumServiceTest {
   void shouldGetErrorWhileSavingConsortium() {
     ConsortiumEntity consortiumEntity = createConsortiumEntity("111841e3-e6fb-4191-8fd8-5674a5107c33", "Test");
     Consortium consortium = createConsortium("111941e3-e6fb-4191-8fd8-5674a5107c33", "Test");
-    when(repository.count()).thenThrow(ResourceAlreadyExistException.class);
+    when(consortiumRepository.count()).thenThrow(ResourceAlreadyExistException.class);
     when(conversionService.convert(consortiumEntity, Consortium.class)).thenReturn(consortium);
 
     Assertions.assertThrows(org.folio.consortia.exception.ResourceAlreadyExistException.class,
@@ -72,29 +75,30 @@ class ConsortiumServiceTest {
 
   @Test
   void shouldGetErrorWhileGetConsortium() {
-    when(repository.findById(any())).thenThrow(ResourceNotFoundException.class);
+    when(consortiumRepository.existsById(any())).thenReturn(false);
     Assertions.assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class,
       () -> consortiumService.get(UUID.fromString("111941e3-e6fb-4191-8fd8-5674a5107c33")));
   }
 
   @Test
   void shouldGetErrorWhileGetConsortiumById() {
-    when(repository.findById(any())).thenThrow(ResourceNotFoundException.class);
+    when(consortiumRepository.existsById(any())).thenReturn(false);
     Assertions.assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class,
       () -> consortiumService.checkConsortiumExistsOrThrow(UUID.fromString("111941e3-e6fb-4191-8fd8-5674a5107c33")));
   }
 
   @Test
   void shouldValidateConsortiumById() {
-    when(repository.findById(any())).thenReturn(Optional.of(new ConsortiumEntity()));
-    Assertions.assertEquals(new ConsortiumEntity(), consortiumService.checkConsortiumExistsOrThrow(UUID.fromString("111941e3-e6fb-4191-8fd8-5674a5107c33")));
+    UUID consortiumId = UUID.fromString("111941e3-e6fb-4191-8fd8-5674a5107c33");
+    when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
+    Assertions.assertDoesNotThrow(() -> consortiumService.checkConsortiumExistsOrThrow(consortiumId));
   }
 
   @Test
   void shouldGetConsortium() {
     ConsortiumEntity consortiumEntity = createConsortiumEntity("111841e3-e6fb-4191-8fd8-5674a5107c33", "Test");
     Consortium consortium = createConsortium("111941e3-e6fb-4191-8fd8-5674a5107c33", "Test");
-    when(repository.findById(any())).thenReturn(Optional.of(consortiumEntity));
+    when(consortiumRepository.findById(any())).thenReturn(Optional.of(consortiumEntity));
     when(conversionService.convert(consortiumEntity, Consortium.class)).thenReturn(consortium);
 
     var consortium1 = consortiumService.get(UUID.fromString("111941e3-e6fb-4191-8fd8-5674a5107c33"));
@@ -105,8 +109,8 @@ class ConsortiumServiceTest {
   void shouldUpdateConsortium() {
     ConsortiumEntity consortiumEntity = createConsortiumEntity("111841e3-e6fb-4191-8fd8-5674a5107c33", "Test");
     Consortium consortium = createConsortium("111941e3-e6fb-4191-8fd8-5674a5107c33", "Test1");
-        when(repository.findById(any())).thenReturn(Optional.of(consortiumEntity));
-    when(repository.save(any())).thenReturn(consortiumEntity);
+    when(consortiumRepository.existsById(any())).thenReturn(true);
+    when(consortiumRepository.save(any())).thenReturn(consortiumEntity);
     when(conversionService.convert(consortiumEntity, Consortium.class)).thenReturn(consortium);
 
     var consortium1 = consortiumService.update(UUID.fromString("111941e3-e6fb-4191-8fd8-5674a5107c33"), consortium);
@@ -118,7 +122,7 @@ class ConsortiumServiceTest {
   void shouldThrowExceptionWhileUpdateTenant() {
     ConsortiumEntity consortiumEntity = createConsortiumEntity("111841e3-e6fb-4191-8fd8-5674a5107c33", "Test");
     Consortium consortium = createConsortium("111941e3-e6fb-4191-8fd8-5674a5107c33", "Test1");
-    when(repository.findById(any())).thenReturn(Optional.of(consortiumEntity));
+    when(consortiumRepository.existsById(any())).thenReturn(true);
     when(conversionService.convert(consortiumEntity, Consortium.class)).thenReturn(consortium);
 
     Assertions.assertThrows(java.lang.IllegalArgumentException.class,
@@ -129,7 +133,7 @@ class ConsortiumServiceTest {
   void shouldThrowNotFoundExceptionWhileUpdateTenant() {
     ConsortiumEntity consortiumEntity = createConsortiumEntity("111841e3-e6fb-4191-8fd8-5674a5107c33", "Test");
     Consortium consortium = createConsortium("111941e3-e6fb-4191-8fd8-5674a5107c33", "Test1");
-    when(repository.findById(any())).thenThrow(ResourceNotFoundException.class);
+    when(consortiumRepository.findById(any())).thenThrow(ResourceNotFoundException.class);
     when(conversionService.convert(consortiumEntity, Consortium.class)).thenReturn(consortium);
 
     Assertions.assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class,

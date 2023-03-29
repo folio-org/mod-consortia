@@ -6,7 +6,6 @@ import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.repository.TenantRepository;
-import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.TenantService;
@@ -42,7 +41,7 @@ public class TenantServiceImpl implements TenantService {
   @Override
   public Tenant save(UUID consortiumId, Tenant tenantDto) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    checkTenantNotExistsOrThrow(tenantDto.getId());
+    checkTenantExistsOrThrow(tenantDto.getId());
     TenantEntity entity = toEntity(consortiumId, tenantDto);
     TenantEntity tenantEntity = repository.save(entity);
     return converter.convert(tenantEntity, Tenant.class);
@@ -58,12 +57,10 @@ public class TenantServiceImpl implements TenantService {
     return converter.convert(tenantEntity, Tenant.class);
   }
 
-  private void checkTenantNotExistsOrThrow(String tenantId) {
-    repository.findById(tenantId).ifPresent(s -> { throw new ResourceAlreadyExistException("id", tenantId); });
-  }
-
-  private TenantEntity checkTenantExistsOrThrow(String tenantId) {
-    return repository.findById(tenantId).orElseThrow(() ->  new ResourceNotFoundException("tenantId", tenantId));
+  private void checkTenantExistsOrThrow(String tenantId) {
+    if(!repository.existsById(tenantId)){
+      throw new ResourceNotFoundException("id", tenantId);
+    }
   }
 
   private TenantEntity toEntity(UUID consortiumId, Tenant tenantDto) {

@@ -7,6 +7,7 @@ import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.rest.resource.UserTenantsApi;
 import org.folio.consortia.service.UserTenantService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,11 +35,11 @@ public class UserTenantController implements UserTenantsApi {
     } else {
       userTenantCollection = userTenantService.get(consortiumId, offset, limit);
     }
-    return ResponseEntity.ok(userTenantCollection);
+    return new ResponseEntity<>(userTenantCollection, HttpStatus.OK);
   }
 
   @Override
   public ResponseEntity<UserTenant> getUserTenantByAssociationId(UUID consortiumId, UUID associationId) {
-    return ResponseEntity.ok(userTenantService.getById(consortiumId, associationId));
+    return new ResponseEntity<>(userTenantService.getById(consortiumId, associationId), HttpStatus.OK);
   }
 }

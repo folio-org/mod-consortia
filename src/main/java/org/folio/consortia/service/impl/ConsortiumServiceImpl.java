@@ -30,7 +30,7 @@ public class ConsortiumServiceImpl implements ConsortiumService {
 
   @Override
   public Consortium save(Consortium consortiumDto) {
-    checkConsortiumNotExistsOrThrow();
+    checkAnyConsortiumNotExistsOrThrow();
     ConsortiumEntity entity = new ConsortiumEntity();
     entity.setId(consortiumDto.getId());
     entity.setName(consortiumDto.getName());
@@ -65,11 +65,13 @@ public class ConsortiumServiceImpl implements ConsortiumService {
   }
 
   @Override
-  public ConsortiumEntity checkConsortiumExistsOrThrow(UUID consortiumId) {
-    return repository.findById(consortiumId).orElseThrow(() -> new ResourceNotFoundException("consortiumId", String.valueOf(consortiumId)));
+  public void checkConsortiumExistsOrThrow(UUID consortiumId) {
+    if(!repository.existsById(consortiumId)){
+      throw new ResourceNotFoundException("consortiumId", String.valueOf(consortiumId));
+    }
   }
 
-  private void checkConsortiumNotExistsOrThrow() {
+  private void checkAnyConsortiumNotExistsOrThrow() {
     if (repository.count() > 0) {
       throw new ResourceAlreadyExistException(CONSORTIUM_RESOURCE_EXIST_MSG_TEMPLATE);
     }

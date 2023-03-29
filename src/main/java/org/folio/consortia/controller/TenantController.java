@@ -12,25 +12,29 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
+
 @RestController
 @RequestMapping("/consortia/{consortiumId}")
 @RequiredArgsConstructor
 public class TenantController implements TenantsApi {
+
   @Autowired
   private final TenantService service;
 
   @Override
   public ResponseEntity<TenantCollection> getTenants(UUID consortiumId, Integer offset, Integer limit) {
-    return ResponseEntity.ok(service.get(consortiumId, offset, limit));
+    return new ResponseEntity<>(service.get(consortiumId, offset, limit), OK);
   }
 
   @Override
   public ResponseEntity<Tenant> saveTenant(UUID consortiumId, Tenant tenant) {
-    return ResponseEntity.ok(service.save(consortiumId, tenant));
+    return new ResponseEntity<>(service.save(consortiumId, tenant), CREATED);
   }
 
   @Override
   public ResponseEntity<Tenant> updateTenant(UUID consortiumId, String tenantId, Tenant tenant) {
-    return ResponseEntity.ok(service.update(consortiumId, tenantId, tenant));
+    return new ResponseEntity<>(service.update(consortiumId, tenantId, tenant), OK);
   }
 }
