@@ -57,7 +57,7 @@ paths:
           $ref: "#/components/responses/InternalServerError"
     delete:
       description: Delete tenant
-      operationId: deleteTenant
+      operationId: deleteTenantById
       parameters:
         - $ref: "#/components/parameters/consortiumId"
         - $ref: "#/components/parameters/tenantId"

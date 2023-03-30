@@ -39,7 +39,7 @@ public class TenantController implements TenantsApi {
   }
 
   @Override
-  public ResponseEntity<Void> deleteTenant(UUID consortiumId, String tenantId) {
+  public ResponseEntity<Void> deleteTenantById(UUID consortiumId, String tenantId) {
     service.delete(consortiumId, tenantId);
     return ResponseEntity.noContent().build();
   }
