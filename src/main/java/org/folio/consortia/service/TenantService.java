@@ -35,4 +35,6 @@ public interface TenantService {
    * @return tenantDto
    */
   Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto);
+
+  void delete(UUID consortiumId, String tenantId);
 }

@@ -57,8 +57,15 @@ public class TenantServiceImpl implements TenantService {
     return converter.convert(tenantEntity, Tenant.class);
   }
 
+  @Override
+  public void delete(UUID consortiumId, String tenantId) {
+    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
+    checkTenantExistsOrThrow(tenantId);
+    repository.deleteById(tenantId);
+  }
+
   private void checkTenantExistsOrThrow(String tenantId) {
-    if(!repository.existsById(tenantId)){
+    if (!repository.existsById(tenantId)) {
       throw new ResourceNotFoundException("id", tenantId);
     }
   }
