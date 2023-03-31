@@ -5,7 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import org.folio.consortia.domain.dto.Consortium;
 import org.folio.consortia.domain.dto.ConsortiumCollection;
 import org.folio.consortia.domain.entity.ConsortiumEntity;
-import org.folio.consortia.domain.repository.ConsortiumRepository;
+import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.ConsortiumService;

@@ -2,8 +2,8 @@ package org.folio.consortia.controller;
 
 import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.entity.TenantEntity;
-import org.folio.consortia.domain.repository.ConsortiumRepository;
-import org.folio.consortia.domain.repository.TenantRepository;
+import org.folio.consortia.repository.ConsortiumRepository;
+import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.support.BaseTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

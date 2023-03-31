@@ -1,4 +1,4 @@
-package org.folio.consortia.domain.repository;
+package org.folio.consortia.repository;
 
 import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.jetbrains.annotations.NotNull;

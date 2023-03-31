@@ -1,4 +1,4 @@
-package org.folio.consortia.domain.repository;
+package org.folio.consortia.repository;
 
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.springframework.data.domain.Page;

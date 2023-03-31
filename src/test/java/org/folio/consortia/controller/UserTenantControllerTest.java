@@ -4,7 +4,7 @@ import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
-import org.folio.consortia.domain.repository.ConsortiumRepository;
+import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.consortia.support.BaseTest;
 import org.junit.jupiter.api.Assertions;

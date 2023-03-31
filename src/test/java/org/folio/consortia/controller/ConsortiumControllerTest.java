@@ -1,7 +1,7 @@
 package org.folio.consortia.controller;
 
 import org.folio.consortia.domain.entity.ConsortiumEntity;
-import org.folio.consortia.domain.repository.ConsortiumRepository;
+import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.support.BaseTest;
 import org.junit.jupiter.api.Test;

@@ -2,8 +2,7 @@ package org.folio.consortia.service;
 
 import org.folio.consortia.domain.dto.Consortium;
 import org.folio.consortia.domain.entity.ConsortiumEntity;
-import org.folio.consortia.domain.repository.ConsortiumRepository;
-import org.folio.consortia.domain.repository.TenantRepository;
+import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.impl.ConsortiumServiceImpl;
@@ -11,7 +10,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
