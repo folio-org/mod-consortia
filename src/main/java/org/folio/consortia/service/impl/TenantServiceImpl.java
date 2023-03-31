@@ -6,6 +6,7 @@ import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.repository.TenantRepository;
+import org.folio.consortia.domain.repository.UserTenantRepository;
 import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.ConsortiumService;
@@ -23,9 +24,10 @@ import static org.folio.consortia.utils.HelperUtils.checkIdenticalOrThrow;
 @Log4j2
 @RequiredArgsConstructor
 public class TenantServiceImpl implements TenantService {
-  private static final String TENANTS_IDS_NOT_MATCHED_ERROR_MSG = "Request body tenantId and path param tenantId should be identical";
 
+  private static final String TENANTS_IDS_NOT_MATCHED_ERROR_MSG = "Request body tenantId and path param tenantId should be identical";
   private final TenantRepository tenantRepository;
+  private final UserTenantRepository userTenantRepository;
   private final ConversionService converter;
   private final ConsortiumService consortiumService;
 
@@ -62,6 +64,9 @@ public class TenantServiceImpl implements TenantService {
   public void delete(UUID consortiumId, String tenantId) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     checkTenantExistsOrThrow(tenantId);
+    if (userTenantRepository.existsByTenantId(tenantId)) {
+      throw new IllegalArgumentException("Tenant with id has association with user-tenant");
+    }
     tenantRepository.deleteById(tenantId);
   }
 
@@ -72,9 +77,9 @@ public class TenantServiceImpl implements TenantService {
   }
 
   private void checkTenantExistsOrThrow(String tenantId) {
-      if (!tenantRepository.existsById(tenantId)) {
-        throw new ResourceNotFoundException("id", tenantId);
-      }
+    if (!tenantRepository.existsById(tenantId)) {
+      throw new ResourceNotFoundException("id", tenantId);
+    }
   }
 
   private TenantEntity toEntity(UUID consortiumId, Tenant tenantDto) {
