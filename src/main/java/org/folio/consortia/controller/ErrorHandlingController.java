@@ -46,6 +46,12 @@ public class ErrorHandlingController {
     return createInternalError(Objects.requireNonNull(e.getRootCause()).getMessage(), VALIDATION_ERROR);
   }
 
+  @ResponseStatus(HttpStatus.CONFLICT)
+  @ExceptionHandler(IllegalStateException.class)
+  public Errors handleIllegalStateException(IllegalStateException e) {
+    return createInternalError(e.getMessage(), VALIDATION_ERROR);
+  }
+
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ExceptionHandler({
     MissingServletRequestParameterException.class,

@@ -43,7 +43,7 @@ class ConsortiumControllerTest extends BaseTest {
           .headers(headers)
           .content(contentString))
         .andExpectAll(status().is4xxClientError(),
-          jsonPath("$.errors[0].code", is("RESOURCE_ALREADY_EXIST")),
+          jsonPath("$.errors[0].code", is("DUPLICATE_ERROR")),
           jsonPath("$.errors[0].message", is("System can not have more than one consortium record")));
   }
 

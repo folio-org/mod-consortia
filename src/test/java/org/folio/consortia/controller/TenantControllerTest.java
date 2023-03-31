@@ -109,7 +109,7 @@ class TenantControllerTest extends BaseTest {
       .andExpectAll(
         status().is4xxClientError(),
         jsonPath("$.errors[0].message", is("Object with id [diku] is already presented in the system")),
-        jsonPath("$.errors[0].code", is("RESOURCE_ALREADY_EXIST")));
+        jsonPath("$.errors[0].code", is("DUPLICATE_ERROR")));
   }
 
   @ParameterizedTest

@@ -26,6 +26,8 @@ import static org.folio.consortia.utils.HelperUtils.checkIdenticalOrThrow;
 public class TenantServiceImpl implements TenantService {
 
   private static final String TENANTS_IDS_NOT_MATCHED_ERROR_MSG = "Request body tenantId and path param tenantId should be identical";
+  private static final String TENANT_HAS_ACTIVE_USER_ASSOCIATIONS_ERROR_MSG = "Cannot delete tenant with ID {tenantId} because it has an association with a user. " +
+    "Please remove the user association before attempting to delete the tenant.";
   private final TenantRepository tenantRepository;
   private final UserTenantRepository userTenantRepository;
   private final ConversionService converter;
@@ -65,7 +67,7 @@ public class TenantServiceImpl implements TenantService {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     checkTenantExistsOrThrow(tenantId);
     if (userTenantRepository.existsByTenantId(tenantId)) {
-      throw new IllegalArgumentException("Tenant with id has association with user-tenant");
+      throw new IllegalStateException(TENANT_HAS_ACTIVE_USER_ASSOCIATIONS_ERROR_MSG);
     }
     tenantRepository.deleteById(tenantId);
   }
