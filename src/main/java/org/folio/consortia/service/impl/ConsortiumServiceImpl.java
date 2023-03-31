@@ -66,7 +66,7 @@ public class ConsortiumServiceImpl implements ConsortiumService {
 
   @Override
   public void checkConsortiumExistsOrThrow(UUID consortiumId) {
-    if(!repository.existsById(consortiumId)){
+    if (!repository.existsById(consortiumId)) {
       throw new ResourceNotFoundException("consortiumId", String.valueOf(consortiumId));
     }
   }
