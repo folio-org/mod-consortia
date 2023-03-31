@@ -88,16 +88,6 @@
         },
         {
           "methods": [
-            "DELETE"
-          ],
-          "pathPattern": "/consortia/{consortiumId}/tenants/{tenantId}",
-          "permissionsRequired": [
-            "consortia.tenants.item.delete"
-          ],
-          "modulePermissions": []
-        },
-        {
-          "methods": [
             "GET"
           ],
           "pathPattern": "/consortia/{consortiumId}/user-tenants",
