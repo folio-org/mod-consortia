@@ -10,7 +10,7 @@
       <column name="id" type="text">
         <constraints primaryKey="true" primaryKeyName="pk_tenant_id"/>
       </column>
-      <column name="name" type="text">
+      <column name="name" type="varchar(150)">
         <constraints unique="true" nullable="false"/>
       </column>
       <column name="consortium_id" type="uuid">
