@@ -16,7 +16,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import java.util.Objects;
 
 import static org.folio.consortia.utils.ErrorHelper.ErrorCode.NOT_FOUND_ERROR;
-import static org.folio.consortia.utils.ErrorHelper.ErrorCode.RESOURCE_ALREADY_EXIST;
+import static org.folio.consortia.utils.ErrorHelper.ErrorCode.DUPLICATE_ERROR;
 import static org.folio.consortia.utils.ErrorHelper.ErrorCode.VALIDATION_ERROR;
 import static org.folio.consortia.utils.ErrorHelper.createInternalError;
 
@@ -32,7 +32,7 @@ public class ErrorHandlingController {
   @ResponseStatus(HttpStatus.CONFLICT)
   @ExceptionHandler(ResourceAlreadyExistException.class)
   public Errors handleResourceAlreadyExistException(ResourceAlreadyExistException e) {
-    return createInternalError(e.getMessage(), RESOURCE_ALREADY_EXIST);
+    return createInternalError(e.getMessage(), DUPLICATE_ERROR);
   }
 
   @ResponseStatus(HttpStatus.CONFLICT)
