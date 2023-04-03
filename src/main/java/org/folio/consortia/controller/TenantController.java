@@ -15,7 +15,6 @@ import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
-import static org.springframework.http.HttpStatus.OK;
 
 @RestController
 @RequestMapping("/consortia/{consortiumId}")
@@ -27,7 +26,7 @@ public class TenantController implements TenantsApi {
 
   @Override
   public ResponseEntity<TenantCollection> getTenants(UUID consortiumId, Integer offset, Integer limit) {
-    return ResponseEntity.status(OK).body(service.get(consortiumId, offset, limit));
+    return ResponseEntity.ok(service.get(consortiumId, offset, limit));
   }
 
   @Override
@@ -37,7 +36,7 @@ public class TenantController implements TenantsApi {
 
   @Override
   public ResponseEntity<Tenant> updateTenant(UUID consortiumId, String tenantId, @Validated Tenant tenant) {
-    return ResponseEntity.status(OK).body(service.update(consortiumId, tenantId, tenant));
+    return ResponseEntity.ok(service.update(consortiumId, tenantId, tenant));
   }
 
   @Override
