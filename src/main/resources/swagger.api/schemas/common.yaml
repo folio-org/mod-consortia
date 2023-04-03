@@ -143,7 +143,6 @@ Address:
       type: boolean
   additionalProperties: false
 
-
 Tags:
   type: object
   title: tags
@@ -154,8 +153,6 @@ Tags:
       items:
         type: string
   additionalProperties: false
-
-
 
 Metadata:
   type: object
@@ -182,8 +179,8 @@ Metadata:
     updatedByUsername:
       type: string
       description: Username of the user who updated the record (when available)
-    required:
-      - createdDate
+  required:
+    - createdDate
 
 Error:
   description: "An error"
