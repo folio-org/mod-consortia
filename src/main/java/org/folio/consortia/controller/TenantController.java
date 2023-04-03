@@ -7,6 +7,7 @@ import org.folio.consortia.rest.resource.TenantsApi;
 import org.folio.consortia.service.TenantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,12 +30,12 @@ public class TenantController implements TenantsApi {
   }
 
   @Override
-  public ResponseEntity<Tenant> saveTenant(UUID consortiumId, Tenant tenant) {
+  public ResponseEntity<Tenant> saveTenant(UUID consortiumId, @Validated Tenant tenant) {
     return new ResponseEntity<>(service.save(consortiumId, tenant), CREATED);
   }
 
   @Override
-  public ResponseEntity<Tenant> updateTenant(UUID consortiumId, String tenantId, Tenant tenant) {
+  public ResponseEntity<Tenant> updateTenant(UUID consortiumId, String tenantId, @Validated Tenant tenant) {
     return new ResponseEntity<>(service.update(consortiumId, tenantId, tenant), OK);
   }
 
