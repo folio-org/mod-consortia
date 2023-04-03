@@ -35,11 +35,11 @@ public class UserTenantController implements UserTenantsApi {
     } else {
       userTenantCollection = userTenantService.get(consortiumId, offset, limit);
     }
-    return new ResponseEntity<>(userTenantCollection, HttpStatus.OK);
+    return ResponseEntity.status(HttpStatus.OK).body(userTenantCollection);
   }
 
   @Override
   public ResponseEntity<UserTenant> getUserTenantByAssociationId(UUID consortiumId, UUID associationId) {
-    return new ResponseEntity<>(userTenantService.getById(consortiumId, associationId), HttpStatus.OK);
+    return ResponseEntity.status(HttpStatus.OK).body(userTenantService.getById(consortiumId, associationId));
   }
 }

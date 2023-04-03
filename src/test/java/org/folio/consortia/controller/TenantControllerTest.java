@@ -1,10 +1,13 @@
 package org.folio.consortia.controller;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.support.BaseTest;
+import org.hibernate.validator.internal.engine.ConstraintViolationImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -15,12 +18,17 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 
+import javax.validation.ConstraintValidatorContext;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
+import static org.folio.consortia.utils.ErrorHelper.ErrorCode.VALIDATION_ERROR;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -61,7 +69,7 @@ class TenantControllerTest extends BaseTest {
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
 
     this.mockMvc.perform(get("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants?limit=0&offset=0")
-      .headers(headers)).
+        .headers(headers)).
       andExpectAll(
         status().is4xxClientError(),
         content().contentType(MediaType.APPLICATION_JSON_VALUE),
@@ -73,7 +81,7 @@ class TenantControllerTest extends BaseTest {
     var headers = defaultHeaders();
 
     this.mockMvc.perform(get("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants?limit=0&offset=0")
-      .headers(headers))
+        .headers(headers))
       .andExpectAll(
         status().is4xxClientError(),
         content().contentType(MediaType.APPLICATION_JSON_VALUE),
@@ -86,12 +94,41 @@ class TenantControllerTest extends BaseTest {
     var headers = defaultHeaders();
 
     this.mockMvc.perform(post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants")
-      .headers(headers).content(contentString))
+        .headers(headers).content(contentString))
       .andExpectAll(
         status().is4xxClientError(),
         jsonPath("$.errors[0].message", is("Object with consortiumId [07698e46-c3e3-11ed-afa1-0242ac120002] was not found")),
         jsonPath("$.errors[0].code", is("NOT_FOUND_ERROR")));
   }
+  @ParameterizedTest
+  @ValueSource(strings = {"{\"id\": \"123123123123123123\", \"name\": \"\"}"})
+  void testConstraintViolationException(String contentString) throws Exception {
+    var headers = defaultHeaders();
+    // Given a request with invalid input
+    UUID consortiumId = UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002");
+    when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
+    when(tenantRepository.existsById(any(String.class))).thenReturn(false);
+
+    Set<ConstraintViolation<?>> constraintViolations = new HashSet<>();
+    constraintViolations.add(mock(ConstraintViolation.class));
+    constraintViolations.add(mock(ConstraintViolation.class));
+
+    when(tenantRepository.save(any(TenantEntity.class)))
+      .thenThrow(new ConstraintViolationException("Invalid input", constraintViolations));
+
+    // When performing a request to the endpoint
+    mockMvc.perform(post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants")
+        .headers(headers)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(contentString))
+      .andExpect(status().isUnprocessableEntity())
+      .andExpect(jsonPath("$.size()", is(2)))
+      .andExpect(jsonPath("$[0].code", is(String.valueOf(VALIDATION_ERROR))))
+      .andExpect(jsonPath("$[0].type", is("-1")))
+      .andExpect(jsonPath("$[1].code", is(String.valueOf(VALIDATION_ERROR))))
+      .andExpect(jsonPath("$[1].type", is("-1")));
+  }
+
 
   @ParameterizedTest
   @ValueSource(strings = {"{\"id\":\"diku\",\"name\":\"diku_tenant_name\"}"})
@@ -104,8 +141,8 @@ class TenantControllerTest extends BaseTest {
     when(tenantRepository.save(any(TenantEntity.class))).thenThrow(DataIntegrityViolationException.class);
 
     this.mockMvc.perform(
-      post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants")
-        .headers(headers).content(contentString))
+        post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants")
+          .headers(headers).content(contentString))
       .andExpectAll(
         status().is4xxClientError(),
         jsonPath("$.errors[0].message", is("Object with id [diku] is already presented in the system")),
@@ -121,8 +158,8 @@ class TenantControllerTest extends BaseTest {
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(TenantEntity.class.newInstance());
 
     this.mockMvc.perform(
-      post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants")
-        .headers(headers).content(contentString))
+        post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants")
+          .headers(headers).content(contentString))
       .andExpect(status().isCreated());
   }
 
@@ -139,8 +176,8 @@ class TenantControllerTest extends BaseTest {
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(TenantEntity.class.newInstance());
 
     this.mockMvc.perform(
-      put("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants/TestID")
-        .headers(headers).content(contentString))
+        put("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants/TestID")
+          .headers(headers).content(contentString))
       .andExpectAll(status().is4xxClientError(),
         jsonPath("$.errors[0].message", is("Request body tenantId and path param tenantId should be identical")),
         jsonPath("$.errors[0].code", is("VALIDATION_ERROR")));

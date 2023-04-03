@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 @RestController
@@ -26,22 +27,22 @@ public class TenantController implements TenantsApi {
 
   @Override
   public ResponseEntity<TenantCollection> getTenants(UUID consortiumId, Integer offset, Integer limit) {
-    return new ResponseEntity<>(service.get(consortiumId, offset, limit), OK);
+    return ResponseEntity.status(OK).body(service.get(consortiumId, offset, limit));
   }
 
   @Override
   public ResponseEntity<Tenant> saveTenant(UUID consortiumId, @Validated Tenant tenant) {
-    return new ResponseEntity<>(service.save(consortiumId, tenant), CREATED);
+    return ResponseEntity.status(CREATED).body(service.save(consortiumId, tenant));
   }
 
   @Override
   public ResponseEntity<Tenant> updateTenant(UUID consortiumId, String tenantId, @Validated Tenant tenant) {
-    return new ResponseEntity<>(service.update(consortiumId, tenantId, tenant), OK);
+    return ResponseEntity.status(OK).body(service.update(consortiumId, tenantId, tenant));
   }
 
   @Override
   public ResponseEntity<Void> deleteTenantById(UUID consortiumId, String tenantId) {
     service.delete(consortiumId, tenantId);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.status(NO_CONTENT).build();
   }
 }

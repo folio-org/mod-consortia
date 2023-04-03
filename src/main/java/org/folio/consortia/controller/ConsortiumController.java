@@ -20,21 +20,21 @@ public class ConsortiumController implements ConsortiaApi {
 
   @Override
   public ResponseEntity<Consortium> saveConsortium(Consortium consortium) {
-    return new ResponseEntity<>(consortiumService.save(consortium), HttpStatus.CREATED);
+    return ResponseEntity.status(HttpStatus.CREATED).body(consortiumService.save(consortium));
   }
 
   @Override
   public ResponseEntity<Consortium> getConsortium(UUID consortiumId) {
-    return new ResponseEntity<>(consortiumService.get(consortiumId), HttpStatus.OK);
+    return ResponseEntity.status(HttpStatus.OK).body(consortiumService.get(consortiumId));
   }
 
   @Override
   public ResponseEntity<Consortium> updateConsortium(UUID consortiumId, Consortium consortium) {
-    return new ResponseEntity<>(consortiumService.update(consortiumId, consortium), HttpStatus.OK);
+    return ResponseEntity.status(HttpStatus.OK).body(consortiumService.update(consortiumId, consortium));
   }
 
   @Override
   public ResponseEntity<ConsortiumCollection> getConsortiumCollection() {
-    return  new ResponseEntity<>(consortiumService.getAll(), HttpStatus.OK);
+    return ResponseEntity.status(HttpStatus.OK).body(consortiumService.getAll());
   }
 }
