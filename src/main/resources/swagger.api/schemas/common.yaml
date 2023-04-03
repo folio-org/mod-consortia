@@ -183,7 +183,7 @@ Metadata:
       type: string
       description: Username of the user who updated the record (when available)
     required:
-    - createdDate
+     createdDate
 
 Error:
   description: "An error"

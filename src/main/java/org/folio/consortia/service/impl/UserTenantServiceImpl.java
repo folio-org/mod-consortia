@@ -3,7 +3,6 @@ package org.folio.consortia.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.domain.dto.Personal;
 import org.folio.consortia.domain.dto.User;
@@ -135,7 +134,7 @@ public class UserTenantServiceImpl implements UserTenantService {
     if (Objects.nonNull(userOptional.getId())) {
       user.setId(UUID.randomUUID().toString());
       user.setPatronGroup(PATRON_GROUP);
-      user.setUsername(userOptional.getUsername() + RandomStringUtils.randomAlphabetic(RANDOM_STRING_COUNT));
+      user.setUsername(userOptional.getUsername() + HelperUtils.randomString(RANDOM_STRING_COUNT));
       if(Objects.nonNull(userOptional.getPersonal())) {
         Personal personal = new Personal();
         personal.setLastName(userOptional.getPersonal().getLastName());
