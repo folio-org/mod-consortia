@@ -16,4 +16,7 @@ public interface UserTenantRepository extends JpaRepository<UserTenantEntity, UU
 
   @Query("SELECT ut FROM UserTenantEntity ut WHERE ut.username= ?1 AND ut.tenant.id= ?2")
   Optional<UserTenantEntity> findByUsernameAndTenantId(String username, String tenantId);
+
+  @Query("SELECT ut FROM UserTenantEntity ut WHERE ut.userId= ?1 AND ut.isPrimary= ?2")
+  Optional<UserTenantEntity> findByUserIdAndTenantId(UUID userId, Boolean isPrimary);
 }

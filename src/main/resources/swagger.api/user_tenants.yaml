@@ -25,6 +25,23 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "500":
           $ref: "#/components/responses/InternalServerError"
+    post:
+      description: User Tenant Associations
+      summary: Inserts a single user_tenant associations
+      operationId: postUserTenants
+      parameters:
+        - $ref: "#/components/parameters/consortiumId"
+      requestBody:
+        $ref: "#/components/requestBodies/UserTenantBody"
+      responses:
+        "201":
+          $ref: "#/components/responses/UserTenant"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /user-tenants/{associationId}:
     description: User Tenant Associations
     get:
@@ -43,6 +60,14 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
 components:
+  requestBodies:
+    UserTenantBody:
+      description: user_tenant object
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "schemas/userTenant.yaml#/UserTenant"
   responses:
     UserTenant:
       description: Returns a user tenant association object
@@ -62,6 +87,12 @@ components:
         application/json:
           schema:
             $ref: "schemas/common.yaml#/Error"
+    User:
+      description: User
+      content:
+        application/json:
+          schema:
+            $ref: "schemas/common.yaml#/User"
     BadRequest:
       description: Bad request
       content:
