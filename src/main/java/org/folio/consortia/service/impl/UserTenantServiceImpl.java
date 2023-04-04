@@ -10,9 +10,9 @@ import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
-import org.folio.consortia.domain.repository.UserTenantRepository;
 import org.folio.consortia.exception.PrimaryAffiliationException;
 import org.folio.consortia.exception.ResourceNotFoundException;
+import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.consortia.utils.HelperUtils;
@@ -43,6 +43,7 @@ import java.util.UUID;
 @Log4j2
 @RequiredArgsConstructor
 public class UserTenantServiceImpl implements UserTenantService {
+
 
   private static final String USER_ID = "userId";
   private static final Boolean IS_PRIMARY_TRUE = true;
@@ -80,14 +81,14 @@ public class UserTenantServiceImpl implements UserTenantService {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
 
     Optional<UserTenantEntity> userTenant = userTenantRepository.findByUserIdAndIsPrimary(userTenantDto.getUserId(), IS_PRIMARY_TRUE);
-      if (userTenant.isEmpty()) {
-        throw new ResourceNotFoundException(USER_ID, String.valueOf(userTenantDto.getUserId()));
-      } else {
-          UserTenantEntity userTenantEntity = userTenant.get();
-            if (Boolean.FALSE.equals(userTenantEntity.getIsPrimary())) {
+    if (userTenant.isEmpty()) {
+      throw new ResourceNotFoundException(USER_ID, String.valueOf(userTenantDto.getUserId()));
+    } else {
+        UserTenantEntity userTenantEntity = userTenant.get();
+          if (Boolean.FALSE.equals(userTenantEntity.getIsPrimary())) {
             throw new PrimaryAffiliationException(USER_ID, String.valueOf(userTenantDto.getUserId()));
-            }
-      }
+          }
+    }
 
     prepareContextForTenant(userTenant.get().getTenant().getId());
     User shadowUser = prepareShadowUser(userTenantDto.getUserId(), userTenantDto);
