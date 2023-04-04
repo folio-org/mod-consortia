@@ -17,6 +17,9 @@ Metadata:
     createdByUsername:
       type: string
       description: Username of the user who created the record (when available)
+    createdBy:
+      $ref: '#/userInfo'
+      description: Additional information of the user who created the record (when available)
     updatedDate:
       type: string
       format: date-time
@@ -27,6 +30,9 @@ Metadata:
     updatedByUsername:
       type: string
       description: Username of the user who updated the record (when available)
+    updatedBy:
+      $ref: '#/userInfo'
+      description: Additional information of the user who updated the record (when available)
   required:
     - createdDate
 

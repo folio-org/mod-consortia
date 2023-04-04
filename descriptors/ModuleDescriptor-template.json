@@ -108,11 +108,13 @@
           ],
           "pathPattern": "/consortia/{consortiumId}/user-tenants",
           "permissionsRequired": [
-            "users.collection.get",
-            "users.item.put",
             "consortia.user-tenants.item.post"
           ],
-          "modulePermissions": []
+          "modulePermissions": [
+            "users.collection.get",
+            "users.item.put",
+            "users.item.post"
+          ]
         },
         {
           "methods": [

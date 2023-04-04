@@ -1,5 +1,6 @@
 package org.folio.consortia.service.impl;
 
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.MapUtils;
@@ -10,7 +11,6 @@ import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
-import org.folio.consortia.exception.PrimaryAffiliationException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.ConsortiumService;
@@ -44,12 +44,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserTenantServiceImpl implements UserTenantService {
 
-
   private static final String USER_ID = "userId";
   private static final Boolean IS_PRIMARY_TRUE = true;
   private static final Boolean IS_PRIMARY_FALSE = false;
   private static final Integer RANDOM_STRING_COUNT = 5;
   private static final String PATRON_GROUP = null;
+
   private final UserTenantRepository userTenantRepository;
   private final FolioExecutionContext folioExecutionContext;
   private final ConversionService converter;
@@ -83,16 +83,11 @@ public class UserTenantServiceImpl implements UserTenantService {
     Optional<UserTenantEntity> userTenant = userTenantRepository.findByUserIdAndIsPrimary(userTenantDto.getUserId(), IS_PRIMARY_TRUE);
     if (userTenant.isEmpty()) {
       throw new ResourceNotFoundException(USER_ID, String.valueOf(userTenantDto.getUserId()));
-    } else {
-        UserTenantEntity userTenantEntity = userTenant.get();
-          if (Boolean.FALSE.equals(userTenantEntity.getIsPrimary())) {
-            throw new PrimaryAffiliationException(USER_ID, String.valueOf(userTenantDto.getUserId()));
-          }
     }
 
     prepareContextForTenant(userTenant.get().getTenant().getId());
     User shadowUser = prepareShadowUser(userTenantDto.getUserId(), userTenantDto);
-    validateAndUpdateShadowUser(userTenantDto.getUserId());
+    createOrUpdateShadowUser(userTenantDto.getUserId(), shadowUser);
 
     prepareContextForTenant(currentTenantId);
     UserTenantEntity userTenantEntity = toEntity(userTenantDto, consortiumId, shadowUser);
@@ -130,8 +125,9 @@ public class UserTenantServiceImpl implements UserTenantService {
   }
 
   private User prepareShadowUser(UUID userId, UserTenant userTenantDto) {
-    User userOptional = getUser(userId);
     User user = new User();
+    User userOptional = getUser(userId);
+
     if (Objects.nonNull(userOptional.getId())) {
       user.setId(UUID.randomUUID().toString());
       user.setPatronGroup(PATRON_GROUP);
@@ -147,19 +143,34 @@ public class UserTenantServiceImpl implements UserTenantService {
       user.setPatronGroup(userOptional.getPatronGroup());
       user.setActive(true);
     } else {
-      throw new ResourceNotFoundException(USER_ID, userId.toString());
+        throw new ResourceNotFoundException(USER_ID, userId.toString());
     }
     prepareContextForTenant(userTenantDto.getTenantId());
     return user;
   }
 
-  private void validateAndUpdateShadowUser(UUID userId) {
-    updateUser(getUser(userId));
+  private void createOrUpdateShadowUser(UUID userId, User shadowUser) {
+    User user = getUser(userId);
+    if(Objects.nonNull(user.getActive())) {
+      updateUser(user);
+    } else {
+        createUser(shadowUser);
+    }
   }
 
   private User getUser(UUID userId) {
-    log.info("Getting user by userId {}.", userId);
-    return usersClient.getUsersByUserId(String.valueOf(userId));
+    try {
+      log.info("Getting user by userId {}.", userId);
+      return usersClient.getUsersByUserId(String.valueOf(userId));
+    } catch (FeignException e) {
+        log.info("User with userId {} does not exist in schema.", userId);
+        return new User();
+    }
+  }
+
+  private void createUser(User user) {
+    log.info("Creating user {}.", user);
+    usersClient.saveUser(user);
   }
 
   private void updateUser(User user) {
