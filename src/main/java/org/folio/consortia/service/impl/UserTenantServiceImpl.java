@@ -79,15 +79,15 @@ public class UserTenantServiceImpl implements UserTenantService {
     String currentTenantId = HelperUtils.getTenantId(folioExecutionContext);
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
 
-    Optional<UserTenantEntity> userTenant = userTenantRepository.findByUserIdAndTenantId(userTenantDto.getUserId(), IS_PRIMARY_TRUE);
+    Optional<UserTenantEntity> userTenant = userTenantRepository.findByUserIdAndIsPrimary(userTenantDto.getUserId(), IS_PRIMARY_TRUE);
       if (userTenant.isEmpty()) {
         throw new ResourceNotFoundException(USER_ID, String.valueOf(userTenantDto.getUserId()));
       } else {
-      UserTenantEntity userTenantEntity = userTenant.get();
-       if (Boolean.FALSE.equals(userTenantEntity.getIsPrimary())) {
-         throw new PrimaryAffiliationException(USER_ID, String.valueOf(userTenantDto.getUserId()));
-       }
-     }
+          UserTenantEntity userTenantEntity = userTenant.get();
+            if (Boolean.FALSE.equals(userTenantEntity.getIsPrimary())) {
+            throw new PrimaryAffiliationException(USER_ID, String.valueOf(userTenantDto.getUserId()));
+            }
+      }
 
     prepareContextForTenant(userTenant.get().getTenant().getId());
     User shadowUser = prepareShadowUser(userTenantDto.getUserId(), userTenantDto);
@@ -144,7 +144,7 @@ public class UserTenantServiceImpl implements UserTenantService {
         user.setPersonal(personal);
       }
       user.setPatronGroup(userOptional.getPatronGroup());
-      user.setActive(IS_PRIMARY_TRUE);
+      user.setActive(true);
     } else {
       throw new ResourceNotFoundException(USER_ID, userId.toString());
     }
@@ -162,10 +162,10 @@ public class UserTenantServiceImpl implements UserTenantService {
   }
 
   private void updateUser(User user) {
-    if (HelperUtils.existingUserUpToDate(user)) {
+    if (HelperUtils.isUserActive(user)) {
       log.info("{} is up to date.", user);
     } else {
-      user.setActive(IS_PRIMARY_TRUE);
+      user.setActive(true);
       log.info("Updating {}.", user);
       usersClient.updateUser(user.getId(), user);
     }

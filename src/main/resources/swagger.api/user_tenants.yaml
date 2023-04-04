@@ -92,7 +92,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: "schemas/common.yaml#/User"
+            $ref: "schemas/user.yaml#/User"
     BadRequest:
       description: Bad request
       content:

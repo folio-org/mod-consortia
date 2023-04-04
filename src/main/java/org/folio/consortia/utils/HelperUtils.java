@@ -15,7 +15,7 @@ public class HelperUtils {
     }
   }
 
-  public static boolean existingUserUpToDate(User user) {
+  public static boolean isUserActive(User user) {
     return user.getActive();
   }
 

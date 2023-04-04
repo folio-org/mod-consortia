@@ -47,6 +47,8 @@ import static org.mockito.Mockito.when;
 @EntityScan(basePackageClasses = UserTenantEntity.class)
 class UserTenantServiceTest {
 
+  private static final String CONSORTIUM_ID = "7698e46-c3e3-11ed-afa1-0242ac120002";
+
   @InjectMocks
   private UserTenantServiceImpl userTenantService;
   @Mock
@@ -70,12 +72,12 @@ class UserTenantServiceTest {
     List<UserTenantEntity> userTenantEntities = List.of(new UserTenantEntity(), new UserTenantEntity());
     Page<UserTenantEntity> userTenantPage = new PageImpl<>(userTenantEntities, PageRequest.of(0, 10), userTenantEntities.size());
 
-    when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
+    when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
       .thenReturn(Optional.of(createConsortiumEntity()));
     when(userTenantRepository.findAll(PageRequest.of(0, 10))).thenReturn(userTenantPage);
 
     // when
-    var result = userTenantService.get(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), 0, 10);
+    var result = userTenantService.get(UUID.fromString(CONSORTIUM_ID), 0, 10);
 
     // then
     assertEquals(userTenantEntities.size(), result.getUserTenants().size());
@@ -91,13 +93,13 @@ class UserTenantServiceTest {
     UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser", tenantId);
     List<UserTenantEntity> userTenantEntities = List.of(userTenant);
 
-    when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
+    when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
       .thenReturn(Optional.of(createConsortiumEntity()));
     when(conversionService.convert(userTenant, UserTenant.class)).thenReturn(toDto(userTenant));
     when(userTenantRepository.findById(associationId)).thenReturn(Optional.of(userTenantEntities.get(0)));
 
     // when
-    var result = userTenantService.getById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), associationId);
+    var result = userTenantService.getById(UUID.fromString(CONSORTIUM_ID), associationId);
 
     // then
     assertEquals(associationId, result.getId());
@@ -115,7 +117,7 @@ class UserTenantServiceTest {
     UserTenantEntity userTenant2 = createUserTenantEntity(associationId, userId, "testuser", tenantId);
     List<UserTenantEntity> userTenantEntities = List.of(userTenant);
 
-    when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
+    when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
       .thenReturn(Optional.of(createConsortiumEntity()));
     when(conversionService.convert(userTenant, UserTenant.class)).thenReturn(toDto(userTenant));
     when(conversionService.convert(userTenant2, UserTenant.class)).thenReturn(toDto(userTenant2));
@@ -123,7 +125,7 @@ class UserTenantServiceTest {
       .thenReturn(new PageImpl<>(userTenantEntities, PageRequest.of(0, 10), userTenantEntities.size()));
 
     // when
-    UserTenantCollection result = userTenantService.getByUserId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), userId, 0, 10);
+    UserTenantCollection result = userTenantService.getByUserId(UUID.fromString(CONSORTIUM_ID), userId, 0, 10);
 
     // then
     assertEquals(userTenant2, userTenant);
@@ -139,13 +141,13 @@ class UserTenantServiceTest {
     String tenantId = String.valueOf(UUID.randomUUID());
     UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser", tenantId);
 
-    when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
+    when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
       .thenReturn(Optional.of(createConsortiumEntity()));
     when(conversionService.convert(userTenant, UserTenant.class)).thenReturn(toDto(userTenant));
     when(userTenantRepository.findByUsernameAndTenantId("testuser", tenantId)).thenReturn(Optional.of(userTenant));
 
     // when
-    UserTenantCollection result = userTenantService.getByUsernameAndTenantId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), "testuser", tenantId);
+    UserTenantCollection result = userTenantService.getByUsernameAndTenantId(UUID.fromString(CONSORTIUM_ID), "testuser", tenantId);
 
     // then
     assertEquals(tenantId, result.getUserTenants().get(0).getTenantId());
@@ -154,9 +156,9 @@ class UserTenantServiceTest {
 
   @Test
   void shouldThrowIllegalArgumentException() {
-    when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
+    when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
       .thenReturn(Optional.of(createConsortiumEntity()));
-    UUID id = UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002");
+    UUID id = UUID.fromString(CONSORTIUM_ID);
     Assertions.assertThrows(IllegalArgumentException.class, () -> userTenantService.get(id, 0, 0));
   }
 
@@ -165,12 +167,12 @@ class UserTenantServiceTest {
     // given
     UUID userId = UUID.randomUUID();
 
-    when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
+    when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
       .thenReturn(Optional.of(createConsortiumEntity()));
     when(userTenantRepository.findByUserId(userId, PageRequest.of(0, 10)))
       .thenReturn(new PageImpl<>(new ArrayList<>()));
 
-    UUID id = UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002");
+    UUID id = UUID.fromString(CONSORTIUM_ID);
     // throw exception
     assertThrows(ResourceNotFoundException.class, () -> userTenantService.getByUserId(id, userId, 0, 10));
   }
@@ -181,11 +183,11 @@ class UserTenantServiceTest {
     String username = "testuser";
     String tenantId = String.valueOf(UUID.randomUUID());
 
-    when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
+    when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
       .thenReturn(Optional.of(createConsortiumEntity()));
     when(userTenantRepository.findByUsernameAndTenantId(username, tenantId))
       .thenReturn(Optional.empty());
-    UUID id = UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002");
+    UUID id = UUID.fromString(CONSORTIUM_ID);
 
     // throw exception
     assertThrows(ResourceNotFoundException.class,
@@ -201,9 +203,9 @@ class UserTenantServiceTest {
     UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser", tenantId);
     userTenant.setIsPrimary(true);
 
-    when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
+    when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
       .thenReturn(Optional.of(createConsortiumEntity()));
-    when(userTenantRepository.findByUserIdAndTenantId(any(), any())).thenReturn(Optional.of(userTenant));
+    when(userTenantRepository.findByUserIdAndIsPrimary(any(), any())).thenReturn(Optional.of(userTenant));
     when(usersClient.getUsersByUserId(any())).thenReturn(createUserEntity(false));
     doNothing().when(usersClient).updateUser(any(), any(User.class));
     when(userTenantRepository.save(userTenant)).thenReturn(userTenant);
@@ -212,7 +214,7 @@ class UserTenantServiceTest {
     okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
-    assertDoesNotThrow(() -> userTenantService.save(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), tenant));
+    assertDoesNotThrow(() -> userTenantService.save(UUID.fromString(CONSORTIUM_ID), tenant));
   }
 
   @Test
@@ -224,9 +226,9 @@ class UserTenantServiceTest {
     UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser", tenantId);
     userTenant.setIsPrimary(true);
 
-    when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
+    when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
       .thenReturn(Optional.of(createConsortiumEntity()));
-    when(userTenantRepository.findByUserIdAndTenantId(any(), any())).thenReturn(Optional.of(userTenant));
+    when(userTenantRepository.findByUserIdAndIsPrimary(any(), any())).thenReturn(Optional.of(userTenant));
     when(usersClient.getUsersByUserId(any())).thenReturn(createUserEntity(true));
     doNothing().when(usersClient).updateUser(any(), any(User.class));
     when(userTenantRepository.save(userTenant)).thenReturn(userTenant);
@@ -235,7 +237,7 @@ class UserTenantServiceTest {
     okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
-    assertDoesNotThrow(() -> userTenantService.save(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), tenant));
+    assertDoesNotThrow(() -> userTenantService.save(UUID.fromString(CONSORTIUM_ID), tenant));
   }
 
   @Test
@@ -247,9 +249,9 @@ class UserTenantServiceTest {
     UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser", tenantId);
     userTenant.setIsPrimary(true);
 
-    when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
+    when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
       .thenReturn(Optional.of(createConsortiumEntity()));
-    when(userTenantRepository.findByUserIdAndTenantId(any(), any())).thenReturn(Optional.of(userTenant));
+    when(userTenantRepository.findByUserIdAndIsPrimary(any(), any())).thenReturn(Optional.of(userTenant));
     when(usersClient.getUsersByUserId(any())).thenThrow(ResourceNotFoundException.class);
     doNothing().when(usersClient).updateUser(any(), any(User.class));
     when(userTenantRepository.save(userTenant)).thenReturn(userTenant);
@@ -259,7 +261,7 @@ class UserTenantServiceTest {
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
     assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class,
-      () -> userTenantService.save(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), tenant));
+      () -> userTenantService.save(UUID.fromString(CONSORTIUM_ID), tenant));
   }
 
   @Test
@@ -271,9 +273,9 @@ class UserTenantServiceTest {
     UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser", tenantId);
     userTenant.setIsPrimary(true);
 
-    when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
+    when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
       .thenReturn(Optional.of(createConsortiumEntity()));
-    when(userTenantRepository.findByUserIdAndTenantId(any(), any())).thenReturn(Optional.of(userTenant));
+    when(userTenantRepository.findByUserIdAndIsPrimary(any(), any())).thenReturn(Optional.of(userTenant));
     when(usersClient.getUsersByUserId(any())).thenThrow(ResourceNotFoundException.class);
     doNothing().when(usersClient).updateUser(any(), any(User.class));
     when(userTenantRepository.save(userTenant)).thenReturn(userTenant);
@@ -283,7 +285,7 @@ class UserTenantServiceTest {
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
     assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class,
-      () -> userTenantService.save(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), tenant));
+      () -> userTenantService.save(UUID.fromString(CONSORTIUM_ID), tenant));
   }
 
   @Test
@@ -295,9 +297,9 @@ class UserTenantServiceTest {
     UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser", tenantId);
     userTenant.setIsPrimary(false);
 
-    when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
+    when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
       .thenReturn(Optional.of(createConsortiumEntity()));
-    when(userTenantRepository.findByUserIdAndTenantId(any(), any())).thenReturn(Optional.of(userTenant));
+    when(userTenantRepository.findByUserIdAndIsPrimary(any(), any())).thenReturn(Optional.of(userTenant));
 
     when(usersClient.getUsersByUserId(any())).thenThrow(ResourceNotFoundException.class);
     doNothing().when(usersClient).updateUser(any(), any(User.class));
@@ -308,7 +310,7 @@ class UserTenantServiceTest {
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
     assertThrows(org.folio.consortia.exception.PrimaryAffiliationException.class,
-      () -> userTenantService.save(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), tenant));
+      () -> userTenantService.save(UUID.fromString(CONSORTIUM_ID), tenant));
   }
 
   @Test
@@ -320,9 +322,9 @@ class UserTenantServiceTest {
     UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser", tenantId);
     userTenant.setIsPrimary(true);
 
-    when(consortiumRepository.findById(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002")))
+    when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
       .thenReturn(Optional.of(createConsortiumEntity()));
-    when(userTenantRepository.findByUserIdAndTenantId(any(), any())).thenReturn(Optional.of(userTenant));
+    when(userTenantRepository.findByUserIdAndIsPrimary(any(), any())).thenReturn(Optional.of(userTenant));
     when(usersClient.getUsersByUserId(any())).thenThrow(ResourceNotFoundException.class);
     doNothing().when(usersClient).updateUser(any(), any(User.class));
     when(userTenantRepository.save(userTenant)).thenReturn(userTenant);
@@ -332,7 +334,7 @@ class UserTenantServiceTest {
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
     assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class,
-      () -> userTenantService.save(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), tenant));
+      () -> userTenantService.save(UUID.fromString(CONSORTIUM_ID), tenant));
   }
 
   private UserTenantEntity createUserTenantEntity(UUID associationId, UUID userId, String username, String tenantId) {
@@ -343,7 +345,7 @@ class UserTenantServiceTest {
     var tenant = new TenantEntity();
     tenant.setId(tenantId);
     tenant.setName("testtenant");
-    tenant.setConsortiumId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
+    tenant.setConsortiumId(UUID.fromString(CONSORTIUM_ID));
     userTenantEntity.setTenant(tenant);
     userTenantEntity.setUsername(username);
     return userTenantEntity;
@@ -356,7 +358,7 @@ class UserTenantServiceTest {
 
   private ConsortiumEntity createConsortiumEntity() {
     ConsortiumEntity consortiumEntity = new ConsortiumEntity();
-    consortiumEntity.setId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
+    consortiumEntity.setId(UUID.fromString(CONSORTIUM_ID));
     consortiumEntity.setName("TestConsortium");
     return consortiumEntity;
   }

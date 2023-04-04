@@ -61,6 +61,4 @@ public interface UserTenantService {
    * @return userTenantDto
    */
   UserTenant save(UUID consortiumId, UserTenant userTenantDto);
-
-
 }
