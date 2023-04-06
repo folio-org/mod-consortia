@@ -137,12 +137,13 @@ public class UserTenantServiceImpl implements UserTenantService {
         user.setId(UUID.randomUUID().toString());
         user.setPatronGroup(PATRON_GROUP);
         user.setUsername(userOptional.getUsername() + HelperUtils.randomString(RANDOM_STRING_COUNT));
-        if (Objects.nonNull(userOptional.getPersonal())) {
+        var userPersonal = userOptional.getPersonal();
+        if (Objects.nonNull(userPersonal)) {
           Personal personal = new Personal();
-          personal.setLastName(userOptional.getPersonal().getLastName());
-          personal.setFirstName(userOptional.getPersonal().getFirstName());
-          personal.setEmail(userOptional.getPersonal().getEmail());
-          personal.setPreferredContactTypeId(userOptional.getPersonal().getPreferredContactTypeId());
+          personal.setLastName(userPersonal.getLastName());
+          personal.setFirstName(userPersonal.getFirstName());
+          personal.setEmail(userPersonal.getEmail());
+          personal.setPreferredContactTypeId(userPersonal.getPreferredContactTypeId());
           user.setPersonal(personal);
         }
         user.setPatronGroup(userOptional.getPatronGroup());
@@ -181,7 +182,7 @@ public class UserTenantServiceImpl implements UserTenantService {
       log.debug("User with userId {} does not exist in schema.", userId);
       return new User();
     } catch (FeignException e) {
-      throw new ConsortiumClientException(e.getMessage());
+      throw new ConsortiumClientException(userId, e);
     }
   }
 
