@@ -182,7 +182,7 @@ public class UserTenantServiceImpl implements UserTenantService {
       log.debug("User with userId {} does not exist in schema.", userId);
       return new User();
     } catch (FeignException e) {
-      throw new ConsortiumClientException(userId, e);
+      throw new ConsortiumClientException(String.format("Could not get a user with id %s", userId), e);
     }
   }
 
