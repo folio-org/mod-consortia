@@ -77,8 +77,8 @@ public class UserTenantServiceImpl implements UserTenantService {
 
   @Override
   public UserTenant save(UUID consortiumId, UserTenant userTenantDto) {
-    FolioExecutionContext getContext = (FolioExecutionContext) folioExecutionContext.getInstance();
-    String currentTenantId = HelperUtils.getTenantId(folioExecutionContext);
+    FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
+    String currentTenantId = folioExecutionContext.getTenantId();
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
 
     Optional<UserTenantEntity> userTenant = userTenantRepository.findByUserIdAndIsPrimary(userTenantDto.getUserId(), IS_PRIMARY_TRUE);
@@ -86,10 +86,10 @@ public class UserTenantServiceImpl implements UserTenantService {
       throw new ResourceNotFoundException(USER_ID, String.valueOf(userTenantDto.getUserId()));
     }
 
-    User shadowUser = prepareShadowUser(userTenantDto.getUserId(), userTenant.get(), getContext);
-    createOrUpdateShadowUser(userTenantDto.getUserId(), shadowUser, userTenantDto, getContext);
+    User shadowUser = prepareShadowUser(userTenantDto.getUserId(), userTenant.get(), currentTenantContext);
+    createOrUpdateShadowUser(userTenantDto.getUserId(), shadowUser, userTenantDto, currentTenantContext);
 
-    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(currentTenantId, getContext))) {
+    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(currentTenantId, currentTenantContext))) {
       UserTenantEntity userTenantEntity = toEntity(userTenantDto, consortiumId, shadowUser);
       userTenantRepository.save(userTenantEntity);
 
@@ -164,6 +164,12 @@ public class UserTenantServiceImpl implements UserTenantService {
     }
   }
 
+  /**
+   * Gets user by id.
+   *
+   * This method will be called to get User from MOD_USERS module based on the tenant schema present in the folioContext.
+   * @param userId user id.
+   */
   private User getUser(UUID userId) {
     try {
       log.info("Getting user by userId {}.", userId);
@@ -181,11 +187,11 @@ public class UserTenantServiceImpl implements UserTenantService {
   }
 
   private void updateUser(User user) {
-    if (HelperUtils.isUserActive(user)) {
-      log.info("{} is up to date.", user);
+    if (Boolean.TRUE.equals(user.getActive())) {
+      log.info("{} is up to date.", user.getId());
     } else {
       user.setActive(true);
-      log.info("Updating {}.", user);
+      log.info("Updating {}.", user.getId());
       usersClient.updateUser(user.getId(), user);
     }
   }
