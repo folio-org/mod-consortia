@@ -19,7 +19,7 @@ import org.folio.consortia.utils.HelperUtils;
 import org.folio.spring.DefaultFolioExecutionContext;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
-import org.folio.spring.scope.FolioExecutionScopeExecutionContextManager;
+import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -77,6 +77,7 @@ public class UserTenantServiceImpl implements UserTenantService {
 
   @Override
   public UserTenant save(UUID consortiumId, UserTenant userTenantDto) {
+    FolioExecutionContext getContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     String currentTenantId = HelperUtils.getTenantId(folioExecutionContext);
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
 
@@ -85,15 +86,15 @@ public class UserTenantServiceImpl implements UserTenantService {
       throw new ResourceNotFoundException(USER_ID, String.valueOf(userTenantDto.getUserId()));
     }
 
-    prepareContextForTenant(userTenant.get().getTenant().getId());
-    User shadowUser = prepareShadowUser(userTenantDto.getUserId(), userTenantDto);
-    createOrUpdateShadowUser(userTenantDto.getUserId(), shadowUser);
+    User shadowUser = prepareShadowUser(userTenantDto.getUserId(), userTenant.get(), getContext);
+    createOrUpdateShadowUser(userTenantDto.getUserId(), shadowUser, userTenantDto, getContext);
 
-    prepareContextForTenant(currentTenantId);
-    UserTenantEntity userTenantEntity = toEntity(userTenantDto, consortiumId, shadowUser);
-    userTenantRepository.save(userTenantEntity);
+    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(currentTenantId, getContext))) {
+      UserTenantEntity userTenantEntity = toEntity(userTenantDto, consortiumId, shadowUser);
+      userTenantRepository.save(userTenantEntity);
 
-    return converter.convert(userTenantEntity, UserTenant.class);
+      return converter.convert(userTenantEntity, UserTenant.class);
+    }
   }
 
   @Override
@@ -124,37 +125,42 @@ public class UserTenantServiceImpl implements UserTenantService {
     return result;
   }
 
-  private User prepareShadowUser(UUID userId, UserTenant userTenantDto) {
-    User user = new User();
-    User userOptional = getUser(userId);
+  private User prepareShadowUser(UUID userId, UserTenantEntity userTenantEntity, FolioExecutionContext folioExecutionContext) {
+    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(userTenantEntity.getTenant().getId(), folioExecutionContext))) {
+      User user = new User();
+      User userOptional = getUser(userId);
 
-    if (Objects.nonNull(userOptional.getId())) {
-      user.setId(UUID.randomUUID().toString());
-      user.setPatronGroup(PATRON_GROUP);
-      user.setUsername(userOptional.getUsername() + HelperUtils.randomString(RANDOM_STRING_COUNT));
-      if(Objects.nonNull(userOptional.getPersonal())) {
-        Personal personal = new Personal();
-        personal.setLastName(userOptional.getPersonal().getLastName());
-        personal.setFirstName(userOptional.getPersonal().getFirstName());
-        personal.setEmail(userOptional.getPersonal().getEmail());
-        personal.setPreferredContactTypeId(userOptional.getPersonal().getPreferredContactTypeId());
-        user.setPersonal(personal);
+      if (Objects.nonNull(userOptional.getId())) {
+        user.setId(UUID.randomUUID().toString());
+        user.setPatronGroup(PATRON_GROUP);
+        user.setUsername(userOptional.getUsername() + HelperUtils.randomString(RANDOM_STRING_COUNT));
+        if (Objects.nonNull(userOptional.getPersonal())) {
+          Personal personal = new Personal();
+          personal.setLastName(userOptional.getPersonal().getLastName());
+          personal.setFirstName(userOptional.getPersonal().getFirstName());
+          personal.setEmail(userOptional.getPersonal().getEmail());
+          personal.setPreferredContactTypeId(userOptional.getPersonal().getPreferredContactTypeId());
+          user.setPersonal(personal);
+        }
+        user.setPatronGroup(userOptional.getPatronGroup());
+        user.setActive(true);
       }
-      user.setPatronGroup(userOptional.getPatronGroup());
-      user.setActive(true);
-    } else {
+      else {
         throw new ResourceNotFoundException(USER_ID, userId.toString());
+      }
+      return user;
     }
-    prepareContextForTenant(userTenantDto.getTenantId());
-    return user;
   }
 
-  private void createOrUpdateShadowUser(UUID userId, User shadowUser) {
-    User user = getUser(userId);
-    if(Objects.nonNull(user.getActive())) {
-      updateUser(user);
-    } else {
+  private void createOrUpdateShadowUser(UUID userId, User shadowUser, UserTenant userTenantDto, FolioExecutionContext folioExecutionContext) {
+    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(userTenantDto.getTenantId(), folioExecutionContext))) {
+      User user = getUser(userId);
+      if (Objects.nonNull(user.getActive())) {
+        updateUser(user);
+      }
+      else {
         createUser(shadowUser);
+      }
     }
   }
 
@@ -162,9 +168,10 @@ public class UserTenantServiceImpl implements UserTenantService {
     try {
       log.info("Getting user by userId {}.", userId);
       return usersClient.getUsersByUserId(String.valueOf(userId));
-    } catch (FeignException e) {
-        log.info("User with userId {} does not exist in schema.", userId);
-        return new User();
+    }
+    catch (FeignException e) {
+      log.info("User with userId {} does not exist in schema.", userId);
+      return new User();
     }
   }
 
@@ -183,14 +190,12 @@ public class UserTenantServiceImpl implements UserTenantService {
     }
   }
 
-  private void prepareContextForTenant(String tenantId) {
-    if (MapUtils.isNotEmpty(folioExecutionContext.getOkapiHeaders())) {
-      folioExecutionContext.getOkapiHeaders().put("x-okapi-tenant", List.of(tenantId));
-      FolioExecutionScopeExecutionContextManager.beginFolioExecutionContext(
-        new DefaultFolioExecutionContext(folioModuleMetadata, folioExecutionContext.getOkapiHeaders()));
-
-      log.info("FOLIO context initialized with tenant {}", folioExecutionContext.getTenantId());
+  private FolioExecutionContext prepareContextForTenant(String tenantId, FolioExecutionContext context) {
+    if (MapUtils.isNotEmpty(context.getOkapiHeaders())) {
+      context.getOkapiHeaders().put("x-okapi-tenant", List.of(tenantId));
+      log.info("FOLIO context initialized with tenant {}", context.getTenantId());
     }
+    return new DefaultFolioExecutionContext(folioModuleMetadata, context.getOkapiHeaders());
   }
 
   private UserTenantEntity toEntity(UserTenant userTenantDto, UUID consortiumId, User user) {
@@ -199,11 +204,14 @@ public class UserTenantServiceImpl implements UserTenantService {
     tenant.setId(userTenantDto.getTenantId());
     tenant.setName(userTenantDto.getTenantName());
     tenant.setConsortiumId(consortiumId);
+
     if(Objects.nonNull(userTenantDto.getId())) {
       entity.setId(userTenantDto.getId());
-    } else {
+    }
+    else {
       entity.setId(UUID.randomUUID());
     }
+
     entity.setUserId(userTenantDto.getUserId());
     entity.setUsername(user.getUsername());
     entity.setTenant(tenant);
