@@ -9,6 +9,7 @@ import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
+import org.folio.consortia.exception.ConsortiumClientException;
 import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.exception.ResourceNotFoundException;
@@ -289,6 +290,31 @@ class UserTenantServiceTest {
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
     assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class,
+      () -> userTenantService.save(UUID.fromString(CONSORTIUM_ID), tenant));
+  }
+
+  @Test
+  void shouldThrowConsortiumClientException() {
+    UserTenant tenant = createUserTenantDtoEntity();
+    UUID associationId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+    String tenantId = String.valueOf(UUID.randomUUID());
+    UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser", tenantId);
+    userTenant.setIsPrimary(true);
+
+    when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
+      .thenReturn(Optional.of(createConsortiumEntity()));
+    when(userTenantRepository.findByUserIdAndIsPrimary(any(), any())).thenReturn(Optional.of(userTenant));
+    when(usersClient.getUsersByUserId(any())).thenThrow(ConsortiumClientException.class);
+    doNothing().when(usersClient).updateUser(any(), any(User.class));
+    when(userTenantRepository.save(userTenant)).thenReturn(userTenant);
+    when(folioExecutionContext.getTenantId()).thenReturn("diku");
+    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
+    Map<String, Collection<String>> okapiHeaders = new HashMap<>();
+    okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
+    when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
+
+    assertThrows(org.folio.consortia.exception.ConsortiumClientException.class,
       () -> userTenantService.save(UUID.fromString(CONSORTIUM_ID), tenant));
   }
 

@@ -11,6 +11,7 @@ import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
+import org.folio.consortia.exception.ConsortiumClientException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.ConsortiumService;
@@ -24,6 +25,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -76,6 +78,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   }
 
   @Override
+  @Transactional
   public UserTenant save(UUID consortiumId, UserTenant userTenantDto) {
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     String currentTenantId = folioExecutionContext.getTenantId();
@@ -156,10 +159,10 @@ public class UserTenantServiceImpl implements UserTenantService {
     try (var context = new FolioExecutionContextSetter(prepareContextForTenant(userTenantDto.getTenantId(), folioExecutionContext))) {
       User user = getUser(userId);
       if (Objects.nonNull(user.getActive())) {
-        updateUser(user);
+        activateUser(user);
       }
       else {
-        createUser(shadowUser);
+        createActiveUser(shadowUser);
       }
     }
   }
@@ -174,19 +177,20 @@ public class UserTenantServiceImpl implements UserTenantService {
     try {
       log.info("Getting user by userId {}.", userId);
       return usersClient.getUsersByUserId(String.valueOf(userId));
-    }
-    catch (FeignException e) {
+    } catch (FeignException.NotFound e) {
       log.debug("User with userId {} does not exist in schema.", userId);
       return new User();
+    } catch (FeignException e) {
+      throw new ConsortiumClientException(e.getMessage());
     }
   }
 
-  private void createUser(User user) {
+  private void createActiveUser(User user) {
     log.info("Creating user {}.", user);
     usersClient.saveUser(user);
   }
 
-  private void updateUser(User user) {
+  private void activateUser(User user) {
     if (Boolean.TRUE.equals(user.getActive())) {
       log.info("{} is up to date.", user.getId());
     } else {
