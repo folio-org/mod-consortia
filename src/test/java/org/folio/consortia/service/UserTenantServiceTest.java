@@ -267,6 +267,20 @@ class UserTenantServiceTest {
     assertDoesNotThrow(() -> userTenantService.save(UUID.fromString(CONSORTIUM_ID), tenant));
   }
 
+  @Test
+  void shouldDeleteUserTenantByUserIdAndTenantId() {
+    UUID userId = UUID.randomUUID();
+    String tenantId = "dikue";
+    UUID associationId = UUID.randomUUID();
+    when(consortiumRepository.existsById(UUID.fromString(CONSORTIUM_ID))).thenReturn(true);
+    when(usersClient.getUsersByUserId(any())).thenReturn(createNullUserEntity());
+    when(userTenantRepository.findByUserIdAndTenantId(userId, tenantId))
+      .thenReturn(Optional.of(createUserTenantEntity(associationId, userId, "user", tenantId)));
+    doNothing().when(userTenantRepository).deleteByUserIdAndTenantId(userId, tenantId);
+
+    assertDoesNotThrow(() -> userTenantService.deleteByUserIdAndTenantId(UUID.fromString(CONSORTIUM_ID), tenantId, userId));
+  }
+
 
   @Test
   void shouldThrowNotFoundIfUserNotFound() {
