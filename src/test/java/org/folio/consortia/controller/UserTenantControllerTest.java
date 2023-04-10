@@ -5,11 +5,12 @@ import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.repository.ConsortiumRepository;
-import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.consortia.support.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -102,15 +103,6 @@ class UserTenantControllerTest extends BaseTest {
   }
 
   @Test
-  void return404UserTenantNotFoundByAssociationId() throws Exception {
-    var headers = defaultHeaders();
-    UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
-    when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
-
-    this.mockMvc.perform(get("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/user-tenants/cb28f43c-bf45-11ed-afa1-0242ac120002").headers(headers)).andExpectAll(status().is4xxClientError(), content().contentType(MediaType.APPLICATION_JSON_VALUE), jsonPath("$.errors[0].code", is("NOT_FOUND_ERROR")));
-  }
-
-  @Test
   void return404NotFound() throws Exception {
     var headers = defaultHeaders();
     UUID consortiumId = UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120001");
@@ -119,22 +111,21 @@ class UserTenantControllerTest extends BaseTest {
     this.mockMvc.perform(get("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/user-tenants?limit=0&offset=0").headers(headers)).andExpectAll(status().is4xxClientError(), content().contentType(MediaType.APPLICATION_JSON_VALUE), jsonPath("$.errors[0].code", is("NOT_FOUND_ERROR")));
   }
 
-  @Test
-  void return404UserTenantNotFoundWithUserId() throws Exception {
+  @ParameterizedTest
+  @CsvSource({
+    "/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/user-tenants/cb28f43c-bf45-11ed-afa1-0242ac120002, NOT_FOUND_ERROR",
+    "/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/user-tenants?userId=8ad4c4b4-4d4c-4bf9-a8a0-7a30c1edf34b, NOT_FOUND_ERROR",
+    "/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/user-tenants?userId=90unnn, VALIDATION_ERROR"
+  })
+  void getUserTenant_shouldReturnExpectedStatusAndError(String path, String errorCode) throws Exception {
     var headers = defaultHeaders();
     UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
 
-    this.mockMvc.perform(get("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/user-tenants?userId=8ad4c4b4-4d4c-4bf9-a8a0-7a30c1edf34b").headers(headers)).andExpectAll(status().is4xxClientError(), content().contentType(MediaType.APPLICATION_JSON_VALUE), jsonPath("$.errors[0].code", is("NOT_FOUND_ERROR")));
-  }
-
-  @Test
-  void getValidationError() throws Exception {
-    var headers = defaultHeaders();
-    UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
-    when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
-
-    this.mockMvc.perform(get("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/user-tenants?userId=90unnn").headers(headers)).andExpectAll(status().is4xxClientError(), content().contentType(MediaType.APPLICATION_JSON_VALUE), jsonPath("$.errors[0].code", is("VALIDATION_ERROR")));
+    this.mockMvc.perform(get(path).headers(headers))
+      .andExpectAll(status().is4xxClientError(),
+        content().contentType(MediaType.APPLICATION_JSON_VALUE),
+        jsonPath("$.errors[0].code", is(errorCode)));
   }
 
   private ConsortiumEntity createConsortiumEntity() {

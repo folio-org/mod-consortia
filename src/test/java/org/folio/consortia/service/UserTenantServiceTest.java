@@ -10,7 +10,6 @@ import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.exception.ConsortiumClientException;
-import org.folio.consortia.exception.PrimaryAffiliationException;
 import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.exception.ResourceNotFoundException;
@@ -311,7 +310,7 @@ class UserTenantServiceTest {
     okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
-    assertThrows(PrimaryAffiliationException.class,
+    assertThrows(org.folio.consortia.exception.PrimaryAffiliationException.class,
       () -> userTenantService.deleteByUserIdAndTenantId(UUID.fromString(CONSORTIUM_ID), tenantId, userId));
   }
 
