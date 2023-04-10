@@ -133,6 +133,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   @Transactional
   @Override
   public void deleteByUserIdAndTenantId(UUID consortiumId, String tenantId, UUID userId) {
+    FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     UserTenantEntity userTenantEntity = userTenantRepository.findByUserIdAndTenantId(userId, tenantId)
       .orElseThrow(() -> new ResourceNotFoundException(USER_ID + ", " + TENANT_ID, userId + ", " + tenantId));
@@ -140,10 +141,13 @@ public class UserTenantServiceImpl implements UserTenantService {
     if (Boolean.TRUE.equals(userTenantEntity.getIsPrimary())) {
       throw new PrimaryAffiliationException(String.valueOf(userId), tenantId);
     }
-
     userTenantRepository.deleteByUserIdAndTenantId(userId, tenantId);
-    User user = getUser(userId);
-    deactivateUser(user, tenantId);
+
+    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, currentTenantContext))) {
+      User user = getUser(userId);
+      deactivateUser(user);
+    }
+
   }
 
   private User prepareShadowUser(UUID userId, UserTenantEntity userTenantEntity, FolioExecutionContext folioExecutionContext) {
@@ -218,15 +222,13 @@ public class UserTenantServiceImpl implements UserTenantService {
     }
   }
 
-  private void deactivateUser(User user, String tenantId) {
-    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioExecutionContext))) {
-      if (Boolean.FALSE.equals(user.getActive())) {
-        log.info("User with id '{}' is already deactive", user.getId());
-      } else {
-        user.setActive(false);
-        log.info("Updating User with id {}.", user.getId());
-        usersClient.updateUser(user.getId(), user);
-      }
+  private void deactivateUser(User user) {
+    if (Boolean.FALSE.equals(user.getActive())) {
+      log.info("User with id '{}' is already deactive", user.getId());
+    } else {
+      user.setActive(false);
+      log.info("Updating User with id {}.", user.getId());
+      usersClient.updateUser(user.getId(), user);
     }
   }
 
