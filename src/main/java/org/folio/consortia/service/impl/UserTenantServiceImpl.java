@@ -12,6 +12,7 @@ import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.exception.ConsortiumClientException;
+import org.folio.consortia.exception.PrimaryAffiliationException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.ConsortiumService;
@@ -137,12 +138,12 @@ public class UserTenantServiceImpl implements UserTenantService {
       .orElseThrow(() -> new ResourceNotFoundException(USER_ID + ", " + TENANT_ID, userId + ", " + tenantId));
 
     if (Boolean.TRUE.equals(userTenantEntity.getIsPrimary())) {
-      throw new IllegalStateException("Tenant with id " + tenantId + " is primary for user with id " + userId);
+      throw new PrimaryAffiliationException(String.valueOf(userId), tenantId);
     }
 
     userTenantRepository.deleteByUserIdAndTenantId(userId, tenantId);
     User user = getUser(userId);
-    deactivateUser(user);
+    deactivateUser(user, tenantId);
   }
 
   private User prepareShadowUser(UUID userId, UserTenantEntity userTenantEntity, FolioExecutionContext folioExecutionContext) {
@@ -217,13 +218,15 @@ public class UserTenantServiceImpl implements UserTenantService {
     }
   }
 
-  private void deactivateUser(User user) {
-    if (Boolean.FALSE.equals(user.getActive())) {
-      log.info("User with id '{}' is already deactive", user.getId());
-    } else {
-      user.setActive(false);
-      log.info("Updating User with id {}.", user.getId());
-      usersClient.updateUser(user.getId(), user);
+  private void deactivateUser(User user, String tenantId) {
+    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioExecutionContext))) {
+      if (Boolean.FALSE.equals(user.getActive())) {
+        log.info("User with id '{}' is already deactive", user.getId());
+      } else {
+        user.setActive(false);
+        log.info("Updating User with id {}.", user.getId());
+        usersClient.updateUser(user.getId(), user);
+      }
     }
   }
 
