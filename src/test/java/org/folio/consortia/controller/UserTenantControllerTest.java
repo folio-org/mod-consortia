@@ -95,7 +95,7 @@ class UserTenantControllerTest extends BaseTest {
   }
 
   @Test
-  void shouldRemoveUserTenant() throws Exception {
+  void shouldThrowErrorWhenDeletingUserTenant() throws Exception {
     var headers = defaultHeaders();
     this.mockMvc.perform(delete("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/user-tenants?userId=7698e46-c3e3-11ed-afa1-0242ac120001&tenantId=diku")
       .headers(headers))

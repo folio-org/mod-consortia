@@ -217,17 +217,17 @@ public class UserTenantServiceImpl implements UserTenantService {
       log.info("User with id '{}' is already active.", user.getId());
     } else {
       user.setActive(true);
-      log.info("Updating User with id '{}'.", user.getId());
+      log.info("Updating User with id '{}' with active 'true'. ", user.getId());
       usersClient.updateUser(user.getId(), user);
     }
   }
 
   private void deactivateUser(User user) {
     if (Boolean.FALSE.equals(user.getActive())) {
-      log.info("User with id '{}' is already deactive", user.getId());
+      log.info("User with id '{}' is already no active", user.getId());
     } else {
       user.setActive(false);
-      log.info("Updating User with id {}.", user.getId());
+      log.info("Updating User with id '{}' with active 'false'. ", user.getId());
       usersClient.updateUser(user.getId(), user);
     }
   }
