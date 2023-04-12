@@ -33,7 +33,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-
 /**
  * Implementation of {@link UserTenantService}.
  * <p>
@@ -224,7 +223,7 @@ public class UserTenantServiceImpl implements UserTenantService {
 
   private void deactivateUser(User user) {
     if (Boolean.FALSE.equals(user.getActive())) {
-      log.info("User with id '{}' is already no active", user.getId());
+      log.info("User with id '{}' is already not active", user.getId());
     } else {
       user.setActive(false);
       log.info("Updating User with id '{}' with active 'false'. ", user.getId());

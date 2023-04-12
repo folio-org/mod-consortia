@@ -91,15 +91,20 @@ class UserTenantControllerTest extends BaseTest {
     var headers = defaultHeaders();
     UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
-    this.mockMvc.perform(get("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/user-tenants?limit=2&offset=1").headers(headers)).andExpectAll(status().isOk(), content().contentType(MediaType.APPLICATION_JSON_VALUE));
+    this.mockMvc.perform(get("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/user-tenants?limit=2&offset=1")
+      .headers(headers))
+      .andExpectAll(status().isOk(), content().contentType(MediaType.APPLICATION_JSON_VALUE));
   }
 
   @Test
-  void shouldThrowErrorWhenDeletingUserTenant() throws Exception {
+  void returnNotFoundUserAndTenantAssociationWhenDeletingUserTenant() throws Exception {
     var headers = defaultHeaders();
+    when(consortiumRepository.existsById(UUID.fromString(CONSORTIUM_ID))).thenReturn(true);
     this.mockMvc.perform(delete("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/user-tenants?userId=7698e46-c3e3-11ed-afa1-0242ac120001&tenantId=diku")
       .headers(headers))
-      .andExpect(status().is4xxClientError());
+      .andExpect(status().isNotFound())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+      .andExpect(jsonPath("$.errors[0].code", is("NOT_FOUND_ERROR")));
   }
 
   @Test
@@ -108,7 +113,11 @@ class UserTenantControllerTest extends BaseTest {
     UUID consortiumId = UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120001");
     when(consortiumRepository.existsById(consortiumId)).thenReturn(false);
 
-    this.mockMvc.perform(get("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/user-tenants?limit=0&offset=0").headers(headers)).andExpectAll(status().is4xxClientError(), content().contentType(MediaType.APPLICATION_JSON_VALUE), jsonPath("$.errors[0].code", is("NOT_FOUND_ERROR")));
+    this.mockMvc.perform(get("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/user-tenants?limit=0&offset=0")
+      .headers(headers))
+      .andExpectAll(status().is4xxClientError(),
+        content().contentType(MediaType.APPLICATION_JSON_VALUE),
+        jsonPath("$.errors[0].code", is("NOT_FOUND_ERROR")));
   }
 
   @ParameterizedTest
