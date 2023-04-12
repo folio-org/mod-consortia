@@ -4,7 +4,7 @@
 * [X] Module descriptor MUST include interface requirements for all consumed APIs
 * [x] Third party dependencies use an Apache 2.0 compatible license
 * [x] Installation documentation is included
-* [ ] Personal data form is completed, accurate, and provided as `PERSONAL_DATA_DISCLOSURE.md` file
+* [x] Personal data form is completed, accurate, and provided as `PERSONAL_DATA_DISCLOSURE.md` file
 * [x] Sensitive and environment-specific information is not checked into git repository
 * [x] Module is written in a language and framework from the [officially approved technologies](https://wiki.folio.org/display/TC/Officially+Supported+Technologies) page
 * [x] Module only uses FOLIO interfaces already provided by previously accepted modules _e.g. a UI module cannot be accepted that relies on an interface only provided by a back end module that hasn't been accepted yet_
