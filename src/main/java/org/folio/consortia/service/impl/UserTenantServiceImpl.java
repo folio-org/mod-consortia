@@ -131,26 +131,6 @@ public class UserTenantServiceImpl implements UserTenantService {
 
   @Transactional
   @Override
-  public UserTenant update(UUID consortiumId, UserTenant userTenantDto) {
-    return null;
-  }
-
-  @Override
-  public UserTenantCollection getByUserId(UUID consortiumId, UUID userId, Integer offset, Integer limit) {
-    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    var result = new UserTenantCollection();
-    Page<UserTenantEntity> userTenantPage = userTenantRepository.findByUserId(userId, PageRequest.of(offset, limit));
-
-    if (userTenantPage.getContent().isEmpty()) {
-      throw new ResourceNotFoundException(USER_ID, String.valueOf(userId));
-    }
-
-    result.setUserTenants(userTenantPage.stream().map(o -> converter.convert(o, UserTenant.class)).toList());
-    result.setTotalRecords((int) userTenantPage.getTotalElements());
-    return result;
-  }
-
-  @Override
   public void deleteByUserIdAndTenantId(UUID consortiumId, String tenantId, UUID userId) {
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
@@ -167,6 +147,11 @@ public class UserTenantServiceImpl implements UserTenantService {
       deactivateUser(user);
     }
 
+  }
+
+  @Override
+  public UserTenant update(UUID consortiumId, UserTenant primary) {
+    return new UserTenant();
   }
 
   private User prepareShadowUser(UUID userId, UserTenantEntity userTenantEntity, FolioExecutionContext folioExecutionContext) {
