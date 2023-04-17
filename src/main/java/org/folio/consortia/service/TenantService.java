@@ -2,6 +2,7 @@ package org.folio.consortia.service;
 
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
+import org.folio.consortia.domain.entity.TenantEntity;
 
 import java.util.UUID;
 
@@ -42,4 +43,12 @@ public interface TenantService {
    * @param tenantId the tenantId
    */
   void delete(UUID consortiumId, String tenantId);
+
+  /**
+   * Gets tenant collection based on consortiumId.
+   *
+   * @param tenantId the tenantId
+   * @return tenant collection
+   */
+  TenantEntity getByTenantId(String tenantId);
 }

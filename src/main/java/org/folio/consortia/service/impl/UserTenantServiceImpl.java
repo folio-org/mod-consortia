@@ -101,6 +101,11 @@ public class UserTenantServiceImpl implements UserTenantService {
   }
 
   @Override
+  public UserTenant update(UUID consortiumId, UserTenant userTenantDto) {
+    return null;
+  }
+
+  @Override
   public UserTenantCollection getByUserId(UUID consortiumId, UUID userId, Integer offset, Integer limit) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     var result = new UserTenantCollection();

@@ -72,6 +72,12 @@ public class TenantServiceImpl implements TenantService {
     tenantRepository.deleteById(tenantId);
   }
 
+  @Override
+  public TenantEntity getByTenantId(String tenantId) {
+    //TODO : check errors
+    return tenantRepository.getReferenceById(tenantId);
+  }
+
   private void checkTenantNotExistsOrThrow(String tenantId) {
     if (tenantRepository.existsById(tenantId)) {
       throw new ResourceAlreadyExistException("id", tenantId);

@@ -61,4 +61,13 @@ public interface UserTenantService {
    * @return userTenantDto
    */
   UserTenant save(UUID consortiumId, UserTenant userTenantDto);
+
+  /**
+   * Inserts single user_tenant based on consortiumId.
+   *
+   * @param consortiumId  the consortiumId
+   * @param userTenantDto  the tenantDto
+   * @return userTenantDto
+   */
+  UserTenant update(UUID consortiumId, UserTenant userTenantDto);
 }
