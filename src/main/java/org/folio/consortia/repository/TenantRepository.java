@@ -12,4 +12,5 @@ import java.util.UUID;
 public interface TenantRepository extends JpaRepository<TenantEntity, String> {
 
   Page<TenantEntity> findByConsortiumId(UUID consortiumId, Pageable pageable);
+  Page<TenantEntity> findByName(String tenantId, Pageable pageable);
 }

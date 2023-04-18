@@ -39,6 +39,7 @@
     <consortia.yaml.file>${project.basedir}/src/main/resources/swagger.api/consortia.yaml</consortia.yaml.file>
     <tenants.yaml.file>${project.basedir}/src/main/resources/swagger.api/tenants.yaml</tenants.yaml.file>
     <user_tenants.yaml.file>${project.basedir}/src/main/resources/swagger.api/user_tenants.yaml</user_tenants.yaml.file>
+    <user_events.yaml.file>${project.basedir}/src/main/resources/swagger.api/schemas/kafka_message_schemas.yaml</user_events.yaml.file>
     <!-- runtime dependencies -->
     <folio-spring-base.version>6.2.0-SNAPSHOT</folio-spring-base.version>
     <openapi-generator.version>6.2.1</openapi-generator.version>
@@ -336,6 +337,32 @@
             </goals>
             <configuration>
               <inputSpec>${user_tenants.yaml.file}</inputSpec>
+              <output>${project.build.directory}/generated-sources</output>
+              <generatorName>spring</generatorName>
+              <modelPackage>${project.groupId}.consortia.domain.dto</modelPackage>
+              <apiPackage>${project.groupId}.consortia.rest.resource</apiPackage>
+              <generateApis>true</generateApis>
+              <generateApiTests>true</generateApiTests>
+              <generateApiDocumentation>true</generateApiDocumentation>
+              <generateModels>true</generateModels>
+              <generateModelTests>false</generateModelTests>
+              <generateSupportingFiles>true</generateSupportingFiles>
+              <supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>
+              <generateModelDocumentation>true</generateModelDocumentation>
+              <configOptions>
+                <dateLibrary>java</dateLibrary>
+                <interfaceOnly>true</interfaceOnly>
+                <useSpringBoot3>true</useSpringBoot3>
+              </configOptions>
+            </configuration>
+          </execution>
+          <execution>
+            <id>user_events</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>${user_events.yaml.file}</inputSpec>
               <output>${project.build.directory}/generated-sources</output>
               <generatorName>spring</generatorName>
               <modelPackage>${project.groupId}.consortia.domain.dto</modelPackage>

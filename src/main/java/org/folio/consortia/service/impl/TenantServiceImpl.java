@@ -74,8 +74,8 @@ public class TenantServiceImpl implements TenantService {
 
   @Override
   public TenantEntity getByTenantId(String tenantId) {
-    //TODO : check errors
-    return tenantRepository.getReferenceById(tenantId);
+    Page<TenantEntity> page = tenantRepository.findByName(tenantId, PageRequest.of(0, 1));
+    return page.getContent().get(0);
   }
 
   private void checkTenantNotExistsOrThrow(String tenantId) {
