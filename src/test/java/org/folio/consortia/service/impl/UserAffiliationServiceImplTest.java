@@ -1,13 +1,8 @@
 package org.folio.consortia.service.impl;
 
 import static org.folio.consortia.utils.InputOutputTestUtils.getMockData;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -16,8 +11,6 @@ import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.consortia.support.BaseTest;
-import org.folio.consortia.utils.InputOutputTestUtils;
-import org.folio.consortia.utils.JsonTestUtils;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
