@@ -1,9 +1,6 @@
 package org.folio.consortia.service.impl;
 
-import java.util.UUID;
-
 import org.folio.consortia.config.kafka.KafkaService;
-import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserAffiliationService;
 import org.folio.consortia.service.UserTenantService;
@@ -29,35 +26,26 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   @SneakyThrows
   public void createPrimaryUserAffiliation(String eventPayload) {
     try {
-      var userTenant = objectMapper.readValue(eventPayload, org.folio.consortia.domain.dto.UserEvent.class);
-      // check if primary affiliation exists
-      var consortiaTenant = tenantService.getByTenantId(userTenant.getTenantId());
+      var userEvent = objectMapper.readValue(eventPayload, org.folio.consortia.domain.dto.UserEvent.class);
+      // check if tenant is part of consortia
+      var consortiaTenant = tenantService.getByTenantId(userEvent.getTenantId());
       if (consortiaTenant == null) {
-        log.warn("Tenant {} not exists in consortia", userTenant.getTenantId());
+        log.warn("Tenant {} not exists in consortia", userEvent.getTenantId());
         return;
       }
-      var consortiaAffiliation = userTenantService.getByUsernameAndTenantId(consortiaTenant.getConsortiumId(),
-          userTenant.getUserDto().getUsername(),
-          userTenant.getTenantId());
+      // check if tenant is part of consortia
+      var consortiaUserTenant = userTenantService.getByUsernameAndTenantIdOrNull(consortiaTenant.getConsortiumId(),
+        userEvent.getUserDto().getUsername(),
+        userEvent.getTenantId());
+      if (consortiaUserTenant != null && consortiaUserTenant.getIsPrimary()) {
+        log.warn("Primary affiliation already exists for tenant/user: {}/{}", userEvent.getTenantId(), userEvent.getUserDto().getUsername());
+        return;
+      } else {
+        userTenantService.createPrimaryUserTenantAffiliation(consortiaTenant.getConsortiumId(), consortiaTenant, userEvent);
+      }
 
-      var isPrimaryExists = consortiaAffiliation.getUserTenants()
-        .stream()
-        .anyMatch(UserTenant::getIsPrimary);
-      if (isPrimaryExists) {
-        log.warn("Primary affiliation already exists for the user: {}", userTenant.getUserDto().getUsername());
-        return;
-      }
-      // create or update user tenant with primary affiliation
-      var primaryAffiliationRecord = consortiaAffiliation.getUserTenants()
-        .stream()
-        .findFirst()
-        .map(ut -> userTenantService.update(consortiaTenant.getConsortiumId(), ut.isPrimary(true)))
-        .orElseGet(() -> {
-          var ut = new UserTenant().userId(UUID.fromString(userTenant.getUserDto().getId()));
-          return userTenantService.save(consortiaTenant.getConsortiumId(), ut);
-        });
-      kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_CREATED, consortiaTenant.getConsortiumId().toString(), primaryAffiliationRecord);
-      log.info("Primary affiliation has been set for the user: {}", userTenant.getUserDto().getId());
+      kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_CREATED, consortiaTenant.getConsortiumId().toString(), eventPayload);
+      log.info("Primary affiliation has been set for the user: {}", userEvent.getUserDto().getId());
     } catch (Exception e) {
       log.error("Exception occurred while creating primary affiliation", e);
     }

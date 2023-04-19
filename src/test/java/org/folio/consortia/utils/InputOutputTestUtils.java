@@ -1,22 +1,24 @@
 package org.folio.consortia.utils;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
-import lombok.experimental.UtilityClass;
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.folio.consortia.FolioConsortiaApplication;
+
+import lombok.SneakyThrows;
+import lombok.experimental.UtilityClass;
+import lombok.extern.log4j.Log4j2;
 
 @UtilityClass
 @Log4j2
 public class InputOutputTestUtils {
 
-  public static String getMockData(String path) throws IOException {
+  @SneakyThrows
+  public static String getMockData(String path) {
 
     try (InputStream resourceAsStream = FolioConsortiaApplication.class.getClassLoader().getResourceAsStream(path)) {
       if (resourceAsStream != null) {

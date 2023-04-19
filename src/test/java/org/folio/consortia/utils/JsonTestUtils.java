@@ -22,8 +22,8 @@ public class JsonTestUtils {
     .build();
 
   @SneakyThrows
-  public static org.folio.consortia.domain.dto.UserTenant readUserTenantMockFile(String filename) {
-    return MAPPER.readValue(InputOutputTestUtils.getMockData(filename), org.folio.consortia.domain.dto.UserTenant.class);
+  public static org.folio.consortia.domain.dto.UserEvent readUserEventMockFile(String filename) {
+    return MAPPER.readValue(InputOutputTestUtils.getMockData(filename), org.folio.consortia.domain.dto.UserEvent.class);
   }
 
   @SneakyThrows

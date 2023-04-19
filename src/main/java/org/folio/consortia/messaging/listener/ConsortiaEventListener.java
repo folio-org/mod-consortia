@@ -3,13 +3,10 @@ package org.folio.consortia.messaging.listener;
 import static org.folio.consortia.utils.TenantContextUtils.getFolioExecutionContextCreatePrimaryAffiliationEvent;
 import static org.folio.consortia.utils.TenantContextUtils.runInFolioContext;
 
-import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.service.UserAffiliationService;
 import org.folio.spring.FolioModuleMetadata;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.handler.annotation.Headers;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
