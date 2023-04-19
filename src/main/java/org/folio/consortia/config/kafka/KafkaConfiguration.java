@@ -19,7 +19,6 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
-import org.springframework.kafka.listener.RecordInterceptor;
 import org.springframework.kafka.support.serializer.ParseStringDeserializer;
 import org.springframework.stereotype.Component;
 
@@ -39,10 +38,9 @@ public class KafkaConfiguration {
     return envId;
   }
   @Bean
-  public <V> ConcurrentKafkaListenerContainerFactory<String, V> kafkaListenerContainerFactory(ConsumerFactory<String, V> consumerFactory, RecordInterceptor<String, V> recordInterceptor) {
+  public <V> ConcurrentKafkaListenerContainerFactory<String, V> kafkaListenerContainerFactory(ConsumerFactory<String, V> consumerFactory) {
     var factory = new ConcurrentKafkaListenerContainerFactory<String, V>();
     factory.setConsumerFactory(consumerFactory);
-    factory.setRecordInterceptor(recordInterceptor);
     if (kafkaProperties.getListener().getAckMode() != null) {
       factory.getContainerProperties().setAckMode(kafkaProperties.getListener().getAckMode());
     }
@@ -52,12 +50,10 @@ public class KafkaConfiguration {
   @Bean
   public <V> ConsumerFactory<String, V> consumerFactory(ObjectMapper objectMapper, FolioModuleMetadata folioModuleMetadata) {
     Map<String, Object> props = new HashMap<>(kafkaProperties.buildConsumerProperties());
-    try (var deserializer = new ParseStringDeserializer<V>()) {
       props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
       props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
       props.put("folioModuleMetadata", folioModuleMetadata);
       return new DefaultKafkaConsumerFactory<>(props);
-    }
   }
 
   @Bean
@@ -65,7 +61,7 @@ public class KafkaConfiguration {
       FolioExecutionContext folioExecutionContext) {
     Map<String, Object> props = new HashMap<>(kafkaProperties.buildProducerProperties());
     props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
     props.put("folioExecutionContext", folioExecutionContext);
     return new DefaultKafkaProducerFactory<>(props);
   }
