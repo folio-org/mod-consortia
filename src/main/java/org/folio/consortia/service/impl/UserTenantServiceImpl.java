@@ -204,7 +204,7 @@ public class UserTenantServiceImpl implements UserTenantService {
       log.info("Getting user by userId {}.", userId);
       return usersClient.getUsersByUserId(String.valueOf(userId));
     } catch (FeignException.NotFound e) {
-      log.info("User with userId {} does not exist in schema.", userId);
+      log.info("User with userId {} does not exist in schema, going to use new one", userId);
       return new User();
     } catch (FeignException e) {
       throw new ConsortiumClientException(String.format("Could not get a user with id %s", userId), e);
@@ -239,7 +239,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   private FolioExecutionContext prepareContextForTenant(String tenantId, FolioExecutionContext context) {
     if (MapUtils.isNotEmpty(context.getOkapiHeaders())) {
       context.getOkapiHeaders().put("x-okapi-tenant", List.of(tenantId));
-      log.info("FOLIO context initialized with tenant {}", context.getTenantId());
+      log.info("FOLIO context initialized with tenant {}", tenantId);
     }
     return new DefaultFolioExecutionContext(folioModuleMetadata, context.getOkapiHeaders());
   }
