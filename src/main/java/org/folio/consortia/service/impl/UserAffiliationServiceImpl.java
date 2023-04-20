@@ -1,17 +1,17 @@
 package org.folio.consortia.service.impl;
 
-import org.folio.consortia.domain.dto.UserEvent;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.log4j.Log4j2;
 import org.folio.consortia.config.kafka.KafkaService;
+import org.folio.consortia.domain.dto.UserEvent;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserAffiliationService;
 import org.folio.consortia.service.UserTenantService;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import lombok.AllArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.extern.log4j.Log4j2;
+import java.util.UUID;
 
 @Service
 @Log4j2
@@ -63,16 +63,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
         log.warn("Tenant {} not exists in consortia", userEvent.getTenantId());
         return;
       }
-      var consortiaUserTenant = userTenantService.getByUsernameAndTenantIdOrNull(consortiaTenant.getConsortiumId(), userEvent.getUserDto().getUsername(),
-        userEvent.getTenantId());
-      if (consortiaUserTenant != null && consortiaUserTenant.getIsPrimary()) {
-        log.warn("Primary affiliation already exists for tenant/user: {}/{}", userEvent.getTenantId(), userEvent.getUserDto().getUsername());
-        return;
-      } else {
-
-      }
-
-
+      userTenantService.deleteByUserIdAndIsPrimary(UUID.fromString(userEvent.getUserDto().getId()));
       kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_DELETED, "consortiaTenant.getConsortiumId().toString()", data);
     } catch (Exception e) {
       log.error("Exception occurred while deleting primary affiliation", e);
