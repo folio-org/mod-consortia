@@ -176,6 +176,12 @@ public class UserTenantServiceImpl implements UserTenantService {
   }
 
   @Override
+  @Transactional
+  public void deleteByUserIdAndIsPrimary(UUID userId) {
+    userTenantRepository.deleteByUserIdAndIsPrimary(userId, true);
+  }
+
+  @Override
   public UserTenant update(UUID consortiumId, UserTenant primary) {
     return new UserTenant();
   }

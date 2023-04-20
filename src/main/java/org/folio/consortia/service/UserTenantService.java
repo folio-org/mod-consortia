@@ -84,4 +84,6 @@ public interface UserTenantService {
 
   UserTenant update(UUID consortiumId, org.folio.consortia.domain.dto.UserTenant primary);
   UserTenant getByUsernameAndTenantIdOrNull(UUID consortiumId, String username, String tenantId);
+
+  void deleteByUserIdAndIsPrimary(UUID userId);
 }

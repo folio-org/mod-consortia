@@ -1,5 +1,6 @@
 package org.folio.consortia.service.impl;
 
+import org.folio.consortia.domain.dto.UserEvent;
 import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserAffiliationService;
@@ -26,7 +27,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   @SneakyThrows
   public void createPrimaryUserAffiliation(String eventPayload) {
     try {
-      var userEvent = objectMapper.readValue(eventPayload, org.folio.consortia.domain.dto.UserEvent.class);
+      var userEvent = objectMapper.readValue(eventPayload, UserEvent.class);
       // check if tenant is part of consortia
       var consortiaTenant = tenantService.getByTenantId(userEvent.getTenantId());
       if (consortiaTenant == null) {
@@ -54,6 +55,27 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   @Override
   public void deletePrimaryUserAffiliation(String data) {
     // TODO : implement deletion with transactional outbox
-    kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_DELETED, "consortiaTenant.getConsortiumId().toString()", data);
+    try {
+      var userEvent = objectMapper.readValue(data, UserEvent.class);
+      // checking whether tenant part of consortia
+      var consortiaTenant = tenantService.getByTenantId(userEvent.getTenantId());
+      if (consortiaTenant == null) {
+        log.warn("Tenant {} not exists in consortia", userEvent.getTenantId());
+        return;
+      }
+      var consortiaUserTenant = userTenantService.getByUsernameAndTenantIdOrNull(consortiaTenant.getConsortiumId(), userEvent.getUserDto().getUsername(),
+        userEvent.getTenantId());
+      if (consortiaUserTenant != null && consortiaUserTenant.getIsPrimary()) {
+        log.warn("Primary affiliation already exists for tenant/user: {}/{}", userEvent.getTenantId(), userEvent.getUserDto().getUsername());
+        return;
+      } else {
+
+      }
+
+
+      kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_DELETED, "consortiaTenant.getConsortiumId().toString()", data);
+    } catch (Exception e) {
+      log.error("Exception occurred while deleting primary affiliation", e);
+    }
   }
 }
