@@ -203,7 +203,7 @@ public class UserTenantServiceImpl implements UserTenantService {
     try {
       log.info("Getting user by userId {}.", userId);
       return usersClient.getUsersByUserId(String.valueOf(userId));
-    } catch (FeignException.NotFound e) {
+    } catch (FeignException.NotFound | FeignException.Unauthorized e) {
       log.info("User with userId {} does not exist in schema, going to use new one", userId);
       return new User();
     } catch (FeignException e) {
