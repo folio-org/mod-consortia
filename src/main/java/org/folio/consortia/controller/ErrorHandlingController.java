@@ -70,7 +70,7 @@ public class ErrorHandlingController {
     PrimaryAffiliationException.class
   })
   public Errors handleIllegalArgumentException(Exception e) {
-    log.error(e);
+    log.error("Handle bad request scenarios", e);
     return createInternalError(e.getMessage(), VALIDATION_ERROR);
   }
 
