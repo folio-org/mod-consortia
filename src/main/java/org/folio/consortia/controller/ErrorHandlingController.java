@@ -1,6 +1,7 @@
 package org.folio.consortia.controller;
 
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.log4j.Log4j2;
 import org.folio.consortia.domain.dto.Error;
 import org.folio.consortia.domain.dto.Errors;
 import org.folio.consortia.exception.ConsortiumClientException;
@@ -27,6 +28,7 @@ import static org.folio.consortia.utils.ErrorHelper.ErrorCode.VALIDATION_ERROR;
 import static org.folio.consortia.utils.ErrorHelper.createInternalError;
 
 @RestControllerAdvice
+@Log4j2
 public class ErrorHandlingController {
 
   @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -68,6 +70,7 @@ public class ErrorHandlingController {
     PrimaryAffiliationException.class
   })
   public Errors handleIllegalArgumentException(Exception e) {
+    log.error(e);
     return createInternalError(e.getMessage(), VALIDATION_ERROR);
   }
 

@@ -109,12 +109,15 @@ public class UserTenantServiceImpl implements UserTenantService {
   @Override
   @Transactional
   public UserTenant save(UUID consortiumId, UserTenant userTenantDto) {
+    log.debug("Going to save user with id: {} into tenant: {}", userTenantDto.getUserId(), userTenantDto.getTenantId());
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     String currentTenantId = folioExecutionContext.getTenantId();
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
 
     Optional<UserTenantEntity> userTenant = userTenantRepository.findByUserIdAndIsPrimary(userTenantDto.getUserId(), IS_PRIMARY_TRUE);
     if (userTenant.isEmpty()) {
+      log.warn("Could not found user with id: {} in user_tenant table for tenant id: {}",
+        userTenantDto.getUserId(), userTenantDto.getTenantId());
       throw new ResourceNotFoundException(USER_ID, String.valueOf(userTenantDto.getUserId()));
     }
 
@@ -170,6 +173,7 @@ public class UserTenantServiceImpl implements UserTenantService {
         user.setPatronGroup(userOptional.getPatronGroup());
         user.setActive(true);
       } else {
+        log.warn("Could not found real user with id: {} in his home tenant: {}", userId.toString(), userTenantEntity.getTenant().getId());
         throw new ResourceNotFoundException(USER_ID, userId.toString());
       }
       return user;
@@ -177,6 +181,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   }
 
   private void createOrUpdateShadowUser(UUID userId, User shadowUser, UserTenant userTenantDto, FolioExecutionContext folioExecutionContext) {
+    log.info("Going to create or update shadow user with id: {} in the desired tenant: {}", userId.toString(), userTenantDto.getTenantId());
     try (var context = new FolioExecutionContextSetter(prepareContextForTenant(userTenantDto.getTenantId(), folioExecutionContext))) {
       User user = getUser(userId);
       if (Objects.nonNull(user.getActive())) {
@@ -199,7 +204,7 @@ public class UserTenantServiceImpl implements UserTenantService {
       log.info("Getting user by userId {}.", userId);
       return usersClient.getUsersByUserId(String.valueOf(userId));
     } catch (FeignException.NotFound e) {
-      log.debug("User with userId {} does not exist in schema.", userId);
+      log.info("User with userId {} does not exist in schema.", userId);
       return new User();
     } catch (FeignException e) {
       throw new ConsortiumClientException(String.format("Could not get a user with id %s", userId), e);
@@ -207,7 +212,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   }
 
   private void createActiveUser(User user) {
-    log.info("Creating user {}.", user);
+    log.info("Creating user with id {}.", user.getId());
     usersClient.saveUser(user);
   }
 
