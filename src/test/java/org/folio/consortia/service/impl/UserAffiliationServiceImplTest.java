@@ -5,7 +5,10 @@ import static org.folio.spring.integration.XOkapiHeaders.TENANT;
 import static org.folio.spring.integration.XOkapiHeaders.TOKEN;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.nio.charset.StandardCharsets;
@@ -86,6 +89,7 @@ class UserAffiliationServiceImplTest {
     try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
       userAffiliationService.createPrimaryUserAffiliation(userCreatedEventSample);
     }
+    verify(kafkaService, times(1)).send(any(), anyString(), any());
 
   }
 
@@ -100,6 +104,7 @@ class UserAffiliationServiceImplTest {
     try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
       userAffiliationService.createPrimaryUserAffiliation(userCreatedEventSample);
     }
+    verify(kafkaService, times(0)).send(any(), anyString(), any());
   }
 
   @Test
@@ -118,5 +123,6 @@ class UserAffiliationServiceImplTest {
     try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
       userAffiliationService.createPrimaryUserAffiliation(userCreatedEventSample);
     }
+    verify(kafkaService, times(0)).send(any(), anyString(), any());
   }
 }
