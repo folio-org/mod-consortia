@@ -1,5 +1,22 @@
 package org.folio.consortia.service;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.apache.commons.lang3.RandomStringUtils;
 import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.domain.converter.UserTenantConverter;
 import org.folio.consortia.domain.dto.Personal;
@@ -10,9 +27,9 @@ import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.exception.ConsortiumClientException;
+import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.UserTenantRepository;
-import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.impl.UserTenantServiceImpl;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
@@ -31,19 +48,6 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @EnableAutoConfiguration(exclude = BatchAutoConfiguration.class)
@@ -365,6 +369,27 @@ class UserTenantServiceTest {
 
     assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class,
       () -> userTenantService.save(UUID.fromString(CONSORTIUM_ID), tenant));
+  }
+
+  @Test
+  void getByUsernameAndTenantIdNullSuccess() {
+    doNothing().when(consortiumService).checkConsortiumExistsOrThrow(any());
+    var utEntity = createUserTenantEntity(UUID.randomUUID(), UUID.randomUUID(), "username", "diku");
+
+    when(conversionService.convert(any(), any())).thenReturn(toDto(utEntity));
+    when(userTenantRepository.findByUsernameAndTenantId(anyString(), anyString())).thenReturn(Optional.of(utEntity));
+
+    var result = userTenantService.getByUsernameAndTenantIdOrNull(UUID.randomUUID(), RandomStringUtils.random(5), RandomStringUtils.random(5));
+    Assertions.assertNotNull(result);
+  }
+  @Test
+  void getByUsernameAndTenantIdNotFound() {
+    doNothing().when(consortiumService).checkConsortiumExistsOrThrow(any());
+    when(userTenantRepository.findByUsernameAndTenantId(anyString(), anyString())).thenReturn(Optional.empty());
+
+    var result = userTenantService.getByUsernameAndTenantIdOrNull(UUID.randomUUID(), RandomStringUtils.random(5), RandomStringUtils.random(5));
+
+    Assertions.assertNull(result);
   }
 
   private UserTenantEntity createUserTenantEntity(UUID associationId, UUID userId, String username, String tenantId) {
