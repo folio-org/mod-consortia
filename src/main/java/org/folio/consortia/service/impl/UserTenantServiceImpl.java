@@ -127,6 +127,8 @@ public class UserTenantServiceImpl implements UserTenantService {
     try (var context = new FolioExecutionContextSetter(prepareContextForTenant(currentTenantId, currentTenantContext))) {
       UserTenantEntity userTenantEntity = toEntity(userTenantDto, consortiumId, shadowUser);
       userTenantRepository.save(userTenantEntity);
+      log.info("User affiliation added and user created or activated for user id: {} in the tenant: {}",
+        userTenantDto.getUserId(), userTenantDto.getTenantId());
 
       return converter.convert(userTenantEntity, UserTenant.class);
     }
@@ -135,12 +137,15 @@ public class UserTenantServiceImpl implements UserTenantService {
   @Transactional
   @Override
   public void deleteByUserIdAndTenantId(UUID consortiumId, String tenantId, UUID userId) {
+    log.debug("Going to delete user affiliation for user id: {} in the tenant: {}", userId.toString(), tenantId);
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     UserTenantEntity userTenantEntity = userTenantRepository.findByUserIdAndTenantId(userId, tenantId)
       .orElseThrow(() -> new ResourceNotFoundException(USER_ID + ", " + TENANT_ID, userId + ", " + tenantId));
 
     if (Boolean.TRUE.equals(userTenantEntity.getIsPrimary())) {
+      log.warn("Primary affiliation could not be deleted from API for user id: {} in the tenant: {}",
+        userId.toString(), userTenantEntity.getTenant().getId());
       throw new PrimaryAffiliationException(String.valueOf(userId), tenantId);
     }
     userTenantRepository.deleteByUserIdAndTenantId(userId, tenantId);
@@ -148,6 +153,7 @@ public class UserTenantServiceImpl implements UserTenantService {
     try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, currentTenantContext))) {
       User user = getUser(userId);
       deactivateUser(user);
+      log.info("User affiliation deleted and user deactivated for user id: {} in the tenant: {}", userId.toString(), tenantId);
     }
 
   }
