@@ -3,7 +3,7 @@ package org.folio.consortia.service;
 import java.sql.ResultSet;
 
 import org.apache.commons.lang3.BooleanUtils;
-import org.folio.consortia.messaging.topic.KafkaTopicsInitializer;
+import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.liquibase.FolioSpringLiquibase;
 import org.folio.spring.service.TenantService;
@@ -22,23 +22,24 @@ public class FolioTenantService extends TenantService {
   private static final String EXIST_SQL =
     "SELECT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?)";
 
-  private final KafkaTopicsInitializer kafkaTopicsInitializer;
+  private final KafkaService kafkaService;
 
   public FolioTenantService(JdbcTemplate jdbcTemplate,
-    KafkaTopicsInitializer kafkaTopicsInitializer,
+    KafkaService kafkaService,
                             FolioExecutionContext context,
                             FolioSpringLiquibase folioSpringLiquibase) {
     super(jdbcTemplate, context, folioSpringLiquibase);
-    this.kafkaTopicsInitializer = kafkaTopicsInitializer;
+    this.kafkaService = kafkaService;
   }
 
   @Override
   protected void afterTenantUpdate(TenantAttributes tenantAttributes) {
     try {
-      kafkaTopicsInitializer.createTopics();
-      kafkaTopicsInitializer.restartEventListeners();
+      kafkaService.createKafkaTopics();
+      kafkaService.restartEventListeners();
     } catch (Exception e) {
       log.error(e.getMessage(), e);
+      throw e;
     }
   }
 

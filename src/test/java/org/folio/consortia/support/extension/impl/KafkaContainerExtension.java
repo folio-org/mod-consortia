@@ -10,7 +10,7 @@ import org.testcontainers.utility.DockerImageName;
 
 public class KafkaContainerExtension implements BeforeAllCallback, AfterAllCallback {
   private static final String SPRING_PROPERTY_NAME = "spring.kafka.bootstrap-servers";
-  private static final DockerImageName KAFKA_IMAGE = parse("confluentinc/cp-kafka:5.5.3");
+  private static final DockerImageName KAFKA_IMAGE = parse("confluentinc/cp-kafka:7.0.3");
   private static final KafkaContainer CONTAINER = new KafkaContainer(KAFKA_IMAGE)
     .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "false");
 

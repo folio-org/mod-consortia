@@ -65,6 +65,5 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
 
   @Override
   public void deletePrimaryUserAffiliation(String data) {
-    // TODO : implement deletion with transactional outbox
   }
 }

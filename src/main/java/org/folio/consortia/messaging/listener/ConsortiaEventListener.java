@@ -19,7 +19,6 @@ import lombok.extern.log4j.Log4j2;
 public class ConsortiaEventListener {
 
   public static final String USER_CREATED_LISTENER_ID = "user-created-listener-id";
-  public static final String USER_DELETED_LISTENER_ID = "user-deleted-listener-id";
 
   private final UserAffiliationService userAffiliationService;
   private final FolioModuleMetadata moduleMetadata;
@@ -27,23 +26,11 @@ public class ConsortiaEventListener {
   @KafkaListener(
     id = USER_CREATED_LISTENER_ID,
     topicPattern = "#{folioKafkaProperties.listener['user-created'].topicPattern}",
-    concurrency = "1",
+    concurrency = "#{folioKafkaProperties.listener['user-created'].concurrency}",
     containerFactory = "kafkaListenerContainerFactory")
   public void userCreatedListener(String data, MessageHeaders messageHeaders) {
-    log.info("Received USER_CREATED message: {}", data);
     runInFolioContext(getFolioExecutionContextCreatePrimaryAffiliationEvent(messageHeaders, moduleMetadata),
       () -> userAffiliationService.createPrimaryUserAffiliation(data));
-  }
-
-  @KafkaListener(
-    id = USER_DELETED_LISTENER_ID,
-    topicPattern = "FOLIO.Default.diku.USER_DELETED",
-    concurrency = "1",
-    containerFactory = "kafkaListenerContainerFactory")
-  public void userDeletedListener(String data, MessageHeaders messageHeaders) {
-    log.info("Received USER_DELETED message: {}", data);
-    runInFolioContext(getFolioExecutionContextCreatePrimaryAffiliationEvent(messageHeaders, moduleMetadata),
-      () -> userAffiliationService.deletePrimaryUserAffiliation(data));
   }
 
 

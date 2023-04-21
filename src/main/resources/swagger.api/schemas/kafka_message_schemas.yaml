@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: Order export API
+  title: mod-consortia schemas
   version: v1
 servers:
   - url: https://order-stub.com/

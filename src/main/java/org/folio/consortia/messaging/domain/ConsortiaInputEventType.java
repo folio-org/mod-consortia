@@ -1,6 +1,6 @@
 package org.folio.consortia.messaging.domain;
 
-public enum ConsortiaInputEventTypes {
+public enum ConsortiaInputEventType {
   USER_CREATED,
   USER_DELETED
 }
