@@ -7,6 +7,7 @@ import org.folio.consortia.service.UserAffiliationService;
 import org.folio.spring.FolioModuleMetadata;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class ConsortiaEventListener {
 
   @KafkaListener(
     id = USER_CREATED_LISTENER_ID,
-    topicPattern = "FOLIO.Default.diku.USER_CREATED",
+    topicPattern = "#{folioKafkaProperties.listener['user-created'].topicPattern}",
     concurrency = "1",
     containerFactory = "kafkaListenerContainerFactory")
   public void userCreatedListener(String data, MessageHeaders messageHeaders) {

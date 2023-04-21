@@ -32,7 +32,7 @@ spring:
       okhttp:
         enabled: true
 folio:
-  environment: ${ENV:folio}
+  environment: ${ENV:FOLIO}
   kafka:
     numberOfPartitions: ${NUMBER_OF_PARTITIONS:1}
     replicationFactor: ${REPLICATION_FACTOR:1}

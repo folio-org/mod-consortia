@@ -6,7 +6,10 @@ import org.folio.consortia.service.UserAffiliationService;
 import org.folio.consortia.service.UserTenantService;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
@@ -20,13 +23,22 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   private final UserTenantService userTenantService;
   private final TenantService tenantService;
   private final KafkaService kafkaService;
-  private final ObjectMapper objectMapper;
+  private static final ObjectMapper OBJECT_MAPPER;
+
+  static {
+    OBJECT_MAPPER =
+      new ObjectMapper()
+        .findAndRegisterModules()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+        .setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+  }
 
   @Override
   @SneakyThrows
   public void createPrimaryUserAffiliation(String eventPayload) {
     try {
-      var userEvent = objectMapper.readValue(eventPayload, org.folio.consortia.domain.dto.UserEvent.class);
+      var userEvent = OBJECT_MAPPER.readValue(eventPayload, org.folio.consortia.domain.dto.UserEvent.class);
       // check if tenant is part of consortia
       var consortiaTenant = tenantService.getByTenantId(userEvent.getTenantId());
       if (consortiaTenant == null) {
@@ -44,7 +56,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
         userTenantService.createPrimaryUserTenantAffiliation(consortiaTenant.getConsortiumId(), consortiaTenant, userEvent);
       }
 
-      kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_CREATED, consortiaTenant.getConsortiumId().toString(), eventPayload);
+      kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_CREATED, consortiaTenant.getConsortiumId().toString(), userEvent);
       log.info("Primary affiliation has been set for the user: {}", userEvent.getUserDto().getId());
     } catch (Exception e) {
       log.error("Exception occurred while creating primary affiliation", e);
@@ -54,6 +66,5 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   @Override
   public void deletePrimaryUserAffiliation(String data) {
     // TODO : implement deletion with transactional outbox
-    kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_DELETED, "consortiaTenant.getConsortiumId().toString()", data);
   }
 }
