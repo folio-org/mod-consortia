@@ -25,7 +25,6 @@ import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserTenantService;
-import org.folio.consortia.support.extension.impl.KafkaContainerExtension;
 import org.folio.spring.DefaultFolioExecutionContext;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
@@ -34,13 +33,11 @@ import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 
-@ExtendWith(KafkaContainerExtension.class)
 class UserAffiliationServiceImplTest {
   private static final String userCreatedEventSample = getMockData("mockdata/kafka/primary_affiliation_request.json");;
 
@@ -59,6 +56,7 @@ class UserAffiliationServiceImplTest {
   @Mock
   KafkaService kafkaService;
   FolioExecutionContext folioExecutionContext;
+  AutoCloseable mockitoMocks;
 
   private RecordHeader createKafkaHeader(String headerName, String headerValue) {
     return new RecordHeader(headerName, headerValue.getBytes(StandardCharsets.UTF_8));
@@ -66,12 +64,12 @@ class UserAffiliationServiceImplTest {
 
   @BeforeEach
   public void beforeEach() {
-   MockitoAnnotations.openMocks(this);
+    mockitoMocks = MockitoAnnotations.openMocks(this);
   }
 
   @AfterEach
   public void afterEach() throws Exception {
-    // mockitoMocks.close();
+    mockitoMocks.close();
   }
 
   @Test
@@ -84,7 +82,6 @@ class UserAffiliationServiceImplTest {
 
     Map<String, Collection<String>> map = new HashMap<>();
     map.put(TENANT, List.of(TENANT));
-    map.put(XOkapiHeaders.URL, List.of("asd"));
     map.put(TOKEN, List.of(TOKEN));
     map.put(XOkapiHeaders.USER_ID, List.of(UUID.randomUUID().toString()));
     folioExecutionContext = new DefaultFolioExecutionContext(folioModuleMetadata, map);
