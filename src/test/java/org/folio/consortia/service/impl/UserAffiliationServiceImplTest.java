@@ -25,6 +25,7 @@ import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserTenantService;
+import org.folio.consortia.support.extension.impl.KafkaContainerExtension;
 import org.folio.spring.DefaultFolioExecutionContext;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
@@ -33,11 +34,13 @@ import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 
+@ExtendWith(KafkaContainerExtension.class)
 class UserAffiliationServiceImplTest {
   private static final String userCreatedEventSample = getMockData("mockdata/kafka/primary_affiliation_request.json");;
 
