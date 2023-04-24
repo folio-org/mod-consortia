@@ -62,8 +62,4 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       log.error("Exception occurred while creating primary affiliation", e);
     }
   }
-
-  @Override
-  public void deletePrimaryUserAffiliation(String data) {
-  }
 }

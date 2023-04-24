@@ -7,7 +7,6 @@ import org.folio.consortia.service.UserAffiliationService;
 import org.folio.spring.FolioModuleMetadata;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
