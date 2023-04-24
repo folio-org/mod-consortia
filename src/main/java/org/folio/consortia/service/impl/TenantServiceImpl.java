@@ -75,11 +75,8 @@ public class TenantServiceImpl implements TenantService {
 
   @Override
   public TenantEntity getByTenantId(String tenantId) {
-    try {
-      return tenantRepository.findFirstByName(tenantId);
-    } catch (ResourceNotFoundException e) {
-      return null;
-    }
+      return tenantRepository.findById(tenantId)
+        .orElse(null);
   }
 
   private void checkTenantNotExistsOrThrow(String tenantId) {
