@@ -12,5 +12,4 @@ import org.springframework.stereotype.Repository;
 public interface TenantRepository extends JpaRepository<TenantEntity, String> {
 
   Page<TenantEntity> findByConsortiumId(UUID consortiumId, Pageable pageable);
-  TenantEntity findFirstByName(String tenantId);
 }

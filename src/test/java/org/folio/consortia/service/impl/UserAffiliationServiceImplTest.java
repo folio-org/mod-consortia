@@ -5,7 +5,6 @@ import static org.folio.spring.integration.XOkapiHeaders.TENANT;
 import static org.folio.spring.integration.XOkapiHeaders.TOKEN;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -95,7 +94,7 @@ class UserAffiliationServiceImplTest {
 
   @Test
   void tenantNotInConsortiaTest() {
-    when(tenantRepository.findFirstByName(anyString())).thenReturn(null);
+    when(tenantRepository.findById(anyString())).thenReturn(null);
 
     Map<String, Collection<String>> map = new HashMap<>();
     map.put(TENANT, List.of(TENANT));

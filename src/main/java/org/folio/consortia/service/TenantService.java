@@ -45,10 +45,10 @@ public interface TenantService {
   void delete(UUID consortiumId, String tenantId);
 
   /**
-   * Gets tenant collection based on consortiumId.
+   * Gets tenant entity based on tenantId.
    *
    * @param tenantId the tenantId
-   * @return tenant collection
+   * @return tenant Entity
    */
   TenantEntity getByTenantId(String tenantId);
 }
