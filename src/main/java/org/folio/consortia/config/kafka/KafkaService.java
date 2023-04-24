@@ -73,7 +73,7 @@ public class KafkaService {
   }
 
   /**
-   * Restarts kafka event listeners in mod-data-export-spring application.
+   * Restarts kafka event listeners in mod-consortia application.
    */
   public void restartEventListeners() {
     log.info("Restarting kafka consumer to start listening created topics [id: {}]", EVENT_LISTENER_ID);
