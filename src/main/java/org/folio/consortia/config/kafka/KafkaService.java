@@ -1,13 +1,15 @@
 package org.folio.consortia.config.kafka;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.admin.NewTopic;
+import org.folio.consortia.config.kafka.properties.FolioKafkaProperties;
+import org.folio.consortia.messaging.domain.ConsortiaInputEventType;
+import org.folio.consortia.messaging.domain.ConsortiaOutputEventType;
 import org.folio.spring.FolioExecutionContext;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
@@ -31,14 +33,13 @@ public class KafkaService {
   public static final String EVENT_LISTENER_ID = "mod-consortia-events-listener";
 
   private final KafkaAdmin kafkaAdmin;
-  private final KafkaTemplate<String, Object> kafkaTemplate;
-  private final KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
   private final BeanFactory beanFactory;
-  private final Environment springEnvironment;
   private final FolioExecutionContext folioExecutionContext;
-
-  @Value("${env:folio}")
-  private String environment;
+  private final KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
+  private final FolioKafkaProperties folioKafkaProperties;
+  private final Environment springEnvironment;
+  private final String kafkaEnvId;
+  private final KafkaTemplate<String, Object> kafkaTemplate;
 
   @RequiredArgsConstructor
   @AllArgsConstructor
@@ -53,18 +54,22 @@ public class KafkaService {
   }
 
   public void createKafkaTopics() {
+    if (folioExecutionContext == null) {
+      throw new IllegalStateException("Could be executed only in Folio-request scope");
+    }
     var tenantId = folioExecutionContext.getTenantId();
-    List<NewTopic> newTopics = tenantSpecificTopics(tenantId);
+    var topicList = tenantSpecificTopics(tenantId);
 
-    log.info("Creating topics for kafka [topics: {}]", newTopics);
+    log.info("Creating topics for kafka [topics: {}]", topicList);
     var configurableBeanFactory = (ConfigurableBeanFactory) beanFactory;
-    newTopics.forEach(newTopic -> {
+    topicList.forEach(newTopic -> {
       var beanName = newTopic.name() + ".topic";
       if (!configurableBeanFactory.containsBean(beanName)) {
         configurableBeanFactory.registerSingleton(beanName, newTopic);
       }
     });
     kafkaAdmin.initialize();
+    restartEventListeners();
   }
 
   /**
@@ -79,33 +84,34 @@ public class KafkaService {
   }
 
   private List<NewTopic> tenantSpecificTopics(String tenant) {
-    return Arrays.stream(Topic.values())
-      .map(topic -> toKafkaTopic(tenant, topic))
+    var eventsNameStreamBuilder = Stream.<Enum<?>>builder();
+    for (ConsortiaInputEventType consEventType : ConsortiaInputEventType.values()) {
+      eventsNameStreamBuilder.add(consEventType);
+    }
+    eventsNameStreamBuilder.add(ConsortiaOutputEventType.CONSORTIUM_PRIMARY_AFFILIATION_CREATED);
+    return eventsNameStreamBuilder.build()
+      .map(Enum::name)
+      .map(topic -> getTenantTopicName(topic, tenant))
+      .map(this::toKafkaTopic)
       .toList();
   }
 
-  private NewTopic toKafkaTopic(String tenant, Topic topic) {
-    var envProperty = String.format("application.kafka.topic-configuration.%s.partitions", topic.getTopicName());
-    var partitions = Integer.parseInt(springEnvironment.getProperty(envProperty, "1"));
-    var tenantTopicName = getTenantTopicName(topic, tenant);
-    return TopicBuilder.name(tenantTopicName).partitions(partitions).build();
+  private NewTopic toKafkaTopic(String topic) {
+    return TopicBuilder.name(topic)
+      .replicas(folioKafkaProperties.getReplicationFactor())
+      .partitions(folioKafkaProperties.getNumberOfPartitions())
+      .build();
   }
 
   /**
    * Returns topic name in the format - `{env}.{tenant}.topicName`
    *
-   * @param topic initial topic name as {@link String}
+   * @param topicName initial topic name as {@link String}
    * @param tenantId tenant id as {@link String}
    * @return topic name as {@link String} object
    */
-  private String getTenantTopicName(Topic topic, String tenantId) {
-    String topicName = topic.getTopicName();
-    String topicNameSpace = topic.getNameSpace();
-    if (StringUtils.isNotEmpty(topicNameSpace)) {
-      //Meet naming convention from folio-kafka-wrapper
-      return String.format("%s.%s.%s.%s", environment, topicNameSpace, tenantId, topicName);
-    }
-    return String.format("%s.%s.%s", environment, tenantId, topicName);
+  private String getTenantTopicName(String topicName, String tenantId) {
+    return String.format("%s.Default.%s.%s", kafkaEnvId, tenantId, topicName);
   }
 
   public void send(Topic topic, String key, Object data) {
@@ -114,7 +120,7 @@ public class KafkaService {
     if (StringUtils.isBlank(tenant)) {
       throw new IllegalStateException("Can't send to Kafka because tenant is blank");
     }
-    kafkaTemplate.send(getTenantTopicName(topic, tenant), key, data);
+    kafkaTemplate.send(getTenantTopicName(topic.getTopicName(), tenant), key, data);
     log.info("Sent {}.", data);
   }
 }
