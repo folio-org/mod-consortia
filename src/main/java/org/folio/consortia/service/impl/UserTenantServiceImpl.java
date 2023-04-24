@@ -116,7 +116,7 @@ public class UserTenantServiceImpl implements UserTenantService {
 
     Optional<UserTenantEntity> userTenant = userTenantRepository.findByUserIdAndIsPrimary(userTenantDto.getUserId(), IS_PRIMARY_TRUE);
     if (userTenant.isEmpty()) {
-      log.warn("Could not found user with id: {} in user_tenant table for tenant id: {}",
+      log.warn("Could not find user with id: {} in user_tenant table for tenant id: {}",
         userTenantDto.getUserId(), userTenantDto.getTenantId());
       throw new ResourceNotFoundException(USER_ID, String.valueOf(userTenantDto.getUserId()));
     }
@@ -179,7 +179,7 @@ public class UserTenantServiceImpl implements UserTenantService {
         user.setPatronGroup(userOptional.getPatronGroup());
         user.setActive(true);
       } else {
-        log.warn("Could not found real user with id: {} in his home tenant: {}", userId.toString(), userTenantEntity.getTenant().getId());
+        log.warn("Could not find real user with id: {} in his home tenant: {}", userId.toString(), userTenantEntity.getTenant().getId());
         throw new ResourceNotFoundException(USER_ID, userId.toString());
       }
       return user;
