@@ -1,5 +1,7 @@
 package org.folio.consortia.config.kafka;
 
+import static org.folio.consortia.messaging.listener.ConsortiaEventListener.USER_CREATED_LISTENER_ID;
+
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -23,7 +25,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
 
 @Component
 @Log4j2
@@ -76,8 +77,8 @@ public class KafkaService {
    * Restarts kafka event listeners in mod-consortia application.
    */
   public void restartEventListeners() {
-    log.info("Restarting kafka consumer to start listening created topics [id: {}]", EVENT_LISTENER_ID);
-    var listenerContainer = kafkaListenerEndpointRegistry.getListenerContainer(EVENT_LISTENER_ID);
+    log.info("Restarting kafka consumer to start listening created topics [id: {}]", USER_CREATED_LISTENER_ID);
+    var listenerContainer = kafkaListenerEndpointRegistry.getListenerContainer(USER_CREATED_LISTENER_ID);
     Assert.notNull(listenerContainer, "Listener container not found");
     listenerContainer.stop();
     listenerContainer.start();

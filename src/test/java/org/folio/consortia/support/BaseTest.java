@@ -40,7 +40,7 @@ import lombok.SneakyThrows;
 @AutoConfigureMockMvc
 @Testcontainers
 @EmbeddedKafka
-@EnableKafka
+@EnableKafkaExtension
 public abstract class BaseTest {
 
   @Autowired
