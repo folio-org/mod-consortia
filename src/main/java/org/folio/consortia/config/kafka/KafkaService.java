@@ -75,20 +75,13 @@ public class KafkaService {
   /**
    * Restarts kafka event listeners in mod-consortia application.
    */
-//  public void restartEventListeners() {
-//    log.info("Restarting kafka consumer to start listening created topics [id: {}]", USER_CREATED_LISTENER_ID);
-//    var listenerContainer = kafkaListenerEndpointRegistry.getListenerContainer(USER_CREATED_LISTENER_ID);
-//    Assert.notNull(listenerContainer, "Listener container not found");
-//    listenerContainer.stop();
-//    listenerContainer.start();
-//  }
   public void restartEventListeners() {
     restartEventListener(USER_CREATED_LISTENER_ID);
     restartEventListener(USER_DELETED_LISTENER_ID);
   }
 
   private void restartEventListener(String listenerId) {
-    log.info("Restarting kafka consumer to start listening created topics [id: {}]", listenerId);
+    log.info("Restarting kafka consumer to start listening topics [id: {}]", listenerId);
     var listenerContainer = kafkaListenerEndpointRegistry.getListenerContainer(listenerId);
     if (listenerContainer != null) {
       listenerContainer.stop();
