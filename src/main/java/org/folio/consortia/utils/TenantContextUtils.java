@@ -18,7 +18,15 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class TenantContextUtils {
+  public static FolioExecutionContext getFolioExecutionContextCopyForTenant(FolioExecutionContext context,
+    String tenant) {
+    var headers = context.getAllHeaders() != null
+      ? context.getAllHeaders()
+      : new HashMap<String, Collection<String>>();
+    headers.put(XOkapiHeaders.TENANT, Collections.singletonList(tenant));
 
+    return new DefaultFolioExecutionContext(context.getFolioModuleMetadata(), headers);
+  }
   public static FolioExecutionContext getFolioExecutionContextCreatePrimaryAffiliationEvent(
                                                                                   MessageHeaders headers,
                                                                                   FolioModuleMetadata moduleMetadata) {
