@@ -1,19 +1,19 @@
 package org.folio.consortia.service.impl;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.log4j.Log4j2;
 import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserAffiliationService;
 import org.folio.consortia.service.UserTenantService;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-
-import lombok.AllArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.extern.log4j.Log4j2;
+import java.util.UUID;
 
 @Service
 @Log4j2
@@ -60,6 +60,24 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       log.info("Primary affiliation has been set for the user: {}", userEvent.getUserDto().getId());
     } catch (Exception e) {
       log.error("Exception occurred while creating primary affiliation", e);
+    }
+  }
+
+  @Override
+  @SneakyThrows
+  public void deletePrimaryUserAffiliation(String data) {
+    try {
+      var userEvent = OBJECT_MAPPER.readValue(data, org.folio.consortia.domain.dto.UserEvent.class);
+      // checking whether tenant part of consortia
+      var consortiaTenant = tenantService.getByTenantId(userEvent.getTenantId());
+      if (consortiaTenant == null) {
+        log.warn("Tenant {} not exists in consortia", userEvent.getTenantId());
+        return;
+      }
+      userTenantService.deletePrimaryUserTenantAffiliation(UUID.fromString(userEvent.getUserDto().getId()));
+      kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_DELETED, consortiaTenant.getConsortiumId().toString(), userEvent);
+    } catch (Exception e) {
+      log.error("Exception occurred while deleting primary affiliation", e);
     }
   }
 }
