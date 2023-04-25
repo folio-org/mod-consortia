@@ -2,10 +2,15 @@ package org.folio.consortia.service;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -23,6 +28,7 @@ import org.folio.consortia.domain.dto.Personal;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
+import org.folio.consortia.domain.dto.Userdata;
 import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
@@ -38,6 +44,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -390,6 +397,20 @@ class UserTenantServiceTest {
     var result = userTenantService.getByUsernameAndTenantIdOrNull(UUID.randomUUID(), RandomStringUtils.random(5), RandomStringUtils.random(5));
 
     Assertions.assertNull(result);
+  }
+
+  @Test
+  void shouldSavePrimaryAffiliation() {
+    var consId = UUID.randomUUID();
+    var userEvent = new org.folio.consortia.domain.dto.UserEvent();
+    userEvent.userDto(new Userdata()
+      .id(UUID.randomUUID().toString())
+      .username("userName"));
+    ArgumentCaptor<UserTenantEntity> argCaptor = ArgumentCaptor.forClass(UserTenantEntity.class);
+    when(userTenantRepository.save(argCaptor.capture())).thenAnswer(i -> i.getArguments()[0]);
+
+    var result = userTenantService.createPrimaryUserTenantAffiliation(consId, new TenantEntity(), userEvent);
+    assertNull(result);
   }
 
   private UserTenantEntity createUserTenantEntity(UUID associationId, UUID userId, String username, String tenantId) {

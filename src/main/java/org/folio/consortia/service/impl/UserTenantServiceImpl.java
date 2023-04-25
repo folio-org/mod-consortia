@@ -156,8 +156,8 @@ public class UserTenantServiceImpl implements UserTenantService {
     userTenantEntity.setTenant(consortiaTenant);
     userTenantEntity.setIsPrimary(IS_PRIMARY_TRUE);
 
-    userTenantRepository.save(userTenantEntity);
-    return converter.convert(userTenantEntity, UserTenant.class);
+    var createdRecord = userTenantRepository.save(userTenantEntity);
+    return converter.convert(createdRecord, UserTenant.class);
   }
 
   @Transactional
