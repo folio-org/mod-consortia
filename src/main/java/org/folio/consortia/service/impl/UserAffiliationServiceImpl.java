@@ -27,7 +27,11 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   private static final ObjectMapper OBJECT_MAPPER;
 
   static {
-    OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false).setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+    OBJECT_MAPPER = new ObjectMapper()
+      .findAndRegisterModules()
+      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+      .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+      .setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
   }
 
   @Override
