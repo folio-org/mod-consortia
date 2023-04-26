@@ -37,8 +37,8 @@ import static org.mockito.Mockito.when;
 
 
 class UserAffiliationServiceTest {
-  private static final String userCreatedEventSample = getMockData("mockdata/kafka/primary_affiliation_request.json");
-
+  private static final String userCreatedEventSample = getMockData("mockdata/kafka/create_primary_affiliation_request.json");
+  private static final String userDeletedEventSample = getMockData("mockdata/kafka/delete_primary_affiliation_request.json");
   @Mock
   private FolioModuleMetadata folioModuleMetadata;
   @InjectMocks
@@ -91,7 +91,7 @@ class UserAffiliationServiceTest {
   }
 
   @Test
-  void tenantNotInConsortiaTest() {
+  void tenantNotInConsortiaWhenCreatingTest() {
     when(tenantRepository.findById(anyString())).thenReturn(null);
 
     Map<String, Collection<String>> map = new HashMap<>();
@@ -123,14 +123,30 @@ class UserAffiliationServiceTest {
 
   @Test
   void primaryAffiliationSuccessfullyDeletedTest() {
-    doNothing().when(userTenantService).deletePrimaryUserTenantAffiliation(any());
+    var te = getTenantEntity();
+    when(tenantService.getByTenantId(anyString())).thenReturn(te);
+    doNothing().when(consortiumService).checkConsortiumExistsOrThrow(any());
 
     Map<String, Collection<String>> map = new HashMap<>();
     map.put(TENANT, List.of(TENANT));
     map.put(TOKEN, List.of(TOKEN));
     folioExecutionContext = new DefaultFolioExecutionContext(folioModuleMetadata, map);
     try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
-      userAffiliationService.deletePrimaryUserAffiliation(userCreatedEventSample);
+      userAffiliationService.deletePrimaryUserAffiliation(userDeletedEventSample);
+    }
+    verify(kafkaService, times(1)).send(any(), anyString(), any());
+  }
+
+  @Test
+  void tenantNotInConsortiaWhenDeletingTest() {
+    when(tenantRepository.findById(anyString())).thenReturn(null);
+
+    Map<String, Collection<String>> map = new HashMap<>();
+    map.put(TENANT, List.of(TENANT));
+    map.put(TOKEN, List.of(TOKEN));
+    folioExecutionContext = new DefaultFolioExecutionContext(folioModuleMetadata, map);
+    try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
+      userAffiliationService.deletePrimaryUserAffiliation(userDeletedEventSample);
     }
     verify(kafkaService, times(0)).send(any(), anyString(), any());
   }
