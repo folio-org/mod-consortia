@@ -86,7 +86,7 @@ public class ErrorHandlingController {
     List<Error> errorList = ex.getConstraintViolations()
       .stream()
       .map(violation -> {
-        var customCode = violation.getRootBeanClass() != null ? violation.getRootBeanClass().getSimpleName() : EMPTY + "ValidationError";
+        var customCode = (violation.getRootBeanClass() != null ? violation.getRootBeanClass().getSimpleName() : EMPTY) + "ValidationError";
         return new Error()
           // Extract the error message and validation errors from the ConstraintViolationException
           .message(String.format("'%s' validation failed. %s", violation.getPropertyPath(), violation.getMessage()))
