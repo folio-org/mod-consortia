@@ -17,9 +17,7 @@
             "GET"
           ],
           "pathPattern": "/consortia",
-          "permissionsRequired": [
-            "consortia.consortium.collection.get"
-          ],
+          "permissionsRequired": [],
           "modulePermissions": []
         },
         {
@@ -57,9 +55,7 @@
             "GET"
           ],
           "pathPattern": "/consortia/{consortiumId}/tenants",
-          "permissionsRequired": [
-            "consortia.tenants.collection.get"
-          ],
+          "permissionsRequired": [],
           "modulePermissions": []
         },
         {
