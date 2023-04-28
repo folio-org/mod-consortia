@@ -8,10 +8,12 @@ import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.folio.consortia.config.kafka.KafkaService;
+import org.folio.consortia.domain.dto.PrimaryAffiliationEvent;
 import org.folio.consortia.domain.dto.UserEvent;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserAffiliationService;
 import org.folio.consortia.service.UserTenantService;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -55,7 +57,10 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
         userTenantService.createPrimaryUserTenantAffiliation(consortiaTenant.getConsortiumId(), consortiaTenant, userEvent);
       }
 
-      kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_CREATED, consortiaTenant.getConsortiumId().toString(), userEvent);
+      PrimaryAffiliationEvent primaryAffiliationEvent = createUserAffiliationEvent(userEvent, consortiaTenant.getConsortiumId());
+      String data = OBJECT_MAPPER.writeValueAsString(primaryAffiliationEvent);
+
+      kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_CREATED, consortiaTenant.getConsortiumId().toString(), data);
       log.info("Primary affiliation has been set for the user: {}", userEvent.getUserDto().getId());
     } catch (Exception e) {
       log.error("Exception occurred while creating primary affiliation", e);
@@ -76,10 +81,21 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       }
 
       userTenantService.deletePrimaryUserTenantAffiliation(UUID.fromString(userEvent.getUserDto().getId()));
-      kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_DELETED, consortiaTenant.getConsortiumId().toString(), userEvent);
+      PrimaryAffiliationEvent primaryAffiliationEvent = createUserAffiliationEvent(userEvent, consortiaTenant.getConsortiumId());
+      String data = OBJECT_MAPPER.writeValueAsString(primaryAffiliationEvent);
+
+      kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_DELETED, consortiaTenant.getConsortiumId().toString(), data);
       log.info("Primary affiliation has been deleted for the user: {}", userEvent.getUserDto().getId());
     } catch (Exception e) {
       log.error("Exception occurred while deleting primary affiliation", e);
     }
+  }
+
+  private PrimaryAffiliationEvent createUserAffiliationEvent(UserEvent userEvent, UUID consortiumId) {
+    PrimaryAffiliationEvent primaryAffiliationEvent = new PrimaryAffiliationEvent();
+    primaryAffiliationEvent.setId(consortiumId);
+    primaryAffiliationEvent.setUserId(UUID.fromString(userEvent.getUserDto().getId()));
+    primaryAffiliationEvent.setTenantId(userEvent.getTenantId());
+    return primaryAffiliationEvent;
   }
 }
