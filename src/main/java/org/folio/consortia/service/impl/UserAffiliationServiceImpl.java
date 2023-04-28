@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.domain.dto.PrimaryAffiliationEvent;
 import org.folio.consortia.domain.dto.UserEvent;
@@ -91,10 +92,13 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   }
 
   private PrimaryAffiliationEvent createPrimaryAffiliationEvent(UserEvent userEvent) {
-    PrimaryAffiliationEvent primaryAffiliationEvent = new PrimaryAffiliationEvent();
-    primaryAffiliationEvent.setId(userEvent.getId());
-    primaryAffiliationEvent.setUserId(UUID.fromString(userEvent.getUserDto().getId()));
-    primaryAffiliationEvent.setTenantId(userEvent.getTenantId());
-    return primaryAffiliationEvent;
+    PrimaryAffiliationEvent event = new PrimaryAffiliationEvent();
+    event.setId(userEvent.getId());
+    event.setUserId(UUID.fromString(userEvent.getUserDto().getId()));
+    if (StringUtils.isNotBlank(userEvent.getUserDto().getUsername())) { // for delete event username will be empty
+      event.setUserName(userEvent.getUserDto().getUsername());
+    }
+    event.setTenantId(userEvent.getTenantId());
+    return event;
   }
 }
