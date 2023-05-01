@@ -41,19 +41,12 @@ public class ErrorHelper {
 
   public static Errors createPermissionError(FeignException e, ErrorCode errorCode){
     String message = e.getMessage();
-    String extractedMessage = extractPermissionFromErrorMessage(message); // extract the main part from the error message
+    String extractedMessage = extractPermissionFromErrorMessage(message);
     return createErrors(createError(extractedMessage, ErrorType.INTERNAL, errorCode));
   }
 
-  private String extractPermissionFromErrorMessage(String errorMessage) {
-    String regex = "\\[.*: \\[(.*)\\]"; // regex to extract the main part from the error message
-    Pattern pattern = Pattern.compile(regex);
-    Matcher matcher = pattern.matcher(errorMessage);
-    if (matcher.find()) {
-      return matcher.group(1);
-    } else {
-      return "unknown";
-    }
+  private String extractPermissionFromErrorMessage(String e) {
+    return e.substring(e.lastIndexOf('[') + 1, e.lastIndexOf(']')); // extract the main part from the error message
   }
 
   public enum ErrorType {
