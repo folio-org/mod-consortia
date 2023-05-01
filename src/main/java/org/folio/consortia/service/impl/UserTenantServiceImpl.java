@@ -164,7 +164,6 @@ public class UserTenantServiceImpl implements UserTenantService {
   public void deleteByUserIdAndTenantId(UUID consortiumId, String tenantId, UUID userId) {
     log.debug("Going to delete user affiliation for user id: {} in the tenant: {}", userId.toString(), tenantId);
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
-    String currentTenantId = folioExecutionContext.getTenantId();
 
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     UserTenantEntity userTenantEntity = userTenantRepository.findByUserIdAndTenantId(userId, tenantId)
@@ -177,11 +176,9 @@ public class UserTenantServiceImpl implements UserTenantService {
     }
 
     userTenantRepository.deleteByUserIdAndTenantId(userId, tenantId);
-    User user;
+
     try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, currentTenantContext))) {
-      user = getUser(userId);
-    }
-    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(currentTenantId, currentTenantContext))) {
+      User user = getUser(userId);
       deactivateUser(user);
       log.info("User affiliation deleted and user deactivated for user id: {} in the tenant: {}", userId.toString(), tenantId);
     }
