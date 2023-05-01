@@ -12,7 +12,6 @@ import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
-import org.folio.consortia.exception.ConsortiumClientException;
 import org.folio.consortia.exception.PrimaryAffiliationException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.UserTenantRepository;
@@ -164,6 +163,8 @@ public class UserTenantServiceImpl implements UserTenantService {
   public void deleteByUserIdAndTenantId(UUID consortiumId, String tenantId, UUID userId) {
     log.debug("Going to delete user affiliation for user id: {} in the tenant: {}", userId.toString(), tenantId);
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
+    String currentTenantId = folioExecutionContext.getTenantId();
+
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     UserTenantEntity userTenantEntity = userTenantRepository.findByUserIdAndTenantId(userId, tenantId)
       .orElseThrow(() -> new ResourceNotFoundException(USER_ID + ", " + TENANT_ID, userId + ", " + tenantId));
@@ -173,14 +174,17 @@ public class UserTenantServiceImpl implements UserTenantService {
         userId.toString(), userTenantEntity.getTenant().getId());
       throw new PrimaryAffiliationException(String.valueOf(userId), tenantId);
     }
-    userTenantRepository.deleteByUserIdAndTenantId(userId, tenantId);
 
+    userTenantRepository.deleteByUserIdAndTenantId(userId, tenantId);
+    User user = null;
+    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(currentTenantId, currentTenantContext))) {
+      user = getUser(userId);
+    }
     try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, currentTenantContext))) {
-      User user = getUser(userId);
+      user = getUser(userId);
       deactivateUser(user);
       log.info("User affiliation deleted and user deactivated for user id: {} in the tenant: {}", userId.toString(), tenantId);
     }
-
   }
 
   @Override
@@ -249,7 +253,7 @@ public class UserTenantServiceImpl implements UserTenantService {
       log.info("User with userId {} does not exist in schema, going to use new one", userId);
       return new User();
     } catch (FeignException e) {
-      throw new ConsortiumClientException(String.format("Could not get a user with id %s", userId), e);
+      throw new IllegalStateException(e.getCause());
     }
   }
 
