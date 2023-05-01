@@ -62,12 +62,17 @@ public class ErrorHandlingController {
     MissingServletRequestParameterException.class,
     MethodArgumentTypeMismatchException.class,
     HttpMessageNotReadableException.class,
-    IllegalArgumentException.class,
-    PrimaryAffiliationException.class
+    IllegalArgumentException.class
   })
   public Errors handleValidationErrors(Exception e) {
     log.error("Handle validation errors", e);
     return createInternalError(e.getMessage(), VALIDATION_ERROR);
+  }
+
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ExceptionHandler(PrimaryAffiliationException.class)
+  public Errors handlePrimaryAffiliationException(Exception e) {
+    return createInternalError(e.getMessage(), HAS_ACTIVE_USER_ASSOCIATION_ERROR);
   }
 
   @ResponseStatus(HttpStatus.FORBIDDEN)
