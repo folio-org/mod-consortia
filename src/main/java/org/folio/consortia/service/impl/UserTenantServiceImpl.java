@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -252,7 +254,21 @@ public class UserTenantServiceImpl implements UserTenantService {
       log.info("User with userId {} does not exist in schema, going to use new one", userId);
       return new User();
     } catch (FeignException e) {
-      throw new IllegalStateException(e.getCause());
+      int errorCode = e.status(); // get the HTTP error code from the exception
+      String message = e.getMessage();
+      String permission = extractPermissionFromErrorMessage(message); // extract the permission from the error message
+      String formattedMessage = String.format("Access for user '%s' requires permission: %s [%d %s]", userId.toString(), permission, errorCode, message);
+      throw new IllegalStateException(formattedMessage);
+    }
+  }
+
+  private String extractPermissionFromErrorMessage(String errorMessage) {
+    Pattern pattern = Pattern.compile("permission: (\\S+)"); // regex to extract the permission from the error message
+    Matcher matcher = pattern.matcher(errorMessage);
+    if (matcher.find()) {
+      return matcher.group(1);
+    } else {
+      return "unknown";
     }
   }
 

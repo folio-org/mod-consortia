@@ -1,8 +1,10 @@
 package org.folio.consortia.utils;
 
+import feign.FeignException;
 import lombok.experimental.UtilityClass;
 import org.folio.consortia.domain.dto.Error;
 import org.folio.consortia.domain.dto.Errors;
+import org.folio.consortia.exception.ConsortiumClientException;
 
 import java.util.List;
 
@@ -55,6 +57,7 @@ public class ErrorHelper {
   }
 
   public enum ErrorCode {
-    VALIDATION_ERROR, NOT_FOUND_ERROR, INTERACT_ERROR, DUPLICATE_ERROR, HAS_ACTIVE_USER_ASSOCIATION_ERROR
+    VALIDATION_ERROR, NOT_FOUND_ERROR, INTERACT_ERROR, DUPLICATE_ERROR, HAS_ACTIVE_USER_ASSOCIATION_ERROR, PERMISSION_ERROR
   }
+
 }

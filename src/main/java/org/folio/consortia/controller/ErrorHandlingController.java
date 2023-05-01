@@ -1,6 +1,7 @@
 package org.folio.consortia.controller;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.folio.consortia.utils.ErrorHelper.ErrorCode.PERMISSION_ERROR;
 import static org.folio.consortia.utils.ErrorHelper.createInternalError;
 import static org.folio.consortia.utils.ErrorHelper.ErrorCode.DUPLICATE_ERROR;
 import static org.folio.consortia.utils.ErrorHelper.ErrorCode.NOT_FOUND_ERROR;
@@ -9,6 +10,7 @@ import static org.folio.consortia.utils.ErrorHelper.ErrorCode.VALIDATION_ERROR;
 import java.util.List;
 import java.util.Objects;
 
+import feign.FeignException;
 import org.folio.consortia.domain.dto.Error;
 import org.folio.consortia.domain.dto.Errors;
 import org.folio.consortia.exception.ConsortiumClientException;
@@ -57,11 +59,11 @@ public class ErrorHandlingController {
     return createInternalError(Objects.requireNonNull(e.getRootCause()).getMessage(), VALIDATION_ERROR);
   }
 
-  @ResponseStatus(HttpStatus.CONFLICT)
+  @ResponseStatus(HttpStatus.FORBIDDEN)
   @ExceptionHandler(IllegalStateException.class)
   public Errors handleIllegalStateException(IllegalStateException e) {
     log.error("Handle illegal state", e);
-    return createInternalError(e.getMessage(), VALIDATION_ERROR);
+    return createInternalError(e.getMessage(), PERMISSION_ERROR);
   }
 
   @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -70,13 +72,19 @@ public class ErrorHandlingController {
     MethodArgumentTypeMismatchException.class,
     HttpMessageNotReadableException.class,
     IllegalArgumentException.class,
-    ConsortiumClientException.class,
     PrimaryAffiliationException.class
   })
   public Errors handleValidationErrors(Exception e) {
     log.error("Handle validation errors", e);
     return createInternalError(e.getMessage(), VALIDATION_ERROR);
   }
+
+//  @ResponseStatus(HttpStatus.FORBIDDEN)
+//  @ExceptionHandler(ConsortiumClientException.class)
+//  public Errors handleConsortiumClientException(FeignException e) {
+//    log.error("Handle consortium client exception", e);
+//    return createErrorFromFeignException(e);
+//  }
 
   @ExceptionHandler(ConstraintViolationException.class)
   @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
