@@ -6,6 +6,7 @@ import static org.folio.consortia.utils.ErrorHelper.createInternalError;
 import static org.folio.consortia.utils.ErrorHelper.ErrorCode.DUPLICATE_ERROR;
 import static org.folio.consortia.utils.ErrorHelper.ErrorCode.NOT_FOUND_ERROR;
 import static org.folio.consortia.utils.ErrorHelper.ErrorCode.VALIDATION_ERROR;
+import static org.folio.consortia.utils.ErrorHelper.createPermissionError;
 
 import java.util.List;
 import java.util.Objects;
@@ -79,12 +80,12 @@ public class ErrorHandlingController {
     return createInternalError(e.getMessage(), VALIDATION_ERROR);
   }
 
-//  @ResponseStatus(HttpStatus.FORBIDDEN)
-//  @ExceptionHandler(ConsortiumClientException.class)
-//  public Errors handleConsortiumClientException(FeignException e) {
-//    log.error("Handle consortium client exception", e);
-//    return createErrorFromFeignException(e);
-//  }
+  @ResponseStatus(HttpStatus.FORBIDDEN)
+  @ExceptionHandler(ConsortiumClientException.class)
+  public Errors handleConsortiumClientException(FeignException e) {
+    log.error("Handle consortium client exception", e);
+    return createPermissionError(e, PERMISSION_ERROR);
+  }
 
   @ExceptionHandler(ConstraintViolationException.class)
   @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)

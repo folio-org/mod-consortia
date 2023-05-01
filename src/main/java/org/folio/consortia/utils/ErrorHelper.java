@@ -4,9 +4,10 @@ import feign.FeignException;
 import lombok.experimental.UtilityClass;
 import org.folio.consortia.domain.dto.Error;
 import org.folio.consortia.domain.dto.Errors;
-import org.folio.consortia.exception.ConsortiumClientException;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @UtilityClass
 public class ErrorHelper {
@@ -36,6 +37,23 @@ public class ErrorHelper {
 
   public static Errors createExternalError(String message, ErrorCode errorCode) {
     return createErrors(createError(message, ErrorType.FOLIO_EXTERNAL_OR_UNDEFINED, errorCode));
+  }
+
+  public static Errors createPermissionError(FeignException e, ErrorCode errorCode){
+    String message = e.getMessage();
+    String extractedMessage = extractPermissionFromErrorMessage(message); // extract the main part from the error message
+    return createErrors(createError(extractedMessage, ErrorType.INTERNAL, errorCode));
+  }
+
+  private String extractPermissionFromErrorMessage(String errorMessage) {
+    String regex = "\\[.*: \\[(.*)\\]"; // regex to extract the main part from the error message
+    Pattern pattern = Pattern.compile(regex);
+    Matcher matcher = pattern.matcher(errorMessage);
+    if (matcher.find()) {
+      return matcher.group(1);
+    } else {
+      return "unknown";
+    }
   }
 
   public enum ErrorType {
