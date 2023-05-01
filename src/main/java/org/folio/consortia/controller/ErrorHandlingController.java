@@ -1,11 +1,8 @@
 package org.folio.consortia.controller;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.folio.consortia.utils.ErrorHelper.ErrorCode.PERMISSION_ERROR;
+import static org.folio.consortia.utils.ErrorHelper.ErrorCode.*;
 import static org.folio.consortia.utils.ErrorHelper.createInternalError;
-import static org.folio.consortia.utils.ErrorHelper.ErrorCode.DUPLICATE_ERROR;
-import static org.folio.consortia.utils.ErrorHelper.ErrorCode.NOT_FOUND_ERROR;
-import static org.folio.consortia.utils.ErrorHelper.ErrorCode.VALIDATION_ERROR;
 import static org.folio.consortia.utils.ErrorHelper.createPermissionError;
 
 import java.util.List;
@@ -60,13 +57,6 @@ public class ErrorHandlingController {
     return createInternalError(Objects.requireNonNull(e.getRootCause()).getMessage(), VALIDATION_ERROR);
   }
 
-  @ResponseStatus(HttpStatus.FORBIDDEN)
-  @ExceptionHandler(IllegalStateException.class)
-  public Errors handleIllegalStateException(IllegalStateException e) {
-    log.error("Handle illegal state", e);
-    return createInternalError(e.getMessage(), PERMISSION_ERROR);
-  }
-
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ExceptionHandler({
     MissingServletRequestParameterException.class,
@@ -84,7 +74,7 @@ public class ErrorHandlingController {
   @ExceptionHandler(ConsortiumClientException.class)
   public Errors handleConsortiumClientException(FeignException e) {
     log.error("Handle consortium client exception", e);
-    return createPermissionError(e, PERMISSION_ERROR);
+    return createPermissionError(e, PERMISSION_REQUIRED);
   }
 
   @ExceptionHandler(ConstraintViolationException.class)
