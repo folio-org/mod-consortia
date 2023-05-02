@@ -34,7 +34,7 @@ public class ErrorHelper {
   }
 
   public static Errors createExternalError(String message, ErrorCode errorCode) {
-    return createErrors(createError(message, ErrorType.REQUEST_OR_NETWORK, errorCode));
+    return createErrors(createError(message, ErrorType.EXTERNAL, errorCode));
   }
 
   public static Errors createPermissionError(FeignException e, ErrorCode errorCode){
@@ -48,9 +48,9 @@ public class ErrorHelper {
   }
 
   public enum ErrorType {
-    REQUEST_OR_NETWORK("-1"),
-    INTERNAL("-2"),
-    EXTERNAL_OR_UNDEFINED("-3"),
+    EXTERNAL("-1"), // bad request or client error
+    INTERNAL("-2"), // bad gateway or internal error (db error)
+    FOLIO_EXTERNAL_OR_UNDEFINED("-3"),
     UNKNOWN("-4");
 
     private final String typeCode;

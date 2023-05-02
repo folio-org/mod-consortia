@@ -102,7 +102,7 @@ public class ErrorHandlingController {
         return new Error()
           // Extract the error message and validation errors from the ConstraintViolationException
           .message(String.format("'%s' validation failed. %s", violation.getPropertyPath(), violation.getMessage()))
-          .type(ErrorHelper.ErrorType.INTERNAL.getTypeCode())
+          .type(ErrorHelper.ErrorType.EXTERNAL.getTypeCode())
           .code(customCode);
       })
       .toList();
