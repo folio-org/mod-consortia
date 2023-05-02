@@ -22,6 +22,7 @@ import org.folio.consortia.utils.HelperUtils;
 import org.folio.spring.DefaultFolioExecutionContext;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
+import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
@@ -281,7 +282,7 @@ public class UserTenantServiceImpl implements UserTenantService {
 
   private FolioExecutionContext prepareContextForTenant(String tenantId, FolioExecutionContext context) {
     if (MapUtils.isNotEmpty(context.getOkapiHeaders())) {
-      context.getOkapiHeaders().put("x-okapi-tenant", List.of(tenantId));
+      context.getOkapiHeaders().put(XOkapiHeaders.TENANT, List.of(tenantId));
       log.info("FOLIO context initialized with tenant {}", tenantId);
     }
     return new DefaultFolioExecutionContext(folioModuleMetadata, context.getOkapiHeaders());
