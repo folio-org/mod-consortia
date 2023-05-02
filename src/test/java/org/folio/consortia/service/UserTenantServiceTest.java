@@ -61,6 +61,9 @@ import org.springframework.data.domain.PageRequest;
 class UserTenantServiceTest {
 
   private static final String CONSORTIUM_ID = "7698e46-c3e3-11ed-afa1-0242ac120002";
+  private static final String PERMISSION_EXCEPTION_MSG="[403 Forbidden] during [GET] to " +
+    "[http://users/8c54ff1e-5954-4227-8402-9a5dd061a350] [UsersClient#getUsersByUserId(String)]: " +
+    "[Access for user 'ss_admin' (b82b46b6-9a6e-46f0-b986-5c643d9ba036) requires permission: users.item.get]";
 
   @InjectMocks
   private UserTenantServiceImpl userTenantService;
