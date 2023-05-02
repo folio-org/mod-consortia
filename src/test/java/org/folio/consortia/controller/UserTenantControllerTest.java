@@ -179,7 +179,7 @@ class UserTenantControllerTest extends BaseTest {
     when(userTenantRepository.findByUserIdAndTenantId(any(), any())).thenReturn(Optional.of(userTenantEntity));
     doNothing().when(userTenantRepository).deleteByUserIdAndTenantId(any(), any());
     when(usersClient.getUsersByUserId(any())).thenThrow(
-      FeignException.Forbidden.errorStatus("getByUserId", createForbiddenResponse(PERMISSION_EXCEPTION_MSG)));
+      FeignException.errorStatus("getByUserId", createForbiddenResponse("network error")));
 
     this.mockMvc.perform(
         delete("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/user-tenants?userId=7698e46-c3e3-11ed-afa1-0242ac120001&tenantId=diku")
