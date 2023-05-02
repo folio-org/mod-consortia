@@ -96,6 +96,7 @@ class UserTenantControllerTest extends BaseTest {
       .andExpectAll(status().isOk(), content().contentType(MediaType.APPLICATION_JSON_VALUE));
   }
 
+  /* Error cases */
   @Test
   void returnNotFoundUserAndTenantAssociationWhenDeletingUserTenant() throws Exception {
     var headers = defaultHeaders();

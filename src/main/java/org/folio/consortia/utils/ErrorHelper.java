@@ -6,8 +6,6 @@ import org.folio.consortia.domain.dto.Error;
 import org.folio.consortia.domain.dto.Errors;
 
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @UtilityClass
 public class ErrorHelper {
@@ -73,7 +71,8 @@ public class ErrorHelper {
     INTERACT_ERROR,
     DUPLICATE_ERROR,
     HAS_ACTIVE_USER_ASSOCIATION_ERROR,
-    PERMISSION_REQUIRED
+    PERMISSION_REQUIRED,
+    BAD_GATEWAY
   }
 
 }

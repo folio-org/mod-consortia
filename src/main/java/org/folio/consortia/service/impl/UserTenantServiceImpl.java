@@ -250,8 +250,10 @@ public class UserTenantServiceImpl implements UserTenantService {
     } catch (FeignException.NotFound e) {
       log.info("User with userId {} does not exist in schema, going to use new one", userId);
       return new User();
-    } catch (FeignException e) {
+    } catch (FeignException.Forbidden e) {
       throw new ConsortiumClientException(e);
+    } catch (FeignException e) {
+      throw new IllegalStateException(e);
     }
   }
 

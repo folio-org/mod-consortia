@@ -2,6 +2,7 @@ package org.folio.consortia.controller;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.folio.consortia.utils.ErrorHelper.ErrorCode.*;
+import static org.folio.consortia.utils.ErrorHelper.createExternalError;
 import static org.folio.consortia.utils.ErrorHelper.createInternalError;
 import static org.folio.consortia.utils.ErrorHelper.createPermissionError;
 
@@ -35,13 +36,13 @@ public class ErrorHandlingController {
   @ResponseStatus(HttpStatus.NOT_FOUND)
   @ExceptionHandler(ResourceNotFoundException.class)
   public Errors handleNotFoundException(ResourceNotFoundException e) {
-    return createInternalError(e.getMessage(), NOT_FOUND_ERROR);
+    return createExternalError(e.getMessage(), NOT_FOUND_ERROR);
   }
 
   @ResponseStatus(HttpStatus.CONFLICT)
   @ExceptionHandler(ResourceAlreadyExistException.class)
   public Errors handleResourceAlreadyExistException(ResourceAlreadyExistException e) {
-    return createInternalError(e.getMessage(), DUPLICATE_ERROR);
+    return createExternalError(e.getMessage(), DUPLICATE_ERROR);
   }
 
   @ResponseStatus(HttpStatus.CONFLICT)
@@ -54,7 +55,7 @@ public class ErrorHandlingController {
     this is a generic data exception typically thrown by the Spring exception translation mechanism when dealing with lower level persistence exceptions.
     So to get clear error message we need to find rootCause first.
     */
-    return createInternalError(Objects.requireNonNull(e.getRootCause()).getMessage(), VALIDATION_ERROR);
+    return createExternalError(Objects.requireNonNull(e.getRootCause()).getMessage(), VALIDATION_ERROR);
   }
 
   @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -66,13 +67,13 @@ public class ErrorHandlingController {
   })
   public Errors handleValidationErrors(Exception e) {
     log.error("Handle validation errors", e);
-    return createInternalError(e.getMessage(), VALIDATION_ERROR);
+    return createExternalError(e.getMessage(), VALIDATION_ERROR);
   }
 
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ExceptionHandler(PrimaryAffiliationException.class)
   public Errors handlePrimaryAffiliationException(Exception e) {
-    return createInternalError(e.getMessage(), HAS_ACTIVE_USER_ASSOCIATION_ERROR);
+    return createExternalError(e.getMessage(), HAS_ACTIVE_USER_ASSOCIATION_ERROR);
   }
 
   @ResponseStatus(HttpStatus.FORBIDDEN)
@@ -80,6 +81,13 @@ public class ErrorHandlingController {
   public Errors handleConsortiumClientException(FeignException e) {
     log.error("Handle consortium client exception", e);
     return createPermissionError(e, PERMISSION_REQUIRED);
+  }
+
+  @ResponseStatus(HttpStatus.BAD_GATEWAY)
+  @ExceptionHandler(IllegalStateException.class)
+  public Errors handleIllegalStateException(IllegalStateException e) {
+    log.error("Handle illegal state exception", e);
+    return createInternalError(e.getMessage(), BAD_GATEWAY);
   }
 
   @ExceptionHandler(ConstraintViolationException.class)
