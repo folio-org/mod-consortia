@@ -179,14 +179,14 @@ class UserTenantControllerTest extends BaseTest {
     when(userTenantRepository.findByUserIdAndTenantId(any(), any())).thenReturn(Optional.of(userTenantEntity));
     doNothing().when(userTenantRepository).deleteByUserIdAndTenantId(any(), any());
     when(usersClient.getUsersByUserId(any())).thenThrow(
-      FeignException.errorStatus("getByUserId", createForbiddenResponse("network error")));
+      FeignException.errorStatus("getByUserId", createUnknownResponse("network error")));
 
     this.mockMvc.perform(
         delete("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/user-tenants?userId=7698e46-c3e3-11ed-afa1-0242ac120001&tenantId=diku")
           .headers(headers))
-      .andExpectAll(status().is4xxClientError(),
+      .andExpectAll(status().is5xxServerError(),
         content().contentType(MediaType.APPLICATION_JSON_VALUE),
-        jsonPath("$.errors[0].code", is("PERMISSION_REQUIRED")));
+        jsonPath("$.errors[0].code", is("BAD_GATEWAY")));
   }
 
   @ParameterizedTest
@@ -239,6 +239,15 @@ class UserTenantControllerTest extends BaseTest {
       new RequestTemplate());
     return Response.builder()
       .status(HttpStatus.FORBIDDEN.value())
+      .body(message, Charset.defaultCharset())
+      .request(request)
+      .build();
+  }
+  private Response createUnknownResponse(String message) {
+    Request request = Request.create(Request.HttpMethod.GET, "", Map.of(), null, Charset.defaultCharset(),
+      new RequestTemplate());
+    return Response.builder()
+      .status(HttpStatus.BAD_GATEWAY.value())
       .body(message, Charset.defaultCharset())
       .request(request)
       .build();
