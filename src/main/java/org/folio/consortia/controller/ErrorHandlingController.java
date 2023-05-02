@@ -73,7 +73,7 @@ public class ErrorHandlingController {
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ExceptionHandler(PrimaryAffiliationException.class)
   public Errors handlePrimaryAffiliationException(Exception e) {
-    return createExternalError(e.getMessage(), HAS_ACTIVE_USER_ASSOCIATION_ERROR);
+    return createExternalError(e.getMessage(), HAS_PRIMARY_AFFILIATION_ERROR);
   }
 
   @ResponseStatus(HttpStatus.FORBIDDEN)

@@ -5,7 +5,6 @@ import lombok.extern.log4j.Log4j2;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
 import org.folio.consortia.domain.entity.TenantEntity;
-import org.folio.consortia.exception.PrimaryAffiliationException;
 import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.TenantRepository;
@@ -68,7 +67,7 @@ public class TenantServiceImpl implements TenantService {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     checkTenantExistsOrThrow(tenantId);
     if (userTenantRepository.existsByTenantId(tenantId)) {
-      throw new PrimaryAffiliationException(TENANT_HAS_ACTIVE_USER_ASSOCIATIONS_ERROR_MSG);
+      throw new IllegalArgumentException(TENANT_HAS_ACTIVE_USER_ASSOCIATIONS_ERROR_MSG);
     }
     tenantRepository.deleteById(tenantId);
   }
