@@ -203,7 +203,7 @@ class TenantControllerTest extends BaseTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {})
+  @ValueSource(strings = {TENANT_REQUEST_BODY})
   void shouldThrowNotFoundErrorWhileUpdateTenant(String contentString) throws Exception {
     TenantEntity tenantEntity1 = createTenantEntity("ABC1", "TestName1", "TST");
     var headers = defaultHeaders();
