@@ -46,7 +46,7 @@ public class ErrorHandlingController {
   }
 
   @ResponseStatus(HttpStatus.CONFLICT)
-  @ExceptionHandler(DataIntegrityViolationException.class)
+  @ExceptionHandler({DataIntegrityViolationException.class})
   public Errors handleDataIntegrityViolationException(DataIntegrityViolationException e) {
     log.error("Handle data integrity violation", e);
 

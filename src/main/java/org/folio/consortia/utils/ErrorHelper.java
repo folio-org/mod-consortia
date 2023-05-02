@@ -34,7 +34,7 @@ public class ErrorHelper {
   }
 
   public static Errors createExternalError(String message, ErrorCode errorCode) {
-    return createErrors(createError(message, ErrorType.FOLIO_EXTERNAL_OR_UNDEFINED, errorCode));
+    return createErrors(createError(message, ErrorType.REQUEST_OR_NETWORK, errorCode));
   }
 
   public static Errors createPermissionError(FeignException e, ErrorCode errorCode){
@@ -48,8 +48,8 @@ public class ErrorHelper {
   }
 
   public enum ErrorType {
-    INTERNAL("-1"),
-    FOLIO_EXTERNAL_OR_UNDEFINED("-2"),
+    REQUEST_OR_NETWORK("-1"),
+    INTERNAL("-2"),
     EXTERNAL_OR_UNDEFINED("-3"),
     UNKNOWN("-4");
 

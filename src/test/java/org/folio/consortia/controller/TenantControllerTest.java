@@ -12,7 +12,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
@@ -170,7 +169,6 @@ class TenantControllerTest extends BaseTest {
 
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(tenantRepository.existsById(any(String.class))).thenReturn(true);
-    when(tenantRepository.save(any(TenantEntity.class))).thenThrow(DataIntegrityViolationException.class);
 
     this.mockMvc.perform(
         post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants")
