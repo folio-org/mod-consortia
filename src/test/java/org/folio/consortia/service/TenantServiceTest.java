@@ -3,7 +3,6 @@ package org.folio.consortia.service;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.entity.TenantEntity;
-import org.folio.consortia.exception.PrimaryAffiliationException;
 import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
@@ -130,7 +129,7 @@ class TenantServiceTest {
     Mockito.when(userTenantRepository.existsByTenantId(tenantId)).thenReturn(true);
 
     // Call the method
-    assertThrows(PrimaryAffiliationException.class, () -> tenantService.delete(consortiumId, tenantId));
+    assertThrows(IllegalArgumentException.class, () -> tenantService.delete(consortiumId, tenantId));
   }
 
   @Test

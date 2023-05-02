@@ -228,7 +228,7 @@ class TenantControllerTest extends BaseTest {
           .headers(headers).content(contentString))
       .andExpectAll(
         status().is4xxClientError(),
-        jsonPath("$.errors[0].code", is("HAS_ACTIVE_USER_ASSOCIATION_ERROR")));
+        jsonPath("$.errors[0].code", is("VALIDATION_ERROR")));
   }
 
   private TenantEntity createTenantEntity(String id, String name, String code) {
