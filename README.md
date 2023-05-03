@@ -44,12 +44,12 @@ Consortia API provides the following URLs:
 
 More detail about mod-consortia
  - API can be found on api-guide.md: [API Docs](/docs/api-guide.md).
- - Schema architecture can be found on Consortia wiki-page: [https://wiki.folio.org/display/DD/Defining+Tenant+Schema+For+Consortia](https://wiki.folio.org/display/DD/Defining+Tenant+Schema+For+Consortia).
+ - Schema architecture can be found on Consortia wiki-page: [mod-consortia schema and ER diagram](https://wiki.folio.org/display/DD/Defining+Tenant+Schema+For+Consortia).
 
 ## Permissions
 
 Institutional users should be granted the following permissions in order to use this Consortia API:
-- consortia.all
+```consortia.all```
 
 ## Installing and deployment
 
@@ -117,4 +117,4 @@ This module's [API documentation](https://dev.folio.org/reference/api/#mod-conso
 
 The built artifacts for this module are available.
 See [configuration](https://dev.folio.org/download/artifacts) for repository access,
-and the [Docker image](https://hub.docker.com/r/folioci/mod-consortia).
+and the [Docker image](https://hub.docker.com/r/folioci/mod-consortia). Look at contribution guidelines [Contributing](https://dev.folio.org/guidelines/contributing).

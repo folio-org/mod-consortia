@@ -40,3 +40,6 @@
 | `userId`   | `id = "1bddbe67-fd27-436f-901e-9fa66fe4ad1d"` | Find user-tenants with ID (UUID) `1bddbe67-fd27-436f-901e-9fa66fe4ad1d` |
 | `username` | `username = "testuser"`                       | Find user-tenants with username `testuser`                              |
 
+### Other resources
+
+This module's [API documentation](https://dev.folio.org/reference/api/#mod-consortia).
