@@ -4,8 +4,15 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-  <include file="changes/create-consortium-table.xml" relativeToChangelogFile="true"/>
-  <include file="changes/create-tenant-table.xml" relativeToChangelogFile="true"/>
-  <include file="changes/create-user-tenant-table.xml" relativeToChangelogFile="true"/>
-  <include file="changes/db.changelog-1.2.0.xml" relativeToChangelogFile="true"/>
+  <changeSet id="MODCON-31@@update-user-tenant-index" author="singhadesh">
+
+    <dropIndex indexName="username_tenant_id_idx" tableName="user_tenant"/>
+
+    <createIndex indexName="user_id_tenant_id_idx" unique="true" tableName="user_tenant">
+      <column name="user_id"/>
+      <column name="tenant_id"/>
+    </createIndex>
+
+  </changeSet>
+
 </databaseChangeLog>

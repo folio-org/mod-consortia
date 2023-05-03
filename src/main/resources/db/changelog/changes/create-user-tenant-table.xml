@@ -29,7 +29,7 @@
       <column name="user_id"/>
     </createIndex>
     <createIndex indexName="username_tenant_id_idx" tableName="user_tenant" unique="true">
-      <column name="user_id"/>
+      <column name="username"/>
       <column name="tenant_id"/>
     </createIndex>
 
