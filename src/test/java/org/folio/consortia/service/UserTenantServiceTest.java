@@ -80,6 +80,7 @@ class UserTenantServiceTest {
   @Mock
   private FolioModuleMetadata folioModuleMetadata;
 
+  /* Success cases */
   @Test
   void shouldGetUserTenantList() {
     // given
@@ -283,6 +284,7 @@ class UserTenantServiceTest {
     assertDoesNotThrow(() -> userTenantService.deleteByUserIdAndTenantId(UUID.fromString(CONSORTIUM_ID), tenantId, userId));
   }
 
+  /* Exception Cases */
   @Test
   void shouldThrowIllegalArgumentException() {
     when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
@@ -321,6 +323,24 @@ class UserTenantServiceTest {
     // throw exception
     assertThrows(ResourceNotFoundException.class,
       () -> userTenantService.getByUsernameAndTenantId(id, "testusername", tenantId));
+  }
+  @Test
+  void shouldThrowNotFoundPrimaryAffiliationException() {
+    UserTenant tenant = createUserTenantDtoEntity();
+    UUID associationId = UUID.randomUUID();
+
+    when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
+      .thenReturn(Optional.of(createConsortiumEntity()));
+    when(userTenantRepository.findByUserIdAndIsPrimary(any(), any())).thenReturn(Optional.empty());
+    when(usersClient.getUsersByUserId(any())).thenReturn(createUserEntity(false));
+    when(folioExecutionContext.getTenantId()).thenReturn("diku");
+    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
+    Map<String, Collection<String>> okapiHeaders = new HashMap<>();
+    okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
+    when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
+
+    assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class,
+      () -> userTenantService.save(associationId, tenant));
   }
 
   /* Error Cases */
