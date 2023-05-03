@@ -48,7 +48,7 @@ import java.util.UUID;
 @Log4j2
 @RequiredArgsConstructor
 public class UserTenantServiceImpl implements UserTenantService {
-
+  private static final String NOT_FOUND_PRIMARY_AFFILIATION_MSG = "User with %s [%s] doesn't have primary affiliation";
   private static final String USER_ID = "userId";
   private static final String TENANT_ID = "tenantId";
   private static final Boolean IS_PRIMARY_TRUE = true;
@@ -127,9 +127,8 @@ public class UserTenantServiceImpl implements UserTenantService {
 
     Optional<UserTenantEntity> userTenant = userTenantRepository.findByUserIdAndIsPrimary(userTenantDto.getUserId(), IS_PRIMARY_TRUE);
     if (userTenant.isEmpty()) {
-      log.warn("Could not find user with id: {} in user_tenant table for tenant id: {}",
-        userTenantDto.getUserId(), userTenantDto.getTenantId());
-      throw new ResourceNotFoundException(USER_ID, String.valueOf(userTenantDto.getUserId()));
+      log.warn("Could not find user '{}' with primary affiliation in user_tenant table", userTenantDto.getUserId());
+      throw new ResourceNotFoundException(String.format(NOT_FOUND_PRIMARY_AFFILIATION_MSG,USER_ID, userTenantDto.getUserId()));
     }
 
     User shadowUser = prepareShadowUser(userTenantDto.getUserId(), userTenant.get(), currentTenantContext);
