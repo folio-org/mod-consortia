@@ -128,7 +128,7 @@ public class UserTenantServiceImpl implements UserTenantService {
     Optional<UserTenantEntity> userTenant = userTenantRepository.findByUserIdAndIsPrimary(userTenantDto.getUserId(), IS_PRIMARY_TRUE);
     if (userTenant.isEmpty()) {
       log.warn("Could not find user '{}' with primary affiliation in user_tenant table", userTenantDto.getUserId());
-      throw new ResourceNotFoundException(String.format(NOT_FOUND_PRIMARY_AFFILIATION_MSG,USER_ID, userTenantDto.getUserId()));
+      throw new ResourceNotFoundException(String.format(NOT_FOUND_PRIMARY_AFFILIATION_MSG, USER_ID, userTenantDto.getUserId()));
     }
 
     User shadowUser = prepareShadowUser(userTenantDto.getUserId(), userTenant.get(), currentTenantContext);
