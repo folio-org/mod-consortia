@@ -49,7 +49,9 @@ More detail about mod-consortia
 ## Permissions
 
 Institutional users should be granted the following permissions in order to use this Consortia API:
-```consortia.all```
+```shell
+consortia.all
+```
 
 ## Installing and deployment
 
