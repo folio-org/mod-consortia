@@ -109,9 +109,7 @@
           "modulePermissions": [
             "users.item.get",
             "users.item.put",
-            "users.item.post",
-            "perms.users.get",
-            "configuration.entries.collection.get"
+            "users.item.post"
           ]
         },
         {
@@ -125,9 +123,7 @@
           "modulePermissions": [
             "users.item.get",
             "users.item.put",
-            "users.item.post",
-            "perms.users.get",
-            "configuration.entries.collection.get"
+            "users.item.post"
           ]
         },
         {
