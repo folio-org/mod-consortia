@@ -66,7 +66,6 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       log.info("Primary affiliation has been set for the user: {}", userEvent.getUserDto().getId());
     } catch (Exception e) {
       log.error("Exception occurred while creating primary affiliation", e);
-      throw new IllegalStateException("Exception occurred while creating primary affiliation", e);
     }
   }
 
@@ -94,7 +93,6 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       log.info("Primary affiliation has been deleted for the user: {}", userEvent.getUserDto().getId());
     } catch (Exception e) {
       log.error("Exception occurred while deleting primary affiliation", e);
-      throw new IllegalStateException("Exception occurred while deleting primary affiliation", e);
     }
   }
 
