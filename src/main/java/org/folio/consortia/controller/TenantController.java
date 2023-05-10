@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
 import org.folio.consortia.rest.resource.TenantsApi;
+import org.folio.consortia.service.ConfigurationService;
 import org.folio.consortia.service.TenantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,8 @@ public class TenantController implements TenantsApi {
 
   @Autowired
   private final TenantService service;
+  @Autowired
+  private final ConfigurationService configurationService;
 
   @Override
   public ResponseEntity<TenantCollection> getTenants(UUID consortiumId, Integer offset, Integer limit) {
@@ -31,6 +34,9 @@ public class TenantController implements TenantsApi {
 
   @Override
   public ResponseEntity<Tenant> saveTenant(UUID consortiumId, @Validated Tenant tenant) {
+    if (Boolean.TRUE.equals(tenant.getIsCentral())){
+      configurationService.saveConfiguration(tenant.getId());
+    }
     return ResponseEntity.status(CREATED).body(service.save(consortiumId, tenant));
   }
 

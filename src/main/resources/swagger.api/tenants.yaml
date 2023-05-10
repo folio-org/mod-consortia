@@ -135,6 +135,11 @@ components:
         application/json:
           schema:
             $ref: "schemas/common.yaml#/Error"
+  schemas:
+    ConfigurationEntry:
+      $ref: "schemas/configurationEntry.yaml#/ConfigurationEntry"
+    ConfigurationEntryCollection:
+      $ref: "schemas/configurationEntry.yaml#/ConfigurationEntryCollection"
   parameters:
     consortiumId:
       in: path

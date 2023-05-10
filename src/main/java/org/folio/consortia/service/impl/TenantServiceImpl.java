@@ -95,6 +95,7 @@ public class TenantServiceImpl implements TenantService {
     entity.setId(tenantDto.getId());
     entity.setName(tenantDto.getName());
     entity.setCode(tenantDto.getCode());
+    entity.setIsCentral(tenantDto.getIsCentral());
     entity.setConsortiumId(consortiumId);
     return entity;
   }

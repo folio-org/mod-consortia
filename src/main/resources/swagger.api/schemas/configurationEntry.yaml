@@ -1,0 +1,50 @@
+ConfigurationEntry:
+  type: object
+  title: "Configuration Entry"
+  properties:
+    id:
+      description: "A unique id for this configuration entry"
+      type: string
+      $ref: "uuid.yaml"
+    module:
+      description: "The module this configuration entry belongs to"
+      type: string
+    configName:
+      description: "The name of this configuration entry"
+      type: string
+    code:
+      description: "The code of this configuration entry"
+      type: string
+    description:
+      description: "A description of this configuration entry"
+      type: string
+    default:
+      description: "The default value for this configuration entry"
+      type: boolean
+    enabled:
+      description: "Whether this configuration entry is enabled"
+      type: boolean
+    value:
+      description: "The value of this configuration entry"
+      type: string
+  additionalProperties: false
+  required:
+    - module
+    - configName
+
+ConfigurationEntryCollection:
+  type: object
+  properties:
+    configs:
+      type: array
+      description: "Configuration Entries"
+      items:
+        type: object
+        $ref: "configurationEntry.yaml#/ConfigurationEntry"
+    totalRecords:
+      type: integer
+  additionalProperties: false
+  required:
+    - configurationEntries
+    - totalRecords
+
