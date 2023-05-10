@@ -100,4 +100,9 @@ public interface UserTenantService {
   UserTenant getByUsernameAndTenantIdOrNull(UUID consortiumId, String username, String tenantId);
 
   void deletePrimaryUserTenantAffiliation(UUID userId);
+
+  /**
+   * Deletes orphaned shadow_users.
+   */
+  void deleteShadowUsers();
 }

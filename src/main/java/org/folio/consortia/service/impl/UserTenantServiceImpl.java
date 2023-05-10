@@ -31,9 +31,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 /**
@@ -287,6 +289,20 @@ public class UserTenantServiceImpl implements UserTenantService {
       log.info("FOLIO context initialized with tenant {}", tenantId);
     }
     return new DefaultFolioExecutionContext(folioModuleMetadata, context.getOkapiHeaders());
+  }
+
+  public void deleteShadowUsers() {
+    FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
+    List<UserTenantEntity> userTenantEntities = userTenantRepository.getByUserIdAndIsPrimaryFalse().orElse(null);
+    if (Objects.nonNull(userTenantEntities)) {
+      Map<String, List<UserTenantEntity>> listMap = userTenantEntities.stream().collect(Collectors.groupingBy(userTenantEntity -> userTenantEntity.getTenant().getId()));
+      listMap.forEach((key, value) -> {
+        prepareContextForTenant(key, currentTenantContext);
+        String query = String.valueOf(HelperUtils.createQuery(value));
+        usersClient.deleteUsers("?query=" + query);
+      });
+      userTenantRepository.deleteByUserIdAndIsPrimaryFalse();
+    }
   }
 
   private UserTenantEntity toEntity(UserTenant userTenantDto, UUID consortiumId, User user) {
