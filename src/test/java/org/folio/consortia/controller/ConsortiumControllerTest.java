@@ -14,8 +14,8 @@ import org.springframework.data.domain.PageRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
+import static org.folio.consortia.utils.EntityUtils.createConsortiumEntity;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -161,10 +161,4 @@ class ConsortiumControllerTest extends BaseTest {
       .andExpectAll(status().isOk());
   }
 
-  private ConsortiumEntity createConsortiumEntity(String id, String name) {
-    ConsortiumEntity consortiumEntity = new ConsortiumEntity();
-    consortiumEntity.setId(UUID.fromString(id));
-    consortiumEntity.setName(name);
-    return consortiumEntity;
-  }
 }

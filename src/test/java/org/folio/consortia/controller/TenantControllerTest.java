@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import static org.folio.consortia.utils.EntityUtils.createTenantEntity;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -256,23 +257,5 @@ class TenantControllerTest extends BaseTest {
       .andExpectAll(
         status().is4xxClientError(),
         jsonPath("$.errors[0].code", is("VALIDATION_ERROR")));
-  }
-
-  private TenantEntity createTenantEntity(String id, String name, String code, Boolean isCentral) {
-    TenantEntity tenantEntity = new TenantEntity();
-    tenantEntity.setId(id);
-    tenantEntity.setCode(code);
-    tenantEntity.setName(name);
-    tenantEntity.setIsCentral(isCentral);
-    return tenantEntity;
-  }
-
-  private TenantEntity createTenantEntity() {
-    TenantEntity tenantEntity = new TenantEntity();
-    tenantEntity.setId("testtenant1");
-    tenantEntity.setCode("ABC");
-    tenantEntity.setName("testtenant1");
-    tenantEntity.setIsCentral(false);
-    return tenantEntity;
   }
 }

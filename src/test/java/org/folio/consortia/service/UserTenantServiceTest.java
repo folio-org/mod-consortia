@@ -62,7 +62,6 @@ class UserTenantServiceTest {
 
   private static final String CONSORTIUM_ID = "7698e46-c3e3-11ed-afa1-0242ac120002";
 
-
   @InjectMocks
   private UserTenantServiceImpl userTenantService;
   @Mock
