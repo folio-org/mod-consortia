@@ -23,14 +23,14 @@ class EntityTest {
     TenantEntity tenant2 = new TenantEntity();
     tenant2.setId("ABC1");
     tenant2.setName("TestName1");
-    tenant1.setCode("ABC");
-    tenant1.setIsCentral(false);
+    tenant2.setCode("ABC");
+    tenant2.setIsCentral(false);
 
     TenantEntity tenant3 = new TenantEntity();
     tenant3.setId("XYZ1");
     tenant3.setName("TestName2");
-    tenant1.setCode("ABC");
-    tenant1.setIsCentral(false);
+    tenant3.setCode("ABC");
+    tenant3.setIsCentral(false);
 
     assertEquals(tenant1, tenant2);
     assertNotEquals(tenant1, tenant3);
