@@ -48,6 +48,7 @@ class TenantControllerTest extends BaseTest {
   private static final String TENANT_REQUEST_BODY = "{\"id\":\"diku1234\",\"code\":\"TST\",\"name\":\"diku_tenant_name1234\", \"isCentral\":false}";
   private static final String CONSORTIUM_ID = "7698e46-c3e3-11ed-afa1-0242ac120002";
 
+  /* Success cases */
   @Test
   void getTenants() throws Exception {
     UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
@@ -136,6 +137,20 @@ class TenantControllerTest extends BaseTest {
         status().is4xxClientError(),
         jsonPath("$.errors[0].message", is("Object with consortiumId [07698e46-c3e3-11ed-afa1-0242ac120002] was not found")),
         jsonPath("$.errors[0].code", is("NOT_FOUND_ERROR")));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"{\"id\": \"123123123123123123\",\"code\":\"TST\", \"name\": \"\"}"}) // isCentral is not given
+  void shouldThrowMethodArgumentNotValidationException(String contentString) throws Exception {
+    var headers = defaultHeaders();
+
+    mockMvc.perform(post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants")
+        .headers(headers)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(contentString))
+      .andExpect(status().isUnprocessableEntity())
+      .andExpect(jsonPath("$.errors.size()", is(1)))
+      .andExpect(jsonPath("$.errors[0].code", is("tenantValidationError")));
   }
 
   @ParameterizedTest

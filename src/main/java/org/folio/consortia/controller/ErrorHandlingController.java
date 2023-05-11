@@ -93,7 +93,7 @@ public class ErrorHandlingController {
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-  public Errors handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+  public Errors handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
     log.error("Handle method argument not valid", ex);
 
     List<Error> errorList = ex.getBindingResult().getFieldErrors()
