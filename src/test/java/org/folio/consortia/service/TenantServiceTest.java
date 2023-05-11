@@ -1,7 +1,6 @@
 package org.folio.consortia.service;
 
 import org.folio.consortia.domain.dto.Tenant;
-import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.TenantRepository;
@@ -90,7 +89,6 @@ class TenantServiceTest {
     Tenant tenant = createTenant("TestID", "Test");
     TenantEntity centralTenant = createTenantEntity("diku", "diku");
 
-
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(tenantRepository.existsById(any())).thenReturn(false);
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
@@ -173,6 +171,7 @@ class TenantServiceTest {
     when(tenantRepository.existsById(any())).thenReturn(true);
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
+
     assertThrows(java.lang.IllegalArgumentException.class, () -> tenantService.update(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), tenant.getId() + "1234", tenant));
   }
 
@@ -184,6 +183,7 @@ class TenantServiceTest {
     when(consortiumRepository.existsById(any())).thenReturn(true);
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
+
     assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class, () -> tenantService.update(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), tenant.getId() + "1234", tenant));
   }
 
@@ -191,9 +191,16 @@ class TenantServiceTest {
   void shouldNotSaveTenantForDuplicateId() {
     TenantEntity tenantEntity1 = createTenantEntity("TestID", "Test");
     Tenant tenant = createTenant("TestID", "Testq");
+    TenantEntity centralTenant = createTenantEntity("diku", "diku");
 
     when(tenantRepository.existsById(any())).thenReturn(true);
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
+    when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
+    when(folioExecutionContext.getTenantId()).thenReturn("diku");
+    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
+    Map<String, Collection<String>> okapiHeaders = new HashMap<>();
+    okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
+    when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
     assertThrows(org.folio.consortia.exception.ResourceAlreadyExistException.class, () -> tenantService.save(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), tenant));
   }
@@ -210,22 +217,6 @@ class TenantServiceTest {
     when(tenantRepository.findById(anyString())).thenReturn(Optional.empty());
     var tenantEntity = tenantService.getByTenantId(UUID.randomUUID().toString());
     assertNull(tenantEntity);
-  }
-
-  private ConsortiumEntity createConsortiumEntity() {
-    ConsortiumEntity consortiumEntity = new ConsortiumEntity();
-    consortiumEntity.setId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
-    consortiumEntity.setName("TestConsortium");
-    return consortiumEntity;
-  }
-
-  private TenantEntity createTenantEntity() {
-    TenantEntity tenantEntity = new TenantEntity();
-    tenantEntity.setId("testtenant1");
-    tenantEntity.setCode("ABC");
-    tenantEntity.setName("testtenant1");
-    tenantEntity.setIsCentral(false);
-    return tenantEntity;
   }
 
   private TenantEntity createTenantEntity(String id, String name) {
