@@ -10,7 +10,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.folio.consortia.config.kafka.properties.FolioKafkaProperties;
 import org.folio.consortia.messaging.domain.ConsortiaInputEventType;
 import org.folio.consortia.messaging.domain.ConsortiaOutputEventType;
-import org.folio.consortia.service.ConfigurationService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.springframework.beans.factory.BeanFactory;
@@ -42,7 +41,6 @@ public class KafkaService {
   private final Environment springEnvironment;
   private final String kafkaEnvId;
   private final KafkaTemplate<String, Object> kafkaTemplate;
-  private final ConfigurationService configurationService;
 
   @RequiredArgsConstructor
   @AllArgsConstructor
@@ -128,12 +126,12 @@ public class KafkaService {
 
   public void send(Topic topic, String key, String data) {
     log.info("Sending {}.", data);
-    String tenant = configurationService.getConfigValue("centralTenantId");
-//    String tenant = folioExecutionContext.getTenantId();
+    String tenant = folioExecutionContext.getTenantId();
     if (StringUtils.isBlank(tenant)) {
       throw new IllegalStateException("Can't send to Kafka because tenant is blank");
     }
     String tenantTopicName = getTenantTopicName(topic.getTopicName(), tenant);
+
     ProducerRecord<String, Object> producerRecord = new ProducerRecord<>(tenantTopicName, key, data);
     producerRecord.headers().add(XOkapiHeaders.TENANT, tenant.getBytes(StandardCharsets.UTF_8));
     kafkaTemplate.send(producerRecord);

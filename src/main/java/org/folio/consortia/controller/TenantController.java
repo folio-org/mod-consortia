@@ -6,7 +6,9 @@ import org.folio.consortia.domain.dto.TenantCollection;
 import org.folio.consortia.rest.resource.TenantsApi;
 import org.folio.consortia.service.ConfigurationService;
 import org.folio.consortia.service.TenantService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.folio.spring.FolioExecutionContext;
+import org.folio.spring.FolioModuleMetadata;
+import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
@@ -22,10 +25,10 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 @RequiredArgsConstructor
 public class TenantController implements TenantsApi {
 
-  @Autowired
   private final TenantService service;
-  @Autowired
   private final ConfigurationService configurationService;
+  private final FolioExecutionContext folioExecutionContext;
+  private final FolioModuleMetadata folioModuleMetadata;
 
   @Override
   public ResponseEntity<TenantCollection> getTenants(UUID consortiumId, Integer offset, Integer limit) {
@@ -34,10 +37,18 @@ public class TenantController implements TenantsApi {
 
   @Override
   public ResponseEntity<Tenant> saveTenant(UUID consortiumId, @Validated Tenant tenant) {
-    if (Boolean.TRUE.equals(tenant.getIsCentral())){
-      configurationService.saveConfiguration(tenant.getId());
+    FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
+    // query to tenant table to get central tenant id,
+    // if not central, throw new error
+    String centralTenantId = service.getCentralTenantId(); // central tenant id is checking for null in TenantService
+    // prepare context x-okapi-tenant - tenantId == tenant.getId()
+    // call to mod-config to save
+    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenant.getId(), currentTenantContext, folioModuleMetadata))) {
+      configurationService.saveConfiguration(centralTenantId);
     }
-    return ResponseEntity.status(CREATED).body(service.save(consortiumId, tenant));
+    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, currentTenantContext, folioModuleMetadata))) {
+      return ResponseEntity.status(CREATED).body(service.save(consortiumId, tenant));
+    }
   }
 
   @Override

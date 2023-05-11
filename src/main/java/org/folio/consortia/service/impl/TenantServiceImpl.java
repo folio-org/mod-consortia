@@ -44,6 +44,19 @@ public class TenantServiceImpl implements TenantService {
   }
 
   @Override
+  public String getCentralTenantId() {
+    TenantEntity tenant = tenantRepository.findCentralTenant()
+      .orElseThrow(() -> new ResourceNotFoundException("A central tenant is not found. The central Tenant must be created"));
+    return tenant.getId();
+  }
+
+  @Override
+  public TenantEntity getByTenantId(String tenantId) {
+    return tenantRepository.findById(tenantId)
+      .orElse(null);
+  }
+
+  @Override
   public Tenant save(UUID consortiumId, Tenant tenantDto) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     checkTenantNotExistsOrThrow(tenantDto.getId());
@@ -70,12 +83,6 @@ public class TenantServiceImpl implements TenantService {
       throw new IllegalArgumentException(TENANT_HAS_ACTIVE_USER_ASSOCIATIONS_ERROR_MSG);
     }
     tenantRepository.deleteById(tenantId);
-  }
-
-  @Override
-  public TenantEntity getByTenantId(String tenantId) {
-    return tenantRepository.findById(tenantId)
-      .orElse(null);
   }
 
   private void checkTenantNotExistsOrThrow(String tenantId) {
