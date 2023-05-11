@@ -4,12 +4,14 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.MapUtils;
+import org.folio.consortia.client.PermissionsClient;
 import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.domain.dto.Personal;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.dto.UserEvent;
 import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
+import org.folio.consortia.domain.entity.PermissionUser;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.exception.ConsortiumClientException;
@@ -30,6 +32,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -61,6 +64,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   private final ConversionService converter;
   private final ConsortiumService consortiumService;
   private final UsersClient usersClient;
+  private final PermissionsClient permissionsClient;
   private final FolioModuleMetadata folioModuleMetadata;
 
   @Override
@@ -230,7 +234,7 @@ public class UserTenantServiceImpl implements UserTenantService {
       if (Objects.nonNull(user.getActive())) {
         activateUser(user);
       } else {
-        createActiveUser(shadowUser);
+        createActiveUserWithPermission(shadowUser);
       }
     }
   }
@@ -256,7 +260,12 @@ public class UserTenantServiceImpl implements UserTenantService {
     }
   }
 
-  private void createActiveUser(User user) {
+  private void createActiveUserWithPermission(User user) {
+    String permissionUserId = UUID.randomUUID().toString();
+    List<String> emptyStringList = new ArrayList<>();
+    log.info("Creating permission user with id {} for userId {}", permissionUserId, user.getId());
+    var permissionUser = PermissionUser.of(permissionUserId, user.getId(), emptyStringList);
+    permissionsClient.create(permissionUser);
     log.info("Creating user with id {}.", user.getId());
     usersClient.saveUser(user);
   }
