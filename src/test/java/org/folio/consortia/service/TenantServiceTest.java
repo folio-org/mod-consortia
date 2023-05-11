@@ -8,6 +8,9 @@ import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.impl.TenantServiceImpl;
+import org.folio.spring.FolioExecutionContext;
+import org.folio.spring.FolioModuleMetadata;
+import org.folio.spring.integration.XOkapiHeaders;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -22,7 +25,10 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -51,6 +57,12 @@ class TenantServiceTest {
   private ConsortiumRepository consortiumRepository;
   @Mock
   private ConsortiumService consortiumService;
+  @Mock
+  private FolioExecutionContext folioExecutionContext;
+  @Mock
+  private FolioModuleMetadata folioModuleMetadata;
+  @Mock
+  private ConfigurationService configurationService;
 
   @Test
   void shouldGetTenantList() {
@@ -76,11 +88,19 @@ class TenantServiceTest {
     UUID consortiumId = UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002");
     TenantEntity tenantEntity1 = createTenantEntity("ABC1", "TestName1");
     Tenant tenant = createTenant("TestID", "Test");
+    TenantEntity centralTenant = createTenantEntity("diku", "diku");
+
 
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(tenantRepository.existsById(any())).thenReturn(false);
+    when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
+    when(folioExecutionContext.getTenantId()).thenReturn("diku");
+    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
+    Map<String, Collection<String>> okapiHeaders = new HashMap<>();
+    okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
+    when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
     var tenant1 = tenantService.save(consortiumId, tenant);
     Assertions.assertEquals(tenant, tenant1);
@@ -199,10 +219,21 @@ class TenantServiceTest {
     return consortiumEntity;
   }
 
+  private TenantEntity createTenantEntity() {
+    TenantEntity tenantEntity = new TenantEntity();
+    tenantEntity.setId("testtenant1");
+    tenantEntity.setCode("ABC");
+    tenantEntity.setName("testtenant1");
+    tenantEntity.setIsCentral(false);
+    return tenantEntity;
+  }
+
   private TenantEntity createTenantEntity(String id, String name) {
     TenantEntity tenantEntity = new TenantEntity();
     tenantEntity.setId(id);
+    tenantEntity.setCode("ABC");
     tenantEntity.setName(name);
+    tenantEntity.setIsCentral(false);
     return tenantEntity;
   }
 
@@ -210,6 +241,8 @@ class TenantServiceTest {
     Tenant tenant = new Tenant();
     tenant.setId(id);
     tenant.setName(name);
+    tenant.setIsCentral(false);
+    tenant.setCode("ABC");
     return tenant;
   }
 }

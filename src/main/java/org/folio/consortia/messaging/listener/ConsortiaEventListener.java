@@ -49,17 +49,12 @@ public class ConsortiaEventListener {
   }
 
   private String getCentralTenantId(MessageHeaders messageHeaders) {
-    // ! I should check messageHeader have correct tenant id (university)
-    // get tenant id from messageHeaders
     String tenantId = getHeaderValue(messageHeaders, XOkapiHeaders.TENANT, null).get(0);
-    // prepare folio execution context with this tenant id
-    // call mod-config
     String centralTenantId;
+    // getting central tenant for this requested tenant from saved configuration in its own schema
     try (var context = new FolioExecutionContextSetter(createFolioExecutionContext(tenantId, messageHeaders, moduleMetadata))) {
       centralTenantId = configurationService.getConfigValue("centralTenantId", tenantId);
     }
-    // if we couldn't find central tenant id, just "return;"
-    // prepare folio execution context with central tenant id (using mod-config)
     return centralTenantId;
   }
 

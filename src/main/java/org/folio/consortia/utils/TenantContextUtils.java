@@ -34,7 +34,6 @@ public class TenantContextUtils {
     return getContextFromKafkaHeaders(headers, moduleMetadata, centralTenantId);
   }
 
-  //  use single thread,
   public static void runInFolioContext(FolioExecutionContext context, Runnable runnable) {
     try (var fec = new FolioExecutionContextSetter(context)) {
       runnable.run();
@@ -43,7 +42,6 @@ public class TenantContextUtils {
 
   private static FolioExecutionContext getContextFromKafkaHeaders(MessageHeaders headers,
                                                                   FolioModuleMetadata moduleMetadata, String centralTenantId) {
-    // I should enable mod=config for all tenant. it is okay with remote
     Map<String, Collection<String>> map = new HashMap<>();
     map.put(XOkapiHeaders.TENANT, List.of(centralTenantId));
     map.put(XOkapiHeaders.URL, getHeaderValue(headers, XOkapiHeaders.URL, null));
