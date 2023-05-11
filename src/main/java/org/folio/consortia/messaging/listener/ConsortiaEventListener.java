@@ -31,7 +31,7 @@ public class ConsortiaEventListener {
     concurrency = "#{folioKafkaProperties.listener['user-created'].concurrency}",
     containerFactory = "kafkaListenerContainerFactory")
   public void userCreatedListener(String data, MessageHeaders messageHeaders) {
-    String centralTenantId = getCentralTenantId(messageHeaders);
+    String centralTenantId = getCentralTenantId(messageHeaders); // to create affiliation in central tenant schema
     runInFolioContext(getFolioExecutionContextCreatePrimaryAffiliationEvent(messageHeaders, moduleMetadata, centralTenantId),
       () -> userAffiliationService.createPrimaryUserAffiliation(data));
   }
@@ -42,7 +42,7 @@ public class ConsortiaEventListener {
     concurrency = "#{folioKafkaProperties.listener['user-deleted'].concurrency}",
     containerFactory = "kafkaListenerContainerFactory")
   public void userDeletedListener(String data, MessageHeaders messageHeaders) {
-    String centralTenantId = getCentralTenantId(messageHeaders);
+    String centralTenantId = getCentralTenantId(messageHeaders); // to delete affiliation from central tenant schema
     runInFolioContext(getFolioExecutionContextDeletePrimaryAffiliationEvent(messageHeaders, moduleMetadata, centralTenantId),
       () -> userAffiliationService.deletePrimaryUserAffiliation(data));
   }
