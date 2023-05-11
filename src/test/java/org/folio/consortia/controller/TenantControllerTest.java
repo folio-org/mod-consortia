@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -44,14 +45,14 @@ class TenantControllerTest extends BaseTest {
   @MockBean
   UserTenantRepository userTenantRepository;
 
-  private static final String TENANT_REQUEST_BODY = "{\"id\":\"diku1234\",\"code\":\"TST\",\"name\":\"diku_tenant_name1234\"}";
+  private static final String TENANT_REQUEST_BODY = "{\"id\":\"diku1234\",\"code\":\"TST\",\"name\":\"diku_tenant_name1234\", \"isCentral\":false}";
   private static final String CONSORTIUM_ID = "7698e46-c3e3-11ed-afa1-0242ac120002";
 
   @Test
   void getTenants() throws Exception {
     UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
-    TenantEntity tenantEntity1 = createTenantEntity("ABC", "TestName1", "TST");
-    TenantEntity tenantEntity2 = createTenantEntity("ABC", "TestName1", "TST");
+    TenantEntity tenantEntity1 = createTenantEntity();
+    TenantEntity tenantEntity2 = createTenantEntity();
     List<TenantEntity> tenantEntityList = new ArrayList<>();
     tenantEntityList.add(tenantEntity1);
     tenantEntityList.add(tenantEntity2);
@@ -67,9 +68,12 @@ class TenantControllerTest extends BaseTest {
   @ValueSource(strings = {TENANT_REQUEST_BODY})
   void shouldSaveTenant(String contentString) throws Exception {
     var headers = defaultHeaders();
+    TenantEntity centralTenant = createTenantEntity("diku", "diku", "AAA", true);
+
     when(consortiumRepository.existsById(any())).thenReturn(true);
     when(tenantRepository.existsById(any())).thenReturn(false);
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(new TenantEntity());
+    when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
 
     this.mockMvc.perform(
         post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants")
@@ -80,12 +84,12 @@ class TenantControllerTest extends BaseTest {
   @ParameterizedTest
   @ValueSource(strings = {TENANT_REQUEST_BODY})
   void shouldUpdateTenant(String contentString) throws Exception {
-    TenantEntity tenantEntity1 = createTenantEntity("diku1234", "TestName1", "TST");
+    TenantEntity tenant = createTenantEntity();
 
     var headers = defaultHeaders();
     when(tenantRepository.existsById(any())).thenReturn(true);
     when(consortiumRepository.existsById(any())).thenReturn(true);
-    when(tenantRepository.save(tenantEntity1)).thenReturn(tenantEntity1);
+    when(tenantRepository.save(tenant)).thenReturn(tenant);
 
     this.mockMvc.perform(put("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants/diku1234").headers(headers).content(contentString)).andExpectAll(status().isOk());
   }
@@ -119,9 +123,12 @@ class TenantControllerTest extends BaseTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"{\"id\":\"diku\",\"code\":\"TST\",\"name\":\"diku_tenant_name\"}"})
+  @ValueSource(strings = {TENANT_REQUEST_BODY})
   void shouldGet4xxErrorWhileSaving(String contentString) throws Exception {
     var headers = defaultHeaders();
+    TenantEntity centralTenant = createTenantEntity("diku", "diku", "TTA", true);
+
+    when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
 
     this.mockMvc.perform(post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants")
         .headers(headers).content(contentString))
@@ -132,13 +139,16 @@ class TenantControllerTest extends BaseTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"{\"id\": \"123123123123123123\",\"code\":\"TST\", \"name\": \"\"}"})
+  @ValueSource(strings = {"{\"id\": \"123123123123123123\",\"code\":\"TST\", \"name\": \"\", \"isCentral\":false}"})
   void shouldThrownConstraintViolationException(String contentString) throws Exception {
     var headers = defaultHeaders();
+    TenantEntity centralTenant = createTenantEntity("diku", "diku", "TTA", true);
+
     // Given a request with invalid input
     UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(tenantRepository.existsById(any(String.class))).thenReturn(false);
+    when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
 
     Set<ConstraintViolation<?>> constraintViolations = new HashSet<>();
     constraintViolations.add(mock(ConstraintViolation.class));
@@ -162,31 +172,30 @@ class TenantControllerTest extends BaseTest {
 
 
   @ParameterizedTest
-  @ValueSource(strings = {"{\"id\":\"diku\",\"code\":\"TST\",\"name\":\"diku_tenant_name\"}"})
+  @ValueSource(strings = {TENANT_REQUEST_BODY})
   void shouldGet4xxErrorWhileSavingDuplicateName(String contentString) throws Exception {
     var headers = defaultHeaders();
     UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
+    TenantEntity centralTenant = createTenantEntity("diku", "diku", "TTA", true);
 
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(tenantRepository.existsById(any(String.class))).thenReturn(true);
+    when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
 
     this.mockMvc.perform(
         post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants")
           .headers(headers).content(contentString))
       .andExpectAll(
         status().is4xxClientError(),
-        jsonPath("$.errors[0].message", is("Object with id [diku] is already presented in the system")),
+        jsonPath("$.errors[0].message", is("Object with id [diku1234] is already presented in the system")),
         jsonPath("$.errors[0].code", is("DUPLICATE_ERROR")));
   }
 
   @ParameterizedTest
   @ValueSource(strings = {TENANT_REQUEST_BODY})
   void shouldThrowValidationErrorWhileUpdateTenant(String contentString) throws Exception {
-    TenantEntity tenantEntity1 = new TenantEntity();
-    tenantEntity1.setId("TestID");
-    tenantEntity1.setName("TestName1");
-
     var headers = defaultHeaders();
+
     when(tenantRepository.existsById(any())).thenReturn(true);
     when(consortiumRepository.existsById(any())).thenReturn(true);
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(TenantEntity.class.newInstance());
@@ -203,16 +212,19 @@ class TenantControllerTest extends BaseTest {
   @ParameterizedTest
   @ValueSource(strings = {TENANT_REQUEST_BODY})
   void shouldThrowNotFoundErrorWhileUpdateTenant(String contentString) throws Exception {
-    TenantEntity tenantEntity1 = createTenantEntity("ABC1", "TestName1", "TST");
+    TenantEntity tenant = createTenantEntity();
     var headers = defaultHeaders();
+
     when(tenantRepository.existsById(any())).thenReturn(true);
     when(consortiumRepository.existsById(any())).thenReturn(false);
-    when(tenantRepository.save(tenantEntity1)).thenReturn(tenantEntity1);
+    when(tenantRepository.save(tenant)).thenReturn(tenant);
 
     this.mockMvc.perform(
         put("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants/diku1234")
           .headers(headers).content(contentString))
-      .andExpectAll(status().is4xxClientError(), jsonPath("$.errors[0].code", is("NOT_FOUND_ERROR")));
+      .andExpectAll(
+        status().is4xxClientError(),
+        jsonPath("$.errors[0].code", is("NOT_FOUND_ERROR")));
   }
 
   @ParameterizedTest
@@ -231,11 +243,21 @@ class TenantControllerTest extends BaseTest {
         jsonPath("$.errors[0].code", is("VALIDATION_ERROR")));
   }
 
-  private TenantEntity createTenantEntity(String id, String name, String code) {
+  private TenantEntity createTenantEntity(String id, String name, String code, Boolean isCentral) {
     TenantEntity tenantEntity = new TenantEntity();
     tenantEntity.setId(id);
     tenantEntity.setCode(code);
     tenantEntity.setName(name);
+    tenantEntity.setIsCentral(isCentral);
+    return tenantEntity;
+  }
+
+  private TenantEntity createTenantEntity() {
+    TenantEntity tenantEntity = new TenantEntity();
+    tenantEntity.setId("testtenant1");
+    tenantEntity.setCode("ABC");
+    tenantEntity.setName("testtenant1");
+    tenantEntity.setIsCentral(false);
     return tenantEntity;
   }
 }

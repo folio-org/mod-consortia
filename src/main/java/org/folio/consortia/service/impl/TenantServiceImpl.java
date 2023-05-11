@@ -46,7 +46,7 @@ public class TenantServiceImpl implements TenantService {
   @Override
   public String getCentralTenantId() {
     TenantEntity tenant = tenantRepository.findCentralTenant()
-      .orElseThrow(() -> new ResourceNotFoundException("A central tenant is not found. The central Tenant must be created"));
+      .orElseThrow(() -> new ResourceNotFoundException("A central tenant is not found. The central tenant must be created"));
     return tenant.getId();
   }
 
