@@ -1,6 +1,8 @@
 package org.folio.consortia.utils;
 
 import lombok.experimental.UtilityClass;
+import org.folio.consortia.domain.dto.ConfigurationEntry;
+import org.folio.consortia.domain.dto.ConfigurationEntryCollection;
 import org.folio.consortia.domain.dto.Consortium;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.UserTenant;
@@ -8,6 +10,7 @@ import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 
+import java.util.List;
 import java.util.UUID;
 
 @UtilityClass
@@ -92,5 +95,21 @@ public class EntityUtils {
     userTenantEntity.setUserId(UUID.randomUUID());
     userTenantEntity.setIsPrimary(false);
     return userTenantEntity;
+  }
+
+  public static ConfigurationEntryCollection createConfigurationEntryCollection() {
+    ConfigurationEntryCollection collection = new ConfigurationEntryCollection();
+    collection.setConfigs(List.of(createConfigurationEntry()));
+    collection.setTotalRecords(1);
+    return collection;
+  }
+
+  public static ConfigurationEntry createConfigurationEntry() {
+    ConfigurationEntry configurationEntry = new ConfigurationEntry();
+    configurationEntry.setId("339fsd");
+    configurationEntry.setModule("CONSORTIA");
+    configurationEntry.setConfigName("centralTenantId");
+    configurationEntry.setValue("diku");
+    return configurationEntry;
   }
 }
