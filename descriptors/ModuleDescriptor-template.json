@@ -68,7 +68,8 @@
           ],
           "pathPattern": "/consortia/{consortiumId}/tenants",
           "permissionsRequired": [
-            "consortia.tenants.item.post"
+            "consortia.tenants.item.post",
+            "configuration.entries.item.post"
           ],
           "modulePermissions": []
         },

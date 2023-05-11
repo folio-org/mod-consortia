@@ -20,8 +20,7 @@ import java.util.Map;
 @UtilityClass
 @Log4j2
 public class TenantContextUtils {
-  public static FolioExecutionContext getFolioExecutionContextCopyForTenant(FolioExecutionContext context,
-                                                                            String tenant) {
+  public static FolioExecutionContext getFolioExecutionContextCopyForTenant(FolioExecutionContext context, String tenant) {
     var headers = context.getAllHeaders() != null
       ? context.getAllHeaders()
       : new HashMap<String, Collection<String>>();
@@ -30,15 +29,8 @@ public class TenantContextUtils {
     return new DefaultFolioExecutionContext(context.getFolioModuleMetadata(), headers);
   }
 
-  public static FolioExecutionContext getFolioExecutionContextCreatePrimaryAffiliationEvent(MessageHeaders headers,
-                                                                                            FolioModuleMetadata moduleMetadata,
-                                                                                            String centralTenantId) {
-    return getContextFromKafkaHeaders(headers, moduleMetadata, centralTenantId);
-  }
-
-  public static FolioExecutionContext getFolioExecutionContextDeletePrimaryAffiliationEvent(MessageHeaders headers,
-                                                                                            FolioModuleMetadata moduleMetadata,
-                                                                                            String centralTenantId) {
+  public static FolioExecutionContext createFolioExecutionContext(String centralTenantId, MessageHeaders headers,
+                                                                  FolioModuleMetadata moduleMetadata) {
     return getContextFromKafkaHeaders(headers, moduleMetadata, centralTenantId);
   }
 
@@ -69,8 +61,8 @@ public class TenantContextUtils {
     return value == null ? Collections.emptyList() : Collections.singletonList(value);
   }
 
-  public static FolioExecutionContext prepareContextForTenant(String tenantId, FolioExecutionContext context,
-                                                              FolioModuleMetadata folioModuleMetadata) {
+  public static FolioExecutionContext createFolioExecutionContextForTenant(String tenantId, FolioExecutionContext context,
+                                                                           FolioModuleMetadata folioModuleMetadata) {
     if (MapUtils.isNotEmpty(context.getOkapiHeaders())) {
       context.getOkapiHeaders().put(XOkapiHeaders.TENANT, List.of(tenantId));
       log.info("FOLIO context initialized with tenant {}", tenantId);

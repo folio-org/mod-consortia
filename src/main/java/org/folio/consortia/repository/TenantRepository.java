@@ -17,4 +17,6 @@ public interface TenantRepository extends JpaRepository<TenantEntity, String> {
 
   @Query("SELECT t FROM TenantEntity t where t.isCentral = true")
   Optional<TenantEntity> findCentralTenant();
+
+  boolean existsByIsCentralTrue();
 }

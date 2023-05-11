@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class ConfigurationServiceImpl implements ConfigurationService {
-
   private static final String MODULE_NAME = "CONSORTIA";
   private static final String CONFIG_QUERY = "query=module==%s and configName==%s";
   private final ConfigurationClient client;
@@ -22,7 +21,6 @@ public class ConfigurationServiceImpl implements ConfigurationService {
     log.debug("getConfigValue:: Trying to get configValue by configName: {}", configName);
     try {
       var configurations = client.getConfiguration(String.format(CONFIG_QUERY, MODULE_NAME, configName));
-
       if (configurations != null && configurations.getTotalRecords() > 0) {
         ConfigurationEntry configuration = configurations.getConfigs().get(0);
         log.info("getConfigValue:: configValue loaded by configName: {}", configName);
@@ -46,7 +44,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
     }
   }
 
-  private ConfigurationEntry  createConfiguration(String centralTenantId) {
+  private ConfigurationEntry createConfiguration(String centralTenantId) {
     ConfigurationEntry configurationEntry = new ConfigurationEntry();
     configurationEntry.setModule(MODULE_NAME);
     configurationEntry.setValue(centralTenantId);

@@ -9,8 +9,12 @@ import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
+import org.folio.consortia.service.ConfigurationService;
 import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.TenantService;
+import org.folio.spring.FolioExecutionContext;
+import org.folio.spring.FolioModuleMetadata;
+import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +23,8 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 import static org.folio.consortia.utils.HelperUtils.checkIdenticalOrThrow;
+import static org.folio.consortia.utils.TenantContextUtils.createFolioExecutionContextForTenant;
+import static org.folio.consortia.utils.TenantContextUtils.runInFolioContext;
 
 @Service
 @Log4j2
@@ -32,6 +38,9 @@ public class TenantServiceImpl implements TenantService {
   private final UserTenantRepository userTenantRepository;
   private final ConversionService converter;
   private final ConsortiumService consortiumService;
+  private final FolioExecutionContext folioExecutionContext;
+  private final FolioModuleMetadata folioMetadata;
+  private final ConfigurationService configurationService;
 
   @Override
   public TenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
@@ -58,42 +67,64 @@ public class TenantServiceImpl implements TenantService {
 
   @Override
   public Tenant save(UUID consortiumId, Tenant tenantDto) {
-    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    checkTenantNotExistsOrThrow(tenantDto.getId());
-    TenantEntity entity = toEntity(consortiumId, tenantDto);
-    TenantEntity tenantEntity = tenantRepository.save(entity);
-    return converter.convert(tenantEntity, Tenant.class);
+    FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
+    String centralTenantId;
+
+    if (tenantDto.getIsCentral()) {
+      checkCentralTenantExistsOrThrow();
+      centralTenantId = tenantDto.getId();
+    } else {
+      centralTenantId = getCentralTenantId();
+      runInFolioContext(createFolioExecutionContextForTenant(tenantDto.getId(), currentTenantContext, folioMetadata),
+        () -> configurationService.saveConfiguration(centralTenantId));
+    }
+
+    try (var context = new FolioExecutionContextSetter(createFolioExecutionContextForTenant(centralTenantId,
+      currentTenantContext, folioMetadata))) {
+      checkTenantNotExistsAndConsortiumExistsOrThrow(consortiumId, tenantDto.getId());
+      return saveTenant(consortiumId, tenantDto);
+    }
   }
 
   @Override
   public Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto) {
-    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    checkTenantExistsOrThrow(tenantId);
+    checkTenantAndConsortiumExistsOrThrow(consortiumId, tenantId);
     checkIdenticalOrThrow(tenantId, tenantDto.getId(), TENANTS_IDS_NOT_MATCHED_ERROR_MSG);
-    TenantEntity entity = toEntity(consortiumId, tenantDto);
-    TenantEntity tenantEntity = tenantRepository.save(entity);
-    return converter.convert(tenantEntity, Tenant.class);
+    return saveTenant(consortiumId, tenantDto);
   }
 
   @Override
   public void delete(UUID consortiumId, String tenantId) {
-    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    checkTenantExistsOrThrow(tenantId);
+    checkTenantAndConsortiumExistsOrThrow(consortiumId, tenantId);
     if (userTenantRepository.existsByTenantId(tenantId)) {
       throw new IllegalArgumentException(TENANT_HAS_ACTIVE_USER_ASSOCIATIONS_ERROR_MSG);
     }
     tenantRepository.deleteById(tenantId);
   }
 
-  private void checkTenantNotExistsOrThrow(String tenantId) {
+  private Tenant saveTenant(UUID consortiumId, Tenant tenantDto) {
+    TenantEntity entity = toEntity(consortiumId, tenantDto);
+    TenantEntity savedTenant = tenantRepository.save(entity);
+    return converter.convert(savedTenant, Tenant.class);
+  }
+
+  private void checkTenantNotExistsAndConsortiumExistsOrThrow(UUID consortiumId, String tenantId) {
+    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     if (tenantRepository.existsById(tenantId)) {
       throw new ResourceAlreadyExistException("id", tenantId);
     }
   }
 
-  private void checkTenantExistsOrThrow(String tenantId) {
+  private void checkTenantAndConsortiumExistsOrThrow(UUID consortiumId, String tenantId) {
+    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     if (!tenantRepository.existsById(tenantId)) {
       throw new ResourceNotFoundException("id", tenantId);
+    }
+  }
+
+  private void checkCentralTenantExistsOrThrow() {
+    if (tenantRepository.existsByIsCentralTrue()) {
+      throw new ResourceAlreadyExistException("isCentral", "true");
     }
   }
 

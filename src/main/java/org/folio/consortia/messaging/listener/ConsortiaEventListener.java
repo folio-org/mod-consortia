@@ -1,5 +1,7 @@
 package org.folio.consortia.messaging.listener;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.folio.consortia.service.ConfigurationService;
 import org.folio.consortia.service.UserAffiliationService;
 import org.folio.spring.FolioModuleMetadata;
@@ -9,10 +11,9 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Component;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
-
-import static org.folio.consortia.utils.TenantContextUtils.*;
+import static org.folio.consortia.utils.TenantContextUtils.createFolioExecutionContext;
+import static org.folio.consortia.utils.TenantContextUtils.getHeaderValue;
+import static org.folio.consortia.utils.TenantContextUtils.runInFolioContext;
 
 @Log4j2
 @Component
@@ -32,7 +33,7 @@ public class ConsortiaEventListener {
     containerFactory = "kafkaListenerContainerFactory")
   public void userCreatedListener(String data, MessageHeaders messageHeaders) {
     String centralTenantId = getCentralTenantId(messageHeaders); // to create affiliation in central tenant schema
-    runInFolioContext(getFolioExecutionContextCreatePrimaryAffiliationEvent(messageHeaders, moduleMetadata, centralTenantId),
+    runInFolioContext(createFolioExecutionContext(centralTenantId, messageHeaders, moduleMetadata),
       () -> userAffiliationService.createPrimaryUserAffiliation(data));
   }
 
@@ -43,7 +44,7 @@ public class ConsortiaEventListener {
     containerFactory = "kafkaListenerContainerFactory")
   public void userDeletedListener(String data, MessageHeaders messageHeaders) {
     String centralTenantId = getCentralTenantId(messageHeaders); // to delete affiliation from central tenant schema
-    runInFolioContext(getFolioExecutionContextDeletePrimaryAffiliationEvent(messageHeaders, moduleMetadata, centralTenantId),
+    runInFolioContext(createFolioExecutionContext(centralTenantId, messageHeaders, moduleMetadata),
       () -> userAffiliationService.deletePrimaryUserAffiliation(data));
   }
 
@@ -54,7 +55,7 @@ public class ConsortiaEventListener {
     // prepare folio execution context with this tenant id
     // call mod-config
     String centralTenantId;
-    try (var context = new FolioExecutionContextSetter(getFolioExecutionContextCreatePrimaryAffiliationEvent(messageHeaders, moduleMetadata, tenantId))) {
+    try (var context = new FolioExecutionContextSetter(createFolioExecutionContext(tenantId, messageHeaders, moduleMetadata))) {
       centralTenantId = configurationService.getConfigValue("centralTenantId", tenantId);
     }
     // if we couldn't find central tenant id, just "return;"
