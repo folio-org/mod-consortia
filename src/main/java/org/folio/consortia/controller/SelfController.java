@@ -29,7 +29,7 @@ public class SelfController implements SelfApi {
     String token = folioExecutionContext.getToken();
     UUID userId = folioExecutionContext.getUserId();
 
-    if (token == "") {
+    if (StringUtils.isBlank(token)) {
       throw new IllegalArgumentException("token is required");
     }
 
