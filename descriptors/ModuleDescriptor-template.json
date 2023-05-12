@@ -98,9 +98,7 @@
           ],
           "pathPattern": "/consortia/{consortiumId}/_self",
           "permissionsRequired": [],
-          "modulePermissions": [
-            "users.item.get"
-          ]
+          "modulePermissions": []
         },
         {
           "methods": [
