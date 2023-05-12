@@ -113,7 +113,9 @@
           "modulePermissions": [
             "users.item.get",
             "users.item.put",
-            "users.item.post"
+            "users.item.post",
+            "perms.users.item.post",
+            "perms.users.get"
           ]
         },
         {

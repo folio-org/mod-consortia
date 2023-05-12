@@ -12,13 +12,11 @@ import org.folio.consortia.client.PermissionsClient;
 import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.domain.dto.PrimaryAffiliationEvent;
 import org.folio.consortia.domain.dto.UserEvent;
-import org.folio.consortia.domain.entity.PermissionUser;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserAffiliationService;
 import org.folio.consortia.service.UserTenantService;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -31,7 +29,6 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   private final TenantService tenantService;
   private final KafkaService kafkaService;
   private static final ObjectMapper OBJECT_MAPPER;
-  private static final String PERMISSION_NAME = "consortia.user-tenants.collection.get";
 
   static {
     OBJECT_MAPPER = new ObjectMapper()
@@ -60,8 +57,6 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
         return;
       } else {
         userTenantService.createPrimaryUserTenantAffiliation(consortiaTenant.getConsortiumId(), consortiaTenant, userEvent);
-        var permissionUser = PermissionUser.of(UUID.randomUUID().toString(), userEvent.getUserDto().getId(), List.of(PERMISSION_NAME));
-        permissionsClient.create(permissionUser);
       }
 
       PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(userEvent);

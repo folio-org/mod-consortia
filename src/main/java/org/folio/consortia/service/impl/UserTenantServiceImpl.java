@@ -261,11 +261,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   }
 
   private void createActiveUserWithPermission(User user) {
-    String permissionUserId = UUID.randomUUID().toString();
-    List<String> emptyStringList = new ArrayList<>();
-    log.info("Creating permission user with id {} for userId {}", permissionUserId, user.getId());
-    var permissionUser = PermissionUser.of(permissionUserId, user.getId(), emptyStringList);
-    permissionsClient.create(permissionUser);
+    createPermissionUser(user.getId());
     log.info("Creating user with id {}.", user.getId());
     usersClient.saveUser(user);
   }
@@ -316,5 +312,21 @@ public class UserTenantServiceImpl implements UserTenantService {
     entity.setTenant(tenant);
     entity.setIsPrimary(IS_PRIMARY_FALSE);
     return entity;
+  }
+
+  private PermissionUser createPermissionUser(String userId) {
+    List<String> emptyPermissionList = new ArrayList<>();
+    Optional<PermissionUser> permissionUserOptional = permissionsClient.get("userId==" + userId)
+      .getPermissionUsers()
+      .stream()
+      .findFirst();
+    if (permissionUserOptional.isPresent()) {
+      log.info("PermissionUser already exist {}.", permissionUserOptional.get());
+      return permissionUserOptional.get();
+    } else {
+      var permissionUser = PermissionUser.of(UUID.randomUUID().toString(), userId, emptyPermissionList);
+      log.info("Creating permissionUser {}.", permissionUser);
+      return permissionsClient.create(permissionUser);
+    }
   }
 }

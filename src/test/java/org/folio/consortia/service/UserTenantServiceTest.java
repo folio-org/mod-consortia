@@ -2,6 +2,7 @@ package org.folio.consortia.service;
 
 import feign.FeignException;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.folio.consortia.client.PermissionsClient;
 import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.domain.converter.UserTenantConverter;
 import org.folio.consortia.domain.dto.Personal;
@@ -10,9 +11,7 @@ import org.folio.consortia.domain.dto.UserEvent;
 import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.domain.dto.Userdata;
-import org.folio.consortia.domain.entity.ConsortiumEntity;
-import org.folio.consortia.domain.entity.TenantEntity;
-import org.folio.consortia.domain.entity.UserTenantEntity;
+import org.folio.consortia.domain.entity.*;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.UserTenantRepository;
@@ -62,7 +61,6 @@ class UserTenantServiceTest {
 
   private static final String CONSORTIUM_ID = "7698e46-c3e3-11ed-afa1-0242ac120002";
 
-
   @InjectMocks
   private UserTenantServiceImpl userTenantService;
   @Mock
@@ -75,6 +73,8 @@ class UserTenantServiceTest {
   private ConsortiumService consortiumService;
   @Mock
   private UsersClient usersClient;
+  @Mock
+  private PermissionsClient permissionsClient;
   @Mock
   private FolioExecutionContext folioExecutionContext;
   @Mock
@@ -239,18 +239,21 @@ class UserTenantServiceTest {
   }
 
   @Test
-  void shouldCreateUserAndSaveUserTenant() {
+  void shouldCreateUserWithEmptyPermissionSetAndSaveUserTenant() {
     UserTenant tenant = createUserTenantDtoEntity();
     UUID associationId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
     String tenantId = String.valueOf(UUID.randomUUID());
     UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser", tenantId);
     userTenant.setIsPrimary(false);
-
+    PermissionUser permissionUser = new PermissionUser();
+    PermissionUserCollection permissionUserCollection = new PermissionUserCollection();
+    permissionUserCollection.setPermissionUsers(List.of(permissionUser));
     when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
       .thenReturn(Optional.of(createConsortiumEntity()));
     when(userTenantRepository.findByUserIdAndIsPrimary(any(), any())).thenReturn(Optional.of(userTenant));
     when(usersClient.getUsersByUserId(any())).thenReturn(createNullUserEntity());
+    when(permissionsClient.get(any())).thenReturn(permissionUserCollection);
     doNothing().when(usersClient).saveUser(any());
     when(userTenantRepository.save(userTenant)).thenReturn(userTenant);
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
