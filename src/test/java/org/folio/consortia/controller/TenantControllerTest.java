@@ -24,10 +24,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import static org.folio.consortia.utils.EntityUtils.createConsortiaConfiguration;
 import static org.folio.consortia.utils.EntityUtils.createTenantEntity;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -40,7 +40,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @EntityScan(basePackageClasses = TenantEntity.class)
 class TenantControllerTest extends BaseTest {
-
+  private static final String TENANT_REQUEST_BODY = "{\"id\":\"diku1234\",\"code\":\"TST\",\"name\":\"diku_tenant_name1234\", \"isCentral\":false}";
+  private static final String CONSORTIUM_ID = "7698e46-c3e3-11ed-afa1-0242ac120002";
+  private static final String CENTRAL_TENANT_ID = "diku";
   @MockBean
   ConsortiumRepository consortiumRepository;
   @MockBean
@@ -49,9 +51,6 @@ class TenantControllerTest extends BaseTest {
   UserTenantRepository userTenantRepository;
   @MockBean
   ConsortiaConfigurationServiceImpl configurationService;
-
-  private static final String TENANT_REQUEST_BODY = "{\"id\":\"diku1234\",\"code\":\"TST\",\"name\":\"diku_tenant_name1234\", \"isCentral\":false}";
-  private static final String CONSORTIUM_ID = "7698e46-c3e3-11ed-afa1-0242ac120002";
 
   /* Success cases */
   @Test
@@ -74,7 +73,7 @@ class TenantControllerTest extends BaseTest {
   @ValueSource(strings = {TENANT_REQUEST_BODY})
   void shouldSaveTenant(String contentString) throws Exception {
     var headers = defaultHeaders();
-    TenantEntity centralTenant = createTenantEntity("diku", "diku", "AAA", true);
+    TenantEntity centralTenant = createTenantEntity(CENTRAL_TENANT_ID, CENTRAL_TENANT_ID, "AAA", true);
 
     when(consortiumRepository.existsById(any())).thenReturn(true);
     when(tenantRepository.existsById(any())).thenReturn(false);
@@ -132,7 +131,7 @@ class TenantControllerTest extends BaseTest {
   @ValueSource(strings = {TENANT_REQUEST_BODY})
   void shouldGet4xxErrorWhileSaving(String contentString) throws Exception {
     var headers = defaultHeaders();
-    TenantEntity centralTenant = createTenantEntity("diku", "diku", "TTA", true);
+    TenantEntity centralTenant = createTenantEntity(CENTRAL_TENANT_ID, CENTRAL_TENANT_ID, "TTA", true);
 
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
 
@@ -145,7 +144,8 @@ class TenantControllerTest extends BaseTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"{\"id\": \"123123123123123123\",\"code\":\"TST\", \"name\": \"\"}"}) // isCentral is not given
+  @ValueSource(strings = {"{\"id\": \"123123123123123123\",\"code\":\"TST\", \"name\": \"\"}"})
+    // isCentral is not given
   void shouldThrowMethodArgumentNotValidationException(String contentString) throws Exception {
     var headers = defaultHeaders();
 
@@ -162,7 +162,7 @@ class TenantControllerTest extends BaseTest {
   @ValueSource(strings = {"{\"id\": \"123123123123123123\",\"code\":\"TST\", \"name\": \"\", \"isCentral\":false}"})
   void shouldThrownConstraintViolationException(String contentString) throws Exception {
     var headers = defaultHeaders();
-    TenantEntity centralTenant = createTenantEntity("diku", "diku", "TTA", true);
+    TenantEntity centralTenant = createTenantEntity(CENTRAL_TENANT_ID, CENTRAL_TENANT_ID, "TTA", true);
 
     // Given a request with invalid input
     UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
@@ -196,12 +196,13 @@ class TenantControllerTest extends BaseTest {
   void shouldGet4xxErrorWhileSavingDuplicateName(String contentString) throws Exception {
     var headers = defaultHeaders();
     UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
-    TenantEntity centralTenant = createTenantEntity("diku", "diku", "TTA", true);
+    TenantEntity centralTenant = createTenantEntity(CENTRAL_TENANT_ID, CENTRAL_TENANT_ID, "TTA", true);
 
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(tenantRepository.existsById(any(String.class))).thenReturn(true);
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
-    doNothing().when(configurationService).createConfiguration("diku");
+    when(configurationService.createConfiguration(CENTRAL_TENANT_ID))
+      .thenReturn(createConsortiaConfiguration(CENTRAL_TENANT_ID));
 
     this.mockMvc.perform(
         post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants")

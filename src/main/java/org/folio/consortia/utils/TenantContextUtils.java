@@ -68,4 +68,13 @@ public class TenantContextUtils {
     return new DefaultFolioExecutionContext(folioModuleMetadata, context.getOkapiHeaders());
   }
 
+  public static String getTenantIdFromHeader(FolioExecutionContext folioExecutionContext) {
+    String tenantId;
+    if (MapUtils.isNotEmpty(folioExecutionContext.getOkapiHeaders())) {
+      tenantId = folioExecutionContext.getOkapiHeaders().get(XOkapiHeaders.TENANT).iterator().next();
+      return tenantId;
+    }
+    throw new IllegalStateException("Tenant is not available in header");
+  }
+
 }
