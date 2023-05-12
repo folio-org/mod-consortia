@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Objects;
 import java.util.UUID;
 
 @RestController
@@ -27,7 +26,7 @@ public class SelfController implements SelfApi {
     String token = folioExecutionContext.getToken();
     UUID userId = folioExecutionContext.getUserId();
 
-    if (StringUtils.isBlank(token) || Objects.isNull(token)) {
+    if (StringUtils.isBlank(token)) {
       throw new InvalidTokenException();
     }
 

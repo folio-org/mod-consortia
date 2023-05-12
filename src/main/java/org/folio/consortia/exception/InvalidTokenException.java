@@ -1,10 +1,10 @@
 package org.folio.consortia.exception;
 
 public class InvalidTokenException extends RuntimeException {
-  private static final String TOKEN_NOT_FOUND = "Invalid token";
+  private static final String INVALID_TOKEN = "Invalid token";
 
   public InvalidTokenException() {
-    super(TOKEN_NOT_FOUND);
+    super(INVALID_TOKEN);
   }
 
 }
