@@ -8,8 +8,7 @@ servers:
 paths:
   /_self:
     get:
-      description: Self User Tenant Associations
-      summary: Get a list of self user tenants
+      summary: Get a list of user tenants associated to the logged in user
       operationId: getSelfUserTenants
       parameters:
         - $ref: "#/components/parameters/consortiumId"
