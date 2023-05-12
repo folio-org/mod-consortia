@@ -2,13 +2,10 @@ package org.folio.consortia.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.folio.consortia.domain.dto.Payload;
 import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.rest.resource.SelfApi;
 import org.folio.consortia.service.UserTenantService;
-import org.folio.consortia.utils.TokenUtils;
 import org.folio.spring.FolioExecutionContext;
-import org.folio.spring.integration.XOkapiHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,25 +26,14 @@ public class SelfController implements SelfApi {
 
   @Override
   public ResponseEntity<UserTenantCollection> getSelfUserTenants(UUID consortiumId) {
-    String token = folioExecutionContext
-      .getOkapiHeaders()
-      .get(XOkapiHeaders.TOKEN)
-      .stream()
-      .findFirst()
-      .orElse("");
+    String token = folioExecutionContext.getToken();
+    UUID userId = folioExecutionContext.getUserId();
 
     if (token == "") {
       throw new IllegalArgumentException("token is required");
     }
 
-    Payload payload = TokenUtils.parseToken(token);
-
-    if (payload == null) {
-      throw new IllegalArgumentException("token is invalid");
-    }
-
-    String userId = payload.getUser_id();
-    UserTenantCollection userTenantCollection = userTenantService.getByUserId(consortiumId, UUID.fromString(userId), 0, Integer.MAX_VALUE);
+    UserTenantCollection userTenantCollection = userTenantService.getByUserId(consortiumId, userId, 0, Integer.MAX_VALUE);
 
     return ResponseEntity.ok(userTenantCollection);
   }
