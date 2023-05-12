@@ -3,7 +3,7 @@ package org.folio.consortia.controller;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.consortia.domain.dto.UserTenantCollection;
-import org.folio.consortia.exception.TokenNotFoundException;
+import org.folio.consortia.exception.InvalidTokenException;
 import org.folio.consortia.rest.resource.SelfApi;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.spring.FolioExecutionContext;
@@ -26,8 +26,8 @@ public class SelfController implements SelfApi {
     String token = folioExecutionContext.getToken();
     UUID userId = folioExecutionContext.getUserId();
 
-    if (StringUtils.isEmpty(token)) {
-      throw new TokenNotFoundException();
+    if (StringUtils.isBlank(token)) {
+      throw new InvalidTokenException();
     }
 
     UserTenantCollection userTenantCollection = userTenantService.getByUserId(consortiumId, userId, 0, Integer.MAX_VALUE);
