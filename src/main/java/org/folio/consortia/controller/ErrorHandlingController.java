@@ -76,7 +76,7 @@ public class ErrorHandlingController {
     InvalidTokenException.class
   })
   public Errors handleTokenErrors(Exception e) {
-    log.error("Handle validation errors", e);
+    log.error("Handle token validation errors", e);
     return createExternalError(e.getMessage(), UNAUTHORIZED);
   }
 

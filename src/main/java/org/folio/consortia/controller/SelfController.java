@@ -26,7 +26,7 @@ public class SelfController implements SelfApi {
     String token = folioExecutionContext.getToken();
     UUID userId = folioExecutionContext.getUserId();
 
-    if (StringUtils.isBlank(token)) {
+    if (StringUtils.isEmpty(token)) {
       throw new InvalidTokenException();
     }
 

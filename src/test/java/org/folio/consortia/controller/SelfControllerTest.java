@@ -48,8 +48,10 @@ public class SelfControllerTest extends BaseTest {
       get("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/_self")
         .headers(headers)
       )
-      .andExpectAll(status().isOk());
+      .andExpectAll(status().isOk())
+      .andExpect(jsonPath("$.totalRecords", is(2)));
   }
+
   @Test
   void shouldGetTokenNotFound() throws Exception {
     List<UserTenant> userTenantDtos = List.of(new UserTenant(), new UserTenant());
