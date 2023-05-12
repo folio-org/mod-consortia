@@ -32,7 +32,7 @@ paths:
 components:
   requestBodies:
     ConfigurationBody:
-      description: Consortium object
+      description: Consortia configuration object
       required: true
       content:
         application/json:
@@ -40,7 +40,7 @@ components:
             $ref: "schemas/consortiaConfiguration.yaml#/ConsortiaConfiguration"
   responses:
     ConsortiaConfiguration:
-      description: Consortium object
+      description: Consortia configuration object
       content:
         application/json:
           schema:

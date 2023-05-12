@@ -6,6 +6,7 @@ import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
+import org.folio.consortia.service.impl.ConsortiaConfigurationServiceImpl;
 import org.folio.consortia.service.impl.TenantServiceImpl;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
@@ -63,6 +64,8 @@ class TenantServiceTest {
   private FolioExecutionContext folioExecutionContext;
   @Mock
   private FolioModuleMetadata folioModuleMetadata;
+  @Mock
+  private ConsortiaConfigurationServiceImpl configurationService;
 
   @Test
   void shouldGetTenantList() {

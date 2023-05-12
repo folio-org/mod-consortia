@@ -4,11 +4,12 @@ public interface ConsortiaConfigurationService {
   /**
    * Get Config based on requested tenant.
    * If process failed, it will specify error with tenant id.
-   * There will be only one record, so don't need any parameter
+   * There will be only one record
    *
+   * @param requestedTenantId id of tenant in folio execution context
    * @return central tenant id
    */
-  String getCentralTenant();
+  String getCentralTenantId(String requestedTenantId);
 
   /**
    * Save new configuration with central tenant id as value.

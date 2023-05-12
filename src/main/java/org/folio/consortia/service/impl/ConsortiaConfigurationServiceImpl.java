@@ -19,10 +19,10 @@ public class ConsortiaConfigurationServiceImpl implements ConsortiaConfiguration
   private final ConsortiaConfigurationRepository configurationRepository;
 
   @Override
-  public String getCentralTenant() {
+  public String getCentralTenantId(String requestTenantId) {
     List<ConsortiaConfigurationEntity> configList = configurationRepository.findAll();
     if (configList.isEmpty()) {
-      throw new ResourceNotFoundException("A central tenant not found in this tenant '{}' configuration ");
+      throw new ResourceNotFoundException("A central tenant not found in this tenant '{}' configuration", requestTenantId);
     }
     return configList.get(0).getCentralTenantId();
   }

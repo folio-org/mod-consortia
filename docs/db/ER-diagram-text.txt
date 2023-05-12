@@ -24,3 +24,8 @@ Table "user_tenant" {
 }
 Ref: "consortium"."id" < "tenant"."consortium_id"
 Ref: "user_tenant"."tenant_id" < "tenant"."id"
+
+Table "consortium_configuration" {
+  "id" uuid [pk, not null]
+  "central_tenant_id" string
+}

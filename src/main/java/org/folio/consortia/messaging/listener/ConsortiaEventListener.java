@@ -54,7 +54,7 @@ public class ConsortiaEventListener {
     // getting central tenant for this requested tenant from saved configuration in its own schema
     try (var context = new FolioExecutionContextSetter(createFolioExecutionContext(messageHeaders,
       moduleMetadata, tenantId))) {
-      centralTenantId = configurationService.getCentralTenant();
+      centralTenantId = configurationService.getCentralTenantId(tenantId);
     }
     return centralTenantId;
   }

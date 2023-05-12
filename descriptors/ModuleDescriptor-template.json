@@ -141,8 +141,7 @@
             "GET"
           ],
           "pathPattern": "/consortia-configuration",
-          "permissionsRequired": [
-          ],
+          "permissionsRequired": [],
           "modulePermissions": []
         },
         {

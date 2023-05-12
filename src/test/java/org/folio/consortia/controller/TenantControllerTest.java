@@ -6,6 +6,7 @@ import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
+import org.folio.consortia.service.impl.ConsortiaConfigurationServiceImpl;
 import org.folio.consortia.support.BaseTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -26,6 +27,7 @@ import java.util.UUID;
 import static org.folio.consortia.utils.EntityUtils.createTenantEntity;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -45,6 +47,8 @@ class TenantControllerTest extends BaseTest {
   TenantRepository tenantRepository;
   @MockBean
   UserTenantRepository userTenantRepository;
+  @MockBean
+  ConsortiaConfigurationServiceImpl configurationService;
 
   private static final String TENANT_REQUEST_BODY = "{\"id\":\"diku1234\",\"code\":\"TST\",\"name\":\"diku_tenant_name1234\", \"isCentral\":false}";
   private static final String CONSORTIUM_ID = "7698e46-c3e3-11ed-afa1-0242ac120002";
@@ -197,6 +201,7 @@ class TenantControllerTest extends BaseTest {
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(tenantRepository.existsById(any(String.class))).thenReturn(true);
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
+    doNothing().when(configurationService).createConfiguration("diku");
 
     this.mockMvc.perform(
         post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants")
