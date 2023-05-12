@@ -1,7 +1,7 @@
 package org.folio.consortia.client;
 
-import org.folio.consortia.domain.entity.PermissionUser;
-import org.folio.consortia.domain.entity.PermissionUserCollection;
+import org.folio.consortia.domain.entity.dto.PermissionUser;
+import org.folio.consortia.domain.entity.dto.PermissionUserCollection;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -8,7 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.folio.consortia.client.PermissionsClient;
 import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.domain.dto.PrimaryAffiliationEvent;
 import org.folio.consortia.domain.dto.UserEvent;
@@ -25,7 +24,6 @@ import java.util.UUID;
 public class UserAffiliationServiceImpl implements UserAffiliationService {
 
   private final UserTenantService userTenantService;
-  private final PermissionsClient permissionsClient;
   private final TenantService tenantService;
   private final KafkaService kafkaService;
   private static final ObjectMapper OBJECT_MAPPER;

@@ -12,6 +12,8 @@ import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.domain.dto.Userdata;
 import org.folio.consortia.domain.entity.*;
+import org.folio.consortia.domain.entity.dto.PermissionUser;
+import org.folio.consortia.domain.entity.dto.PermissionUserCollection;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.UserTenantRepository;
