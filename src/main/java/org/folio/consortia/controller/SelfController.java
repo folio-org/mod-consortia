@@ -22,7 +22,7 @@ public class SelfController implements SelfApi {
   private final FolioExecutionContext folioExecutionContext;
 
   @Override
-  public ResponseEntity<UserTenantCollection> getSelfUserTenants(UUID consortiumId) {
+  public ResponseEntity<UserTenantCollection> getUserTenantsForCurrentUser(UUID consortiumId) {
     String token = folioExecutionContext.getToken();
     UUID userId = folioExecutionContext.getUserId();
 

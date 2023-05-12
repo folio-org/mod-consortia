@@ -9,7 +9,7 @@ paths:
   /_self:
     get:
       summary: Get a list of user tenants associated to the logged in user
-      operationId: getSelfUserTenants
+      operationId: getUserTenantsForCurrentUser
       parameters:
         - $ref: "#/components/parameters/consortiumId"
       responses:
