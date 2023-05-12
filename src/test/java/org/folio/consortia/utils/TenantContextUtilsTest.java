@@ -41,7 +41,7 @@ class TenantContextUtilsTest {
     header.put(XOkapiHeaders.TENANT, TENANT_ID.getBytes());
 
     var messageHeaders = new MessageHeaders(header);
-    var result = createFolioExecutionContext(TENANT_ID, messageHeaders, folioModuleMetadata);
+    var result = createFolioExecutionContext(messageHeaders, folioModuleMetadata, TENANT_ID);
 
     assertEquals(TENANT_ID, result.getTenantId());
   }

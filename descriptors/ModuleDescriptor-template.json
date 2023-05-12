@@ -5,10 +5,6 @@
     {
       "id": "users",
       "version": "16.0"
-    },
-    {
-      "id": "configuration",
-      "version": "2.0"
     }
   ],
   "provides": [
@@ -68,8 +64,7 @@
           ],
           "pathPattern": "/consortia/{consortiumId}/tenants",
           "permissionsRequired": [
-            "consortia.tenants.item.post",
-            "configuration.entries.item.post"
+            "consortia.tenants.item.post"
           ],
           "modulePermissions": []
         },
@@ -140,6 +135,25 @@
             "consortia.user-tenants.item.get"
           ],
           "modulePermissions": []
+        },
+        {
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/consortia-configuration",
+          "permissionsRequired": [
+          ],
+          "modulePermissions": []
+        },
+        {
+          "methods": [
+            "POST"
+          ],
+          "pathPattern": "/consortia-configuration",
+          "permissionsRequired": [
+            "consortia.consortia-configuration.item.post"
+          ],
+          "modulePermissions": []
         }
       ]
     },
@@ -174,7 +188,8 @@
         "consortia.consortium.item.put",
         "consortia.consortium.item.get",
         "consortia.user-tenants.item.post",
-        "consortia.user-tenants.item.delete"
+        "consortia.user-tenants.item.delete",
+        "consortia.consortia-configuration.item.post"
       ]
     },
     {
@@ -226,7 +241,13 @@
       "permissionName": "consortia.consortium.item.put",
       "displayName": "update consortium",
       "description": "Update consortium"
+    },
+    {
+      "permissionName": "consortia.consortia-configuration.item.post",
+      "displayName": "create consortia configuration",
+      "description": "Create consortia configuration"
     }
+
   ],
   "launchDescriptor": {
     "dockerImage": "@artifactId@:@version@",

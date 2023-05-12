@@ -9,7 +9,7 @@ import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
-import org.folio.consortia.service.ConfigurationService;
+import org.folio.consortia.service.ConsortiaConfigurationService;
 import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.TenantService;
 import org.folio.spring.FolioExecutionContext;
@@ -40,7 +40,7 @@ public class TenantServiceImpl implements TenantService {
   private final ConsortiumService consortiumService;
   private final FolioExecutionContext folioExecutionContext;
   private final FolioModuleMetadata folioMetadata;
-  private final ConfigurationService configurationService;
+  private final ConsortiaConfigurationService configurationService;
 
   @Override
   public TenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
@@ -75,9 +75,10 @@ public class TenantServiceImpl implements TenantService {
       centralTenantId = tenantDto.getId();
     } else {
       centralTenantId = getCentralTenantId();
-      runInFolioContext(createFolioExecutionContextForTenant(tenantDto.getId(), currentTenantContext, folioMetadata),
-        () -> configurationService.saveConfiguration(centralTenantId));
     }
+
+    runInFolioContext(createFolioExecutionContextForTenant(tenantDto.getId(), currentTenantContext, folioMetadata),
+      () -> configurationService.createConfiguration(centralTenantId));
 
     try (var context = new FolioExecutionContextSetter(createFolioExecutionContextForTenant(centralTenantId,
       currentTenantContext, folioMetadata))) {

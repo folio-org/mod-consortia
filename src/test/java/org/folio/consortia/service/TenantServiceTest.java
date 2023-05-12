@@ -63,8 +63,6 @@ class TenantServiceTest {
   private FolioExecutionContext folioExecutionContext;
   @Mock
   private FolioModuleMetadata folioModuleMetadata;
-  @Mock
-  private ConfigurationService configurationService;
 
   @Test
   void shouldGetTenantList() {

@@ -43,8 +43,6 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       var userEvent = OBJECT_MAPPER.readValue(eventPayload, UserEvent.class);
       log.info("Received event for creating primary affiliation for user: {} and tenant: {}", userEvent.getUserDto().getId(), userEvent.getTenantId());
 
-      // prepare context to call mod-config
-      // call to mod-config, to provide
       var consortiaTenant = tenantService.getByTenantId(userEvent.getTenantId());
       if (consortiaTenant == null) {
         log.warn("Tenant {} not exists in consortia", userEvent.getTenantId());

@@ -29,8 +29,8 @@ public class TenantContextUtils {
     return new DefaultFolioExecutionContext(context.getFolioModuleMetadata(), headers);
   }
 
-  public static FolioExecutionContext createFolioExecutionContext(String centralTenantId, MessageHeaders headers,
-                                                                  FolioModuleMetadata moduleMetadata) {
+  public static FolioExecutionContext createFolioExecutionContext(MessageHeaders headers, FolioModuleMetadata moduleMetadata,
+                                                                  String centralTenantId) {
     return getContextFromKafkaHeaders(headers, moduleMetadata, centralTenantId);
   }
 
