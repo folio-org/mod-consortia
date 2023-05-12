@@ -1,5 +1,6 @@
 package org.folio.consortia.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.consortia.domain.dto.Payload;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,7 +8,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 
 import java.util.Base64;
 
+@Slf4j
 public class TokenUtils {
+
+  private static final String UNDEFINED_USER_NAME = "UNDEFINED_USER__";
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
   private TokenUtils() {}
 
@@ -27,13 +33,11 @@ public class TokenUtils {
     String decodedJson = new String(decodedJsonBytes);
 
     try {
-      ObjectMapper objectMapper = new ObjectMapper();
-      objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+      Payload payload = OBJECT_MAPPER.readValue(decodedJson, Payload.class);
 
-      Payload payload = objectMapper.readValue(decodedJson, Payload.class);
-
-      return !payload.getSub().contains("UNDEFINED_USER__");
+      return !payload.getSub().contains(UNDEFINED_USER_NAME);
     } catch (Exception e) {
+      log.error("Could not parse the token", e);
       return false;
     }
   }
