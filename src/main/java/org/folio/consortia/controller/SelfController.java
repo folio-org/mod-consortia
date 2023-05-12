@@ -3,15 +3,14 @@ package org.folio.consortia.controller;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.consortia.domain.dto.UserTenantCollection;
-import org.folio.consortia.exception.TokenNotFoundException;
 import org.folio.consortia.rest.resource.SelfApi;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.spring.FolioExecutionContext;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @RestController
@@ -19,10 +18,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SelfController implements SelfApi {
 
-  @Autowired
   private final UserTenantService userTenantService;
-
-  @Autowired
   private final FolioExecutionContext folioExecutionContext;
 
   @Override
@@ -30,8 +26,8 @@ public class SelfController implements SelfApi {
     String token = folioExecutionContext.getToken();
     UUID userId = folioExecutionContext.getUserId();
 
-    if (StringUtils.isBlank(token)) {
-      throw new TokenNotFoundException();
+    if (StringUtils.isBlank(token) || Objects.isNull(token) || Objects.isNull(userId)) {
+      throw new IllegalArgumentException("Unathorized");
     }
 
     UserTenantCollection userTenantCollection = userTenantService.getByUserId(consortiumId, userId, 0, Integer.MAX_VALUE);
