@@ -1,11 +1,12 @@
 package org.folio.consortia.controller;
 
+import lombok.extern.log4j.Log4j2;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.exception.InvalidTokenException;
 import org.folio.consortia.rest.resource.SelfApi;
 import org.folio.consortia.service.UserTenantService;
+import org.folio.consortia.utils.TokenUtils;
 import org.folio.spring.FolioExecutionContext;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/consortia/{consortiumId}")
+@Log4j2
 @RequiredArgsConstructor
 public class SelfController implements SelfApi {
 
@@ -26,7 +28,7 @@ public class SelfController implements SelfApi {
     String token = folioExecutionContext.getToken();
     UUID userId = folioExecutionContext.getUserId();
 
-    if (StringUtils.isEmpty(token)) {
+    if (!TokenUtils.isValid(token)) {
       throw new InvalidTokenException();
     }
 
