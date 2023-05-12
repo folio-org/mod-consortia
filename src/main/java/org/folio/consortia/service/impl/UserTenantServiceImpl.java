@@ -234,7 +234,7 @@ public class UserTenantServiceImpl implements UserTenantService {
       if (Objects.nonNull(user.getActive())) {
         activateUser(user);
       } else {
-        createActiveUserWithPermission(shadowUser);
+        createActiveUserWithPermissions(shadowUser);
       }
     }
   }
@@ -260,7 +260,7 @@ public class UserTenantServiceImpl implements UserTenantService {
     }
   }
 
-  private void createActiveUserWithPermission(User user) {
+  private void createActiveUserWithPermissions(User user) {
     createPermissionUser(user.getId());
     log.info("Creating user with id {}.", user.getId());
     usersClient.saveUser(user);
