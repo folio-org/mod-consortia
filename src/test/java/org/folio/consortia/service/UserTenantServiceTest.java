@@ -239,7 +239,7 @@ class UserTenantServiceTest {
   }
 
   @Test
-  void shouldCreateUserWithEmptyPermissionSetAndSaveUserTenant() {
+  void shouldCreateUserWithExistingPermissionSetAndSaveUserTenant() {
     UserTenant tenant = createUserTenantDtoEntity();
     UUID associationId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
@@ -254,6 +254,34 @@ class UserTenantServiceTest {
     when(userTenantRepository.findByUserIdAndIsPrimary(any(), any())).thenReturn(Optional.of(userTenant));
     when(usersClient.getUsersByUserId(any())).thenReturn(createNullUserEntity());
     when(permissionsClient.get(any())).thenReturn(permissionUserCollection);
+    doNothing().when(usersClient).saveUser(any());
+    when(userTenantRepository.save(userTenant)).thenReturn(userTenant);
+    when(folioExecutionContext.getTenantId()).thenReturn("diku");
+    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
+    Map<String, Collection<String>> okapiHeaders = new HashMap<>();
+    okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
+    when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
+
+    assertDoesNotThrow(() -> userTenantService.save(UUID.fromString(CONSORTIUM_ID), tenant));
+  }
+
+  @Test
+  void shouldCreateUserWithNewPermissionSetAndSaveUserTenant() {
+    UserTenant tenant = createUserTenantDtoEntity();
+    UUID associationId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+    String tenantId = String.valueOf(UUID.randomUUID());
+    UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "testuser", tenantId);
+    userTenant.setIsPrimary(false);
+    PermissionUser permissionUser = new PermissionUser();
+    PermissionUserCollection permissionUserCollection = new PermissionUserCollection();
+    permissionUserCollection.setPermissionUsers(List.of());
+    when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
+      .thenReturn(Optional.of(createConsortiumEntity()));
+    when(userTenantRepository.findByUserIdAndIsPrimary(any(), any())).thenReturn(Optional.of(userTenant));
+    when(usersClient.getUsersByUserId(any())).thenReturn(createNullUserEntity());
+    when(permissionsClient.get(any())).thenReturn(permissionUserCollection);
+    when(permissionsClient.create(any())).thenReturn(permissionUser);
     doNothing().when(usersClient).saveUser(any());
     when(userTenantRepository.save(userTenant)).thenReturn(userTenant);
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
