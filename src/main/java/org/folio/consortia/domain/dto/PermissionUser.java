@@ -1,4 +1,4 @@
-package org.folio.consortia.domain.entity.dto;
+package org.folio.consortia.domain.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
