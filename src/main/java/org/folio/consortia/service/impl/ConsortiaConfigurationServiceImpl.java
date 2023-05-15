@@ -53,6 +53,7 @@ public class ConsortiaConfigurationServiceImpl implements ConsortiaConfiguration
     if (configList.isEmpty()) {
       throw new ResourceNotFoundException("A central tenant not found in this tenant '{}' configuration", requestTenantId);
     }
+    log.info("getConfiguration:: configuration with centralTenantId={} is retrieved", configList.get(0).getCentralTenantId());
     return configList.get(0);
   }
 

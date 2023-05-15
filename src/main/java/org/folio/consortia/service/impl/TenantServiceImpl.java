@@ -20,6 +20,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -67,7 +68,9 @@ public class TenantServiceImpl implements TenantService {
   }
 
   @Override
+  @Transactional
   public Tenant save(UUID consortiumId, Tenant tenantDto) {
+    log.debug("save:: Trying to save a tenant by consortiumId '{}', tenant object with id '{}' and isCentral={}", consortiumId, tenantDto.getId(), tenantDto.getIsCentral());
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     String centralTenantId;
 
@@ -80,9 +83,10 @@ public class TenantServiceImpl implements TenantService {
 
     runInFolioContext(createFolioExecutionContextForTenant(tenantDto.getId(), currentTenantContext, folioMetadata),
       () -> configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId)));
-
+    log.info("save:: saved consortia configuration with centralTenantId={} for tenant={} context", centralTenantId, tenantDto.getId());
     try (var context = new FolioExecutionContextSetter(createFolioExecutionContextForTenant(centralTenantId,
       currentTenantContext, folioMetadata))) {
+      log.info("save:: context changed to x-okapi-tenant: {}", centralTenantId);
       checkTenantNotExistsAndConsortiumExistsOrThrow(consortiumId, tenantDto.getId());
       return saveTenant(consortiumId, tenantDto);
     }
@@ -105,8 +109,10 @@ public class TenantServiceImpl implements TenantService {
   }
 
   private Tenant saveTenant(UUID consortiumId, Tenant tenantDto) {
+    log.debug("saveTenant:: Trying to save tenant with consoritumId={} and tenant with id={}", consortiumId, tenantDto);
     TenantEntity entity = toEntity(consortiumId, tenantDto);
     TenantEntity savedTenant = tenantRepository.save(entity);
+    log.info("saveTenant: Tenant '{}' successfully saved", tenantDto.getId());
     return converter.convert(savedTenant, Tenant.class);
   }
 
