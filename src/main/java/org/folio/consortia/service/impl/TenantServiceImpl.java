@@ -3,6 +3,7 @@ package org.folio.consortia.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.consortia.client.ConsortiaConfigurationClient;
+import org.folio.consortia.domain.dto.ConsortiaConfiguration;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
 import org.folio.consortia.domain.entity.TenantEntity;
@@ -10,7 +11,6 @@ import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
-import org.folio.consortia.service.ConsortiaConfigurationService;
 import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.TenantService;
 import org.folio.spring.FolioExecutionContext;
@@ -41,7 +41,6 @@ public class TenantServiceImpl implements TenantService {
   private final ConsortiumService consortiumService;
   private final FolioExecutionContext folioExecutionContext;
   private final FolioModuleMetadata folioMetadata;
-  private final ConsortiaConfigurationService configurationService;
   private final ConsortiaConfigurationClient configurationClient;
 
   @Override
@@ -80,7 +79,7 @@ public class TenantServiceImpl implements TenantService {
     }
 
     runInFolioContext(createFolioExecutionContextForTenant(tenantDto.getId(), currentTenantContext, folioMetadata),
-      () -> configurationService.createConfiguration(centralTenantId));
+      () -> configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId)));
 
     try (var context = new FolioExecutionContextSetter(createFolioExecutionContextForTenant(centralTenantId,
       currentTenantContext, folioMetadata))) {
@@ -139,5 +138,11 @@ public class TenantServiceImpl implements TenantService {
     entity.setIsCentral(tenantDto.getIsCentral());
     entity.setConsortiumId(consortiumId);
     return entity;
+  }
+
+  private ConsortiaConfiguration createConsortiaConfigurationBody(String tenantId){
+    ConsortiaConfiguration configuration = new ConsortiaConfiguration();
+    configuration.setCentralTenantId(tenantId);
+    return configuration;
   }
 }

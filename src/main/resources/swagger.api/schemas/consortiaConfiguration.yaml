@@ -9,5 +9,4 @@ ConsortiaConfiguration:
       type: "string"
   additionalProperties: false
   required:
-    - "id"
     - "centralTenantId"

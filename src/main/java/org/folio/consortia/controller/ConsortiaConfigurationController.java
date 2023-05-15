@@ -20,7 +20,8 @@ public class ConsortiaConfigurationController implements ConsortiaConfigurationA
   }
 
   @Override
-  public ResponseEntity<ConsortiaConfiguration> saveConfiguration(String centralTenantId) {
-    return ResponseEntity.status(HttpStatus.CREATED).body(configurationService.createConfiguration(centralTenantId));
+  public ResponseEntity<ConsortiaConfiguration> saveConfiguration(ConsortiaConfiguration configuration) {
+    return ResponseEntity.status(HttpStatus.CREATED)
+      .body(configurationService.createConfiguration(configuration.getCentralTenantId()));
   }
 }

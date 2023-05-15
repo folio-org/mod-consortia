@@ -28,12 +28,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
       requestBody:
-        description: Id of central tenant
-        required: true
-        content:
-          application/json:
-            schema:
-              type: string
+        $ref: '#/components/requestBodies/ConfigurationBody'
 components:
   requestBodies:
     ConfigurationBody:
