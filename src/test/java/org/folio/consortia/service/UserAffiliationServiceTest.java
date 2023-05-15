@@ -136,23 +136,6 @@ class UserAffiliationServiceTest {
   }
 
   @Test
-  void kafkaMessageFailedWhenDeletingTest() {
-    var te = getTenantEntity();
-    when(tenantService.getByTenantId(anyString())).thenReturn(te);
-    doNothing().when(consortiumService).checkConsortiumExistsOrThrow(any());
-    doThrow(new RuntimeException("Unable to send message to Kafka")).when(kafkaService).send(any(), anyString(), any());
-
-    Map<String, Collection<String>> map = new HashMap<>();
-    map.put(TENANT, List.of(TENANT));
-    map.put(TOKEN, List.of(TOKEN));
-    folioExecutionContext = new DefaultFolioExecutionContext(folioModuleMetadata, map);
-    try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
-      userAffiliationService.deletePrimaryUserAffiliation(userDeletedEventSample);
-    }
-
-    verify(kafkaService, times(1)).send(any(), anyString(), any());
-  }
-  @Test
   void tenantNotInConsortiaWhenDeletingTest() {
     when(tenantRepository.findById(anyString())).thenReturn(null);
 

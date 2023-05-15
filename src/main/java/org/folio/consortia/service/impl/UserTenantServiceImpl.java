@@ -3,6 +3,7 @@ package org.folio.consortia.service.impl;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.folio.consortia.client.PermissionsClient;
 import org.folio.consortia.client.UsersClient;
@@ -296,17 +297,19 @@ public class UserTenantServiceImpl implements UserTenantService {
     return new DefaultFolioExecutionContext(folioModuleMetadata, context.getOkapiHeaders());
   }
 
-  public void deleteShadowUsers() {
+  public void deleteShadowUsers(UUID userId) {
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
-    List<UserTenantEntity> userTenantEntities = userTenantRepository.getByUserIdAndIsPrimaryFalse().orElse(null);
-    if (Objects.nonNull(userTenantEntities)) {
+    List<UserTenantEntity> userTenantEntities = userTenantRepository.getByUserIdAndIsPrimaryFalse(userId);
+    if (CollectionUtils.isNotEmpty(userTenantEntities)) {
       Map<String, List<UserTenantEntity>> listMap = userTenantEntities.stream().collect(Collectors.groupingBy(userTenantEntity -> userTenantEntity.getTenant().getId()));
+      log.info("Removing orphaned shadow users from all tenants exist in consortia for the user: {}", userId);
       listMap.forEach((key, value) -> {
         prepareContextForTenant(key, currentTenantContext);
-        String query = String.valueOf(HelperUtils.createQuery(value));
-        usersClient.deleteUsers("?query=" + query);
+        String id = value.stream().findFirst().get().getUserId().toString();
+        usersClient.deleteUsers("?query=(id=(" + id + ")");
+        log.info("Removed shadow user: {} from tenant : {}", id, key);
       });
-      userTenantRepository.deleteByUserIdAndIsPrimaryFalse();
+      userTenantRepository.deleteByUserIdAndIsPrimaryFalse(userId);
     }
   }
 

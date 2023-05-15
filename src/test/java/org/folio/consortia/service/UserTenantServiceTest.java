@@ -299,20 +299,22 @@ class UserTenantServiceTest {
   void shouldRemoveAllOrphanedShadowUsers() {
     UUID associationId = UUID.randomUUID();
     UUID userId1 = UUID.randomUUID();
-    UUID userId2 = UUID.randomUUID();
-    String tenantId = String.valueOf(UUID.randomUUID());
-    UserTenantEntity userTenant1 = createUserTenantEntity(associationId, userId1, "testuser1", tenantId);
-    UserTenantEntity userTenant2 = createUserTenantEntity(associationId, userId2, "testuser2", tenantId);
+    String tenantId1 = String.valueOf(UUID.randomUUID());
+    String tenantId2 = String.valueOf(UUID.randomUUID());
+    UserTenantEntity userTenant1 = createUserTenantEntity(associationId, userId1, "testuser1", tenantId1);
+    UserTenantEntity userTenant2 = createUserTenantEntity(associationId, userId1, "testuser2", tenantId1);
+    UserTenantEntity userTenant3 = createUserTenantEntity(associationId, userId1, "testuser3", tenantId2);
     userTenant1.setIsPrimary(false);
     userTenant2.setIsPrimary(false);
-    when(userTenantRepository.getByUserIdAndIsPrimaryFalse()).thenReturn(Optional.of(List.of(userTenant1, userTenant2)));
+    userTenant3.setIsPrimary(false);
+    when(userTenantRepository.getByUserIdAndIsPrimaryFalse(any())).thenReturn(List.of(userTenant1, userTenant2, userTenant3));
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
     when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
     Map<String, Collection<String>> okapiHeaders = new HashMap<>();
     okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
-    assertDoesNotThrow(() -> userTenantService.deleteShadowUsers());
+    assertDoesNotThrow(() -> userTenantService.deleteShadowUsers(userId1));
   }
 
   @Test

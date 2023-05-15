@@ -22,6 +22,6 @@ public interface UsersClient {
   @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
   void updateUser(@PathVariable String id, @RequestBody User user);
 
-  @DeleteMapping()
+  @DeleteMapping
   void deleteUsers(@PathVariable String query);
 }

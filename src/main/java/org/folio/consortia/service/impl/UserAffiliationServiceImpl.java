@@ -41,7 +41,6 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   @SneakyThrows
   @Transactional
   public void createPrimaryUserAffiliation(String eventPayload) {
-    try {
       var userEvent = OBJECT_MAPPER.readValue(eventPayload, UserEvent.class);
       log.info("Received event for creating primary affiliation for user: {} and tenant: {}", userEvent.getUserDto().getId(), userEvent.getTenantId());
 
@@ -64,16 +63,12 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
 
       kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_CREATED, consortiaTenant.getConsortiumId().toString(), data);
       log.info("Primary affiliation has been set for the user: {}", userEvent.getUserDto().getId());
-    } catch (Exception e) {
-      log.error("Exception occurred while creating primary affiliation", e);
-    }
   }
 
   @Override
   @SneakyThrows
   @Transactional
   public void deletePrimaryUserAffiliation(String eventPayload) {
-    try {
       var userEvent = OBJECT_MAPPER.readValue(eventPayload, UserEvent.class);
       log.info("Received event for deleting primary affiliation for user: {} and tenant: {}", userEvent.getUserDto().getId(), userEvent.getTenantId());
 
@@ -84,18 +79,13 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       }
 
       userTenantService.deletePrimaryUserTenantAffiliation(UUID.fromString(userEvent.getUserDto().getId()));
-
-      log.info("Removing orphaned shadow users from all tenants exist in consortia");
-      userTenantService.deleteShadowUsers();
+      userTenantService.deleteShadowUsers(UUID.fromString(userEvent.getUserDto().getId()));
 
       PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(userEvent);
       String data = OBJECT_MAPPER.writeValueAsString(affiliationEvent);
 
       kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_DELETED, consortiaTenant.getConsortiumId().toString(), data);
       log.info("Primary affiliation has been deleted for the user: {}", userEvent.getUserDto().getId());
-    } catch (Exception e) {
-      log.error("Exception occurred while deleting primary affiliation", e);
-    }
   }
 
   private PrimaryAffiliationEvent createPrimaryAffiliationEvent(UserEvent userEvent) {
