@@ -84,6 +84,8 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       }
 
       userTenantService.deletePrimaryUserTenantAffiliation(UUID.fromString(userEvent.getUserDto().getId()));
+
+      log.info("Removing orphaned shadow users from all tenants exist in consortia");
       userTenantService.deleteShadowUsers();
 
       PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(userEvent);
