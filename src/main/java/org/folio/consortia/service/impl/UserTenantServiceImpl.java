@@ -321,6 +321,7 @@ public class UserTenantServiceImpl implements UserTenantService {
       .stream()
       .findFirst();
     if (permissionUserOptional.isPresent()) {
+      // this case possible because for initial admin users setup we are creating user and permissions separately
       log.info("PermissionUser already exist {}.", permissionUserOptional.get());
       return permissionUserOptional.get();
     } else {
