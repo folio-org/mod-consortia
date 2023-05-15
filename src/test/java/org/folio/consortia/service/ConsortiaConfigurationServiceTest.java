@@ -1,8 +1,12 @@
 package org.folio.consortia.service;
 
+import org.folio.consortia.domain.dto.ConsortiaConfiguration;
 import org.folio.consortia.domain.entity.ConsortiaConfigurationEntity;
+import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.ConsortiaConfigurationRepository;
 import org.folio.consortia.service.impl.ConsortiaConfigurationServiceImpl;
+import org.folio.spring.FolioExecutionContext;
+import org.folio.spring.integration.XOkapiHeaders;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -10,9 +14,15 @@ import org.mockito.Mock;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.convert.ConversionService;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import static org.folio.consortia.utils.EntityUtils.createConsortiaConfiguration;
 import static org.folio.consortia.utils.EntityUtils.createConsortiaConfigurationEntity;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -29,15 +39,39 @@ class ConsortiaConfigurationServiceTest {
   ConsortiaConfigurationServiceImpl configurationService;
   @Mock
   ConsortiaConfigurationRepository configurationRepository;
+  @Mock
+  FolioExecutionContext folioExecutionContext;
+  @Mock
+  ConversionService conversionService;
 
   @Test
-  void shouldGetConfigValue() {
+  void shouldGetConfigValueByGetCentralTenantId() {
     List<ConsortiaConfigurationEntity> configurationEntityList = List.of(createConsortiaConfigurationEntity(CENTRAL_TENANT_ID));
 
     when(configurationRepository.findAll()).thenReturn(configurationEntityList);
     String actualCentralTenantId = configurationService.getCentralTenantId(TENANT_ID);
 
     Assertions.assertEquals(CENTRAL_TENANT_ID, actualCentralTenantId);
+  }
+
+  @Test
+  void shouldGetConfigValueByGetConsortiaConfiguration() {
+    ConsortiaConfigurationEntity configuration = createConsortiaConfigurationEntity(CENTRAL_TENANT_ID);
+    List<ConsortiaConfigurationEntity> configurationEntityList = List.of(configuration);
+
+    when(configurationRepository.findAll()).thenReturn(configurationEntityList);
+    when(conversionService.convert(configuration, ConsortiaConfiguration.class))
+      .thenReturn(createConsortiaConfiguration(CENTRAL_TENANT_ID));
+    when(folioExecutionContext.getTenantId()).thenReturn("testtenant1");
+    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
+    Map<String, Collection<String>> okapiHeaders = new HashMap<>();
+    okapiHeaders.put(XOkapiHeaders.TENANT, List.of("testtenant1"));
+    when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
+
+
+    var expected = configurationService.getConsortiaConfiguration();
+
+    Assertions.assertEquals(CENTRAL_TENANT_ID, expected.getCentralTenantId());
   }
 
   @Test
@@ -53,7 +87,7 @@ class ConsortiaConfigurationServiceTest {
   }
 
   @Test
-  void shouldThrowCentralTenantNotFoundErrorWhileGetConfigValue() {
+  void shouldThrowCentralTenantNotFoundErrorWhileSavingConfigValue() {
     ConsortiaConfigurationEntity configuration = createConsortiaConfigurationEntity(CENTRAL_TENANT_ID);
 
     when(configurationRepository.save(any())).thenReturn(configuration);
@@ -64,6 +98,14 @@ class ConsortiaConfigurationServiceTest {
 
     verify(configurationRepository, times(0)).save(any());
 
+  }
+
+  @Test
+  void shouldThrowCentralTenantNotFoundErrorWhileGetConfigValue() {
+
+    when(configurationRepository.findAll()).thenReturn(new ArrayList<>());
+
+    Assertions.assertThrows(ResourceNotFoundException.class, () -> configurationService.getCentralTenantId(TENANT_ID));
   }
 
 }

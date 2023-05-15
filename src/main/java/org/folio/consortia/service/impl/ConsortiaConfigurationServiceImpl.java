@@ -26,20 +26,13 @@ public class ConsortiaConfigurationServiceImpl implements ConsortiaConfiguration
   private final ConsortiaConfigurationRepository configurationRepository;
   private final ConversionService converter;
   private final FolioExecutionContext folioExecutionContext;
-  private final FolioModuleMetadata folioMetadata;
 
   @Override
   public ConsortiaConfiguration getConsortiaConfiguration() {
     FolioExecutionContext currentContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     String requestedTenantId = getTenantIdFromHeader(currentContext);
     ConsortiaConfigurationEntity configuration;
-
-    // getting central tenant for this requested tenant from saved configuration in its own schema
-//    try (var context = new FolioExecutionContextSetter(createFolioExecutionContextForTenant(
-//      requestedTenantId, folioExecutionContext, folioMetadata))) {
     configuration = getConfiguration(requestedTenantId);
-//    }
-
     return converter.convert(configuration, ConsortiaConfiguration.class);
   }
 
@@ -55,23 +48,6 @@ public class ConsortiaConfigurationServiceImpl implements ConsortiaConfiguration
     configuration.setCentralTenantId(centralTenantId);
     return converter.convert(configurationRepository.save(configuration), ConsortiaConfiguration.class);
   }
-
-//  @Override
-//  public ConsortiaConfiguration createConfigurationByFolioExecutionContext() {
-//    FolioExecutionContext currentContext = (FolioExecutionContext) folioExecutionContext.getInstance();
-//    String requestedTenantId = getTenantIdFromHeader(currentContext);
-//    ConsortiaConfigurationEntity configuration;
-//
-//    String centralTenantId = getCentralTenantId(requestedTenantId);
-//
-//    // getting central tenant for this requested tenant from saved configuration in its own schema
-////    try (var context = new FolioExecutionContextSetter(createFolioExecutionContextForTenant(
-////      requestedTenantId, folioExecutionContext, folioMetadata))) {
-//    configuration = createConfiguration(centralTenantId);
-////    }
-//
-//    return converter.convert(configuration, ConsortiaConfiguration.class);
-//  }
 
   private ConsortiaConfigurationEntity getConfiguration(String requestTenantId) {
     List<ConsortiaConfigurationEntity> configList = configurationRepository.findAll();

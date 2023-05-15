@@ -1,12 +1,12 @@
 package org.folio.consortia.service;
 
+import org.folio.consortia.client.ConsortiaConfigurationClient;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
-import org.folio.consortia.service.impl.ConsortiaConfigurationServiceImpl;
 import org.folio.consortia.service.impl.TenantServiceImpl;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.folio.consortia.utils.EntityUtils.createConsortiaConfiguration;
 import static org.folio.consortia.utils.EntityUtils.createTenant;
 import static org.folio.consortia.utils.EntityUtils.createTenantEntity;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -48,6 +49,7 @@ import static org.mockito.Mockito.when;
 class TenantServiceTest {
 
   private final static String CONSORTIUM_ID = "7698e46-c3e3-11ed-afa1-0242ac120002";
+  private static final String CENTRAL_TENANT_ID = "diku";
   @InjectMocks
   private TenantServiceImpl tenantService;
   @Mock
@@ -63,9 +65,7 @@ class TenantServiceTest {
   @Mock
   private FolioExecutionContext folioExecutionContext;
   @Mock
-  private FolioModuleMetadata folioModuleMetadata;
-  @Mock
-  private ConsortiaConfigurationServiceImpl configurationService;
+  private ConsortiaConfigurationClient configurationClient;
 
   @Test
   void shouldGetTenantList() {
@@ -80,7 +80,8 @@ class TenantServiceTest {
 
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(tenantRepository.existsById(any())).thenReturn(true);
-    when(tenantRepository.findByConsortiumId(any(), any(PageRequest.of(offset, limit).getClass()))).thenReturn(new PageImpl<>(tenantEntityList, PageRequest.of(offset, limit), tenantEntityList.size()));
+    when(tenantRepository.findByConsortiumId(any(), any(PageRequest.of(offset, limit).getClass())))
+      .thenReturn(new PageImpl<>(tenantEntityList, PageRequest.of(offset, limit), tenantEntityList.size()));
 
     var tenantCollection = tenantService.get(consortiumId, 0, 10);
     Assertions.assertEquals(2, tenantCollection.getTotalRecords());
@@ -97,6 +98,7 @@ class TenantServiceTest {
     when(tenantRepository.existsById(any())).thenReturn(false);
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
+    doNothing().when(configurationClient).saveConfiguration(createConsortiaConfiguration(CENTRAL_TENANT_ID));
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
     when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);

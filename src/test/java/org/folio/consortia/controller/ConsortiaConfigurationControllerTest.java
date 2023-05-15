@@ -3,15 +3,22 @@ package org.folio.consortia.controller;
 import org.folio.consortia.domain.entity.ConsortiaConfigurationEntity;
 import org.folio.consortia.repository.ConsortiaConfigurationRepository;
 import org.folio.consortia.support.BaseTest;
+import org.folio.spring.integration.XOkapiHeaders;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import java.util.List;
 import java.util.UUID;
 
+import static org.folio.consortia.utils.EntityUtils.createConsortiaConfigurationEntity;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class ConsortiaConfigurationControllerTest extends BaseTest {
@@ -19,10 +26,25 @@ class ConsortiaConfigurationControllerTest extends BaseTest {
   @MockBean
   ConsortiaConfigurationRepository configurationRepository;
 
+  @Test
+  void shouldGetConsortiumConfiguration() throws Exception {
+    var header = defaultHeaders();
+    header.set(XOkapiHeaders.TENANT, "testtenat1");
+
+    when(configurationRepository.findAll())
+      .thenReturn(List.of(createConsortiaConfigurationEntity("diku")));
+
+    this.mockMvc.perform(
+        get("/consortia-configuration")
+          .headers(header))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.centralTenantId", is("diku")));
+  }
+
   @ParameterizedTest
-  @ValueSource(strings = {"{\"id\":\"111841e3-e6fb-4191-8fd8-5674a5107c33\",\"centralTenantId\":\"diku\"}"})
+  @ValueSource(strings = {"{\"centralTenantId\":\"diku\"}"})
   void shouldSaveConsortiumConfiguration(String contentString) throws Exception {
-    var headers = defaultHeaders();
+    var header = defaultHeaders();
     ConsortiaConfigurationEntity configuration = new ConsortiaConfigurationEntity();
     configuration.setId(UUID.randomUUID());
     configuration.setCentralTenantId("diku");
@@ -31,22 +53,10 @@ class ConsortiaConfigurationControllerTest extends BaseTest {
     when(configurationRepository.save(any(ConsortiaConfigurationEntity.class))).thenReturn(configuration);
 
     this.mockMvc.perform(
-      post("/consortia_configuration")
-        .headers(headers).content(contentString))
-      .andExpect(status().isCreated());
+        post("/consortia-configuration")
+          .headers(header).content(contentString))
+      .andExpect(status().isCreated())
+      .andExpect(jsonPath("$.centralTenantId", is("diku")));
   }
-//  void shouldSaveConsortiumConfiguration(String contentString) throws Exception {
-//    var headers = defaultHeaders();
-//    ConsortiumEntity consortiumEntity = createConsortiumEntity("111841e3-e6fb-4191-8fd8-5674a5107c33", "Test");
-//
-//    when(configurationRepository.count()).thenReturn(0L);
-//
-//    this.mockMvc.perform(
-//        post("/consortia")
-//          .headers(headers)
-//          .content(contentString))
-//      .andExpectAll(status().is2xxSuccessful(),
-//        jsonPath("$.id", is("111841e3-e6fb-4191-8fd8-5674a5107c33")),
-//        jsonPath("$.centralTenantId", is("central_tenant_id")));
-//  }
+
 }

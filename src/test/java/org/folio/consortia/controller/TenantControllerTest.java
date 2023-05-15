@@ -2,6 +2,7 @@ package org.folio.consortia.controller;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import org.folio.consortia.client.ConsortiaConfigurationClient;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.TenantRepository;
@@ -28,6 +29,7 @@ import static org.folio.consortia.utils.EntityUtils.createConsortiaConfiguration
 import static org.folio.consortia.utils.EntityUtils.createTenantEntity;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -51,6 +53,8 @@ class TenantControllerTest extends BaseTest {
   UserTenantRepository userTenantRepository;
   @MockBean
   ConsortiaConfigurationServiceImpl configurationService;
+  @MockBean
+  ConsortiaConfigurationClient configurationClient;
 
   /* Success cases */
   @Test
@@ -79,6 +83,7 @@ class TenantControllerTest extends BaseTest {
     when(tenantRepository.existsById(any())).thenReturn(false);
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(new TenantEntity());
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
+    doNothing().when(configurationClient).saveConfiguration(createConsortiaConfiguration(CENTRAL_TENANT_ID));
 
     this.mockMvc.perform(
         post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants")
@@ -134,6 +139,7 @@ class TenantControllerTest extends BaseTest {
     TenantEntity centralTenant = createTenantEntity(CENTRAL_TENANT_ID, CENTRAL_TENANT_ID, "TTA", true);
 
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
+    doNothing().when(configurationClient).saveConfiguration(createConsortiaConfiguration(CENTRAL_TENANT_ID));
 
     this.mockMvc.perform(post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants")
         .headers(headers).content(contentString))
@@ -169,6 +175,7 @@ class TenantControllerTest extends BaseTest {
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(tenantRepository.existsById(any(String.class))).thenReturn(false);
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
+    doNothing().when(configurationClient).saveConfiguration(createConsortiaConfiguration(CENTRAL_TENANT_ID));
 
     Set<ConstraintViolation<?>> constraintViolations = new HashSet<>();
     constraintViolations.add(mock(ConstraintViolation.class));
@@ -201,8 +208,7 @@ class TenantControllerTest extends BaseTest {
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(tenantRepository.existsById(any(String.class))).thenReturn(true);
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
-    when(configurationService.createConfiguration(CENTRAL_TENANT_ID))
-      .thenReturn(createConsortiaConfiguration(CENTRAL_TENANT_ID));
+    doNothing().when(configurationClient).saveConfiguration(createConsortiaConfiguration(CENTRAL_TENANT_ID));
 
     this.mockMvc.perform(
         post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants")

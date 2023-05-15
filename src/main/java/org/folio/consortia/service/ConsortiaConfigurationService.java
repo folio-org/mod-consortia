@@ -13,6 +13,10 @@ public interface ConsortiaConfigurationService {
    */
   String getCentralTenantId(String requestedTenantId);
 
+  /**
+   * Get Config based on tenant id which is fetched from header
+   * @return ConsortiaConfiguration
+   */
   ConsortiaConfiguration getConsortiaConfiguration();
 
   /**
@@ -23,5 +27,4 @@ public interface ConsortiaConfigurationService {
    */
   ConsortiaConfiguration createConfiguration(String centralTenantId);
 
-//  ConsortiaConfiguration createConfigurationByFolioExecutionContext();
 }
