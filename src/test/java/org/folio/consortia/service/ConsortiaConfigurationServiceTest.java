@@ -13,7 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 
-import static org.folio.consortia.utils.EntityUtils.createConsortiaConfiguration;
+import static org.folio.consortia.utils.EntityUtils.createConsortiaConfigurationEntity;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -32,7 +32,7 @@ class ConsortiaConfigurationServiceTest {
 
   @Test
   void shouldGetConfigValue() {
-    List<ConsortiaConfigurationEntity> configurationEntityList = List.of(createConsortiaConfiguration(CENTRAL_TENANT_ID));
+    List<ConsortiaConfigurationEntity> configurationEntityList = List.of(createConsortiaConfigurationEntity(CENTRAL_TENANT_ID));
 
     when(configurationRepository.findAll()).thenReturn(configurationEntityList);
     String actualCentralTenantId = configurationService.getCentralTenantId(TENANT_ID);
@@ -42,7 +42,7 @@ class ConsortiaConfigurationServiceTest {
 
   @Test
   void shouldSaveConfigValue() {
-    ConsortiaConfigurationEntity configuration = createConsortiaConfiguration(CENTRAL_TENANT_ID);
+    ConsortiaConfigurationEntity configuration = createConsortiaConfigurationEntity(CENTRAL_TENANT_ID);
 
     when(configurationRepository.save(any())).thenReturn(configuration);
     when(configurationRepository.count()).thenReturn(0L);
@@ -54,7 +54,7 @@ class ConsortiaConfigurationServiceTest {
 
   @Test
   void shouldThrowCentralTenantNotFoundErrorWhileGetConfigValue() {
-    ConsortiaConfigurationEntity configuration = createConsortiaConfiguration(CENTRAL_TENANT_ID);
+    ConsortiaConfigurationEntity configuration = createConsortiaConfigurationEntity(CENTRAL_TENANT_ID);
 
     when(configurationRepository.save(any())).thenReturn(configuration);
     when(configurationRepository.count()).thenReturn(1L);

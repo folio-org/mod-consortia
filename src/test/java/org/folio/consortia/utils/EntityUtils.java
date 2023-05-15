@@ -1,6 +1,7 @@
 package org.folio.consortia.utils;
 
 import lombok.experimental.UtilityClass;
+import org.folio.consortia.domain.dto.ConsortiaConfiguration;
 import org.folio.consortia.domain.dto.Consortium;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.UserTenant;
@@ -95,8 +96,15 @@ public class EntityUtils {
     return userTenantEntity;
   }
 
-  public static ConsortiaConfigurationEntity createConsortiaConfiguration(String centralTenantId) {
+  public static ConsortiaConfigurationEntity createConsortiaConfigurationEntity(String centralTenantId) {
     ConsortiaConfigurationEntity configuration = new ConsortiaConfigurationEntity();
+    configuration.setId(UUID.randomUUID());
+    configuration.setCentralTenantId(centralTenantId);
+    return configuration;
+  }
+
+  public static ConsortiaConfiguration createConsortiaConfiguration(String centralTenantId) {
+    ConsortiaConfiguration configuration = new ConsortiaConfiguration();
     configuration.setId(UUID.randomUUID());
     configuration.setCentralTenantId(centralTenantId);
     return configuration;

@@ -10,17 +10,11 @@ import org.folio.consortia.repository.ConsortiaConfigurationRepository;
 import org.folio.consortia.service.ConsortiaConfigurationService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
-import org.folio.spring.integration.XOkapiHeaders;
-import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static org.folio.consortia.utils.TenantContextUtils.createFolioExecutionContext;
-import static org.folio.consortia.utils.TenantContextUtils.createFolioExecutionContextForTenant;
-import static org.folio.consortia.utils.TenantContextUtils.getHeaderValue;
 import static org.folio.consortia.utils.TenantContextUtils.getTenantIdFromHeader;
 
 @Log4j2
@@ -35,32 +29,18 @@ public class ConsortiaConfigurationServiceImpl implements ConsortiaConfiguration
   private final FolioModuleMetadata folioMetadata;
 
   @Override
-  public ConsortiaConfiguration getConsortiaConfigurationByFolioExecutionContext() {
+  public ConsortiaConfiguration getConsortiaConfiguration() {
     FolioExecutionContext currentContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     String requestedTenantId = getTenantIdFromHeader(currentContext);
     ConsortiaConfigurationEntity configuration;
 
     // getting central tenant for this requested tenant from saved configuration in its own schema
-    try (var context = new FolioExecutionContextSetter(createFolioExecutionContextForTenant(
-      requestedTenantId, folioExecutionContext, folioMetadata))) {
-      configuration = getConfiguration(requestedTenantId);
-    }
+//    try (var context = new FolioExecutionContextSetter(createFolioExecutionContextForTenant(
+//      requestedTenantId, folioExecutionContext, folioMetadata))) {
+    configuration = getConfiguration(requestedTenantId);
+//    }
 
     return converter.convert(configuration, ConsortiaConfiguration.class);
-  }
-
-  @Override
-  public String getCentralTenantByIdByHeader(MessageHeaders messageHeaders) {
-    String requestedTenantId = getHeaderValue(messageHeaders, XOkapiHeaders.TENANT, null).get(0);
-    String centralTenantId;
-
-    // getting central tenant for this requested tenant from get central in its own schema
-    try (var context = new FolioExecutionContextSetter(createFolioExecutionContext(
-      messageHeaders, folioMetadata, requestedTenantId))) {
-      centralTenantId = getCentralTenantId(requestedTenantId);
-    }
-
-    return centralTenantId;
   }
 
   @Override
@@ -69,27 +49,29 @@ public class ConsortiaConfigurationServiceImpl implements ConsortiaConfiguration
   }
 
   @Override
-  public ConsortiaConfigurationEntity createConfiguration(String centralTenantId) {
+  public ConsortiaConfiguration createConfiguration(String centralTenantId) {
     checkAnyConsortiaConfigurationNotExistsOrThrow();
     ConsortiaConfigurationEntity configuration = new ConsortiaConfigurationEntity();
     configuration.setCentralTenantId(centralTenantId);
-    return configurationRepository.save(configuration);
+    return converter.convert(configurationRepository.save(configuration), ConsortiaConfiguration.class);
   }
 
-  @Override
-  public ConsortiaConfiguration createConfigurationByFolioExecutionContext() {
-    FolioExecutionContext currentContext = (FolioExecutionContext) folioExecutionContext.getInstance();
-    String requestedTenantId = getTenantIdFromHeader(currentContext);
-    ConsortiaConfigurationEntity configuration;
-
-    // getting central tenant for this requested tenant from saved configuration in its own schema
-    try (var context = new FolioExecutionContextSetter(createFolioExecutionContextForTenant(
-      requestedTenantId, folioExecutionContext, folioMetadata))) {
-      configuration = createConfiguration(requestedTenantId);
-    }
-
-    return converter.convert(configuration, ConsortiaConfiguration.class);
-  }
+//  @Override
+//  public ConsortiaConfiguration createConfigurationByFolioExecutionContext() {
+//    FolioExecutionContext currentContext = (FolioExecutionContext) folioExecutionContext.getInstance();
+//    String requestedTenantId = getTenantIdFromHeader(currentContext);
+//    ConsortiaConfigurationEntity configuration;
+//
+//    String centralTenantId = getCentralTenantId(requestedTenantId);
+//
+//    // getting central tenant for this requested tenant from saved configuration in its own schema
+////    try (var context = new FolioExecutionContextSetter(createFolioExecutionContextForTenant(
+////      requestedTenantId, folioExecutionContext, folioMetadata))) {
+//    configuration = createConfiguration(centralTenantId);
+////    }
+//
+//    return converter.convert(configuration, ConsortiaConfiguration.class);
+//  }
 
   private ConsortiaConfigurationEntity getConfiguration(String requestTenantId) {
     List<ConsortiaConfigurationEntity> configList = configurationRepository.findAll();

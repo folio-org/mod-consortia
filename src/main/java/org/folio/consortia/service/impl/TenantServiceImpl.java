@@ -2,6 +2,7 @@ package org.folio.consortia.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.folio.consortia.client.ConsortiaConfigurationClient;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
 import org.folio.consortia.domain.entity.TenantEntity;
@@ -41,6 +42,7 @@ public class TenantServiceImpl implements TenantService {
   private final FolioExecutionContext folioExecutionContext;
   private final FolioModuleMetadata folioMetadata;
   private final ConsortiaConfigurationService configurationService;
+  private final ConsortiaConfigurationClient configurationClient;
 
   @Override
   public TenantCollection get(UUID consortiumId, Integer offset, Integer limit) {

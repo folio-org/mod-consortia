@@ -1,10 +1,10 @@
 openapi: 3.0.0
 info:
   title: Consortia Configuration integration API
-  description: "Consortium integration API"
+  description: "Consortia Configuration integration API"
   version: 0.0.1
 paths:
-  /consortia-configration:
+  /consortia-configuration:
     get:
       summary: Get consortium configuration
       operationId: getConfiguration
@@ -28,7 +28,12 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
       requestBody:
-        $ref: '#/components/requestBodies/ConfigurationBody'
+        description: Id of central tenant
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
 components:
   requestBodies:
     ConfigurationBody:
