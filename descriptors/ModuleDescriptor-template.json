@@ -68,10 +68,11 @@
           ],
           "pathPattern": "/consortia/{consortiumId}/tenants",
           "permissionsRequired": [
-            "consortia.tenants.item.post",
-            "consortia.consortia-configuration.item.post"
+            "consortia.tenants.item.post"
           ],
-          "modulePermissions": []
+          "modulePermissions": [
+            "consortia.consortia-configuration.item.post"
+          ]
         },
         {
           "methods": [
