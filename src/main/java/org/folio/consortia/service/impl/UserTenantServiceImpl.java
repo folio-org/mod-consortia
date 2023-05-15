@@ -11,7 +11,7 @@ import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.dto.UserEvent;
 import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
-import org.folio.consortia.domain.entity.dto.PermissionUser;
+import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.exception.ConsortiumClientException;
@@ -234,7 +234,11 @@ public class UserTenantServiceImpl implements UserTenantService {
       if (Objects.nonNull(user.getActive())) {
         activateUser(user);
       } else {
+<<<<<<< HEAD
         createActiveUserWithPermission(shadowUser);
+=======
+        createActiveUserWithPermissions(shadowUser);
+>>>>>>> master
       }
     }
   }
@@ -260,7 +264,11 @@ public class UserTenantServiceImpl implements UserTenantService {
     }
   }
 
+<<<<<<< HEAD
   private void createActiveUserWithPermission(User user) {
+=======
+  private void createActiveUserWithPermissions(User user) {
+>>>>>>> master
     createPermissionUser(user.getId());
     log.info("Creating user with id {}.", user.getId());
     usersClient.saveUser(user);
@@ -321,6 +329,10 @@ public class UserTenantServiceImpl implements UserTenantService {
       .stream()
       .findFirst();
     if (permissionUserOptional.isPresent()) {
+<<<<<<< HEAD
+=======
+      // this case possible because for initial admin users setup we are creating user and permissions separately
+>>>>>>> master
       log.info("PermissionUser already exist {}.", permissionUserOptional.get());
       return permissionUserOptional.get();
     } else {
