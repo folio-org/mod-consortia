@@ -9,7 +9,6 @@ import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.ConsortiaConfigurationRepository;
 import org.folio.consortia.service.ConsortiaConfigurationService;
 import org.folio.spring.FolioExecutionContext;
-import org.folio.spring.FolioModuleMetadata;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
