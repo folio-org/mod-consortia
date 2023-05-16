@@ -200,8 +200,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   }
 
   private User prepareShadowUser(UUID userId, UserTenantEntity userTenantEntity, FolioExecutionContext folioExecutionContext) {
-    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(userTenantEntity.getTenant()
-      .getId(), folioExecutionContext))) {
+    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(userTenantEntity.getTenant().getId(), folioExecutionContext))) {
       User user = new User();
       User userOptional = getUser(userId);
 
@@ -221,8 +220,7 @@ public class UserTenantServiceImpl implements UserTenantService {
         user.setPatronGroup(userOptional.getPatronGroup());
         user.setActive(true);
       } else {
-        log.warn("Could not find real user with id: {} in his home tenant: {}", userId.toString(), userTenantEntity.getTenant()
-          .getId());
+        log.warn("Could not find real user with id: {} in his home tenant: {}", userId.toString(), userTenantEntity.getTenant().getId());
         throw new ResourceNotFoundException(USER_ID, userId.toString());
       }
       return user;
