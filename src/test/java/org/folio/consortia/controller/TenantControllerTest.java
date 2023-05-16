@@ -66,11 +66,13 @@ class TenantControllerTest extends BaseTest {
     tenantEntityList.add(tenantEntity1);
     tenantEntityList.add(tenantEntity2);
 
-    when(tenantRepository.findByConsortiumId(any(), any(PageRequest.of(0, 2).getClass()))).thenReturn(new PageImpl<>(tenantEntityList, PageRequest.of(0, 2), tenantEntityList.size()));
+    when(tenantRepository.findByConsortiumId(any(), any(PageRequest.of(0, 2)
+      .getClass()))).thenReturn(new PageImpl<>(tenantEntityList, PageRequest.of(0, 2), tenantEntityList.size()));
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     var headers = defaultHeaders();
 
-    this.mockMvc.perform(get("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants?limit=2&offset=1").headers(headers)).andExpectAll(status().isOk(), content().contentType(MediaType.APPLICATION_JSON_VALUE));
+    this.mockMvc.perform(get("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants?limit=2&offset=1").headers(headers))
+      .andExpectAll(status().isOk(), content().contentType(MediaType.APPLICATION_JSON_VALUE));
   }
 
   @ParameterizedTest
@@ -99,9 +101,12 @@ class TenantControllerTest extends BaseTest {
     var headers = defaultHeaders();
     when(tenantRepository.existsById(any())).thenReturn(true);
     when(consortiumRepository.existsById(any())).thenReturn(true);
-    when(tenantRepository.save(tenant)).thenReturn(tenant);
+    when(tenantRepository.save(any())).thenReturn(tenant);
 
-    this.mockMvc.perform(put("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants/diku1234").headers(headers).content(contentString)).andExpectAll(status().isOk());
+    this.mockMvc.perform(
+        put("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants/diku1234")
+          .headers(headers).content(contentString))
+      .andExpectAll(status().isOk());
   }
 
   /* Error cases */
