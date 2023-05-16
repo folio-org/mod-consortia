@@ -46,7 +46,8 @@ public class ConsortiaEventListener {
   public void userDeletedListener(String data, MessageHeaders messageHeaders) {
     // to delete affiliation from central tenant schema
     String centralTenantId = getCentralTenantByIdByHeader(messageHeaders);
-    runInFolioContext(createFolioExecutionContext(messageHeaders, folioMetadata, centralTenantId), () -> userAffiliationService.deletePrimaryUserAffiliation(data));
+    runInFolioContext(createFolioExecutionContext(messageHeaders, folioMetadata, centralTenantId),
+      () -> userAffiliationService.deletePrimaryUserAffiliation(data));
   }
 
   public String getCentralTenantByIdByHeader(MessageHeaders messageHeaders) {

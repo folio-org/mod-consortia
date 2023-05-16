@@ -15,7 +15,6 @@ import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.TenantService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
-import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -81,15 +80,14 @@ public class TenantServiceImpl implements TenantService {
       centralTenantId = getCentralTenantId();
     }
 
+    checkTenantNotExistsAndConsortiumExistsOrThrow(consortiumId, tenantDto.getId());
+    Tenant savedTenant = saveTenant(consortiumId, tenantDto);
+
     runInFolioContext(createFolioExecutionContextForTenant(tenantDto.getId(), currentTenantContext, folioMetadata),
       () -> configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId)));
-    log.info("save:: saved consortia configuration with centralTenantId={} for tenant={} context", centralTenantId, tenantDto.getId());
-    try (var context = new FolioExecutionContextSetter(createFolioExecutionContextForTenant(centralTenantId,
-      currentTenantContext, folioMetadata))) {
-      log.info("save:: context changed to x-okapi-tenant: {}", centralTenantId);
-      checkTenantNotExistsAndConsortiumExistsOrThrow(consortiumId, tenantDto.getId());
-      return saveTenant(consortiumId, tenantDto);
-    }
+    log.info("save:: saved consortia configuration with centralTenantId={} by tenantId={} context", centralTenantId, tenantDto.getId());
+
+    return savedTenant;
   }
 
   @Override
@@ -112,7 +110,7 @@ public class TenantServiceImpl implements TenantService {
     log.debug("saveTenant:: Trying to save tenant with consoritumId={} and tenant with id={}", consortiumId, tenantDto);
     TenantEntity entity = toEntity(consortiumId, tenantDto);
     TenantEntity savedTenant = tenantRepository.save(entity);
-    log.info("saveTenant: Tenant '{}' successfully saved", tenantDto.getId());
+    log.info("saveTenant: Tenant '{}' successfully saved", savedTenant.getId());
     return converter.convert(savedTenant, Tenant.class);
   }
 
@@ -146,7 +144,7 @@ public class TenantServiceImpl implements TenantService {
     return entity;
   }
 
-  private ConsortiaConfiguration createConsortiaConfigurationBody(String tenantId){
+  private ConsortiaConfiguration createConsortiaConfigurationBody(String tenantId) {
     ConsortiaConfiguration configuration = new ConsortiaConfiguration();
     configuration.setCentralTenantId(tenantId);
     return configuration;

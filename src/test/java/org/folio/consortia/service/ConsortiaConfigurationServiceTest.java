@@ -87,7 +87,7 @@ class ConsortiaConfigurationServiceTest {
   }
 
   @Test
-  void shouldThrowCentralTenantNotFoundErrorWhileSavingConfigValue() {
+  void shouldThrowResourceAlreadyExistExceptionErrorWhileSavingConfigValue() {
     ConsortiaConfigurationEntity configuration = createConsortiaConfigurationEntity(CENTRAL_TENANT_ID);
 
     when(configurationRepository.save(any())).thenReturn(configuration);
