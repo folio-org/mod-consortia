@@ -47,8 +47,10 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -382,9 +384,10 @@ class UserTenantServiceTest {
     doNothing().when(consortiumService).checkConsortiumExistsOrThrow(any());
     when(userTenantRepository.findByUsernameAndTenantId(anyString(), anyString())).thenReturn(Optional.empty());
 
-    var result = userTenantService.getByUsernameAndTenantIdOrNull(UUID.randomUUID(), RandomStringUtils.random(5), RandomStringUtils.random(5));
+    var result = userTenantService.checkUserIfHasPrimaryAffiliationByUserId(UUID.randomUUID(), String.valueOf(UUID.randomUUID()));
 
     Assertions.assertNull(result);
+    assertTrue(result);
   }
 
   @Test
@@ -495,8 +498,9 @@ class UserTenantServiceTest {
     when(conversionService.convert(any(), any())).thenReturn(toDto(utEntity));
     when(userTenantRepository.findByUsernameAndTenantId(anyString(), anyString())).thenReturn(Optional.of(utEntity));
 
-    var result = userTenantService.getByUsernameAndTenantIdOrNull(UUID.randomUUID(), RandomStringUtils.random(5), RandomStringUtils.random(5));
-    Assertions.assertNotNull(result);
+    var result = userTenantService.checkUserIfHasPrimaryAffiliationByUserId(UUID.randomUUID(), RandomStringUtils.random(5));
+    assertNotNull(result);
+    assertTrue(result);
   }
 
 
