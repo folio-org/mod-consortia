@@ -59,6 +59,13 @@ public class TenantContextUtils {
     return value == null ? Collections.emptyList() : Collections.singletonList(value);
   }
 
+  /**
+   * This method change tenant(x-okapi-tenant: tenantId) of context to new tenant and return new context with tenantId
+   * @param tenantId new tenantId
+   * @param context current context
+   * @param folioModuleMetadata current module metadata
+   * @return new context with new tenantId
+   */
   public static FolioExecutionContext createFolioExecutionContextForTenant(String tenantId, FolioExecutionContext context,
                                                                            FolioModuleMetadata folioModuleMetadata) {
     if (MapUtils.isNotEmpty(context.getOkapiHeaders())) {
