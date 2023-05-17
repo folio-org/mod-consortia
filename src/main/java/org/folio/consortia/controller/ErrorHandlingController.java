@@ -16,10 +16,12 @@ import org.folio.consortia.exception.ConsortiumClientException;
 import org.folio.consortia.exception.PrimaryAffiliationException;
 import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.exception.ResourceNotFoundException;
+import org.folio.consortia.exception.InvalidTokenException;
 import org.folio.consortia.utils.ErrorHelper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -70,6 +72,15 @@ public class ErrorHandlingController {
     return createExternalError(e.getMessage(), VALIDATION_ERROR);
   }
 
+  @ResponseStatus(HttpStatus.UNAUTHORIZED)
+  @ExceptionHandler({
+    InvalidTokenException.class
+  })
+  public Errors handleTokenErrors(Exception e) {
+    log.error("Handle token validation errors", e);
+    return createExternalError(e.getMessage(), UNAUTHORIZED);
+  }
+
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ExceptionHandler(PrimaryAffiliationException.class)
   public Errors handlePrimaryAffiliationException(Exception e) {
@@ -88,6 +99,27 @@ public class ErrorHandlingController {
   public Errors handleIllegalStateException(IllegalStateException e) {
     log.error("Handle illegal state exception", e);
     return createInternalError(e.getMessage(), BAD_GATEWAY);
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+  public Errors handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+    log.error("Handle method argument not valid", ex);
+
+    List<Error> errorList = ex.getBindingResult().getFieldErrors()
+      .stream()
+      .map(error -> {
+        error.getObjectName();
+        var customCode = error.getObjectName() + "ValidationError";
+        return new Error()
+          // Extract the error message and validation errors from the MethodArgumentNotValidException
+          .message(String.format("'%s' validation failed. %s", error.getField(), error.getDefaultMessage()))
+          .type(ErrorHelper.ErrorType.EXTERNAL.getTypeCode())
+          .code(customCode);
+      })
+      .toList();
+
+    return new Errors().errors(errorList);
   }
 
   @ExceptionHandler(ConstraintViolationException.class)

@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.folio.consortia.client.UsersClient;
+import org.folio.consortia.client.ConsortiaConfigurationClient;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.UserCollection;
 import org.folio.consortia.domain.entity.ConsortiumEntity;
@@ -25,6 +26,8 @@ import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.impl.TenantServiceImpl;
+import org.folio.spring.FolioExecutionContext;
+import org.folio.spring.integration.XOkapiHeaders;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -38,6 +41,24 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.folio.consortia.utils.EntityUtils.createConsortiaConfiguration;
+import static org.folio.consortia.utils.EntityUtils.createTenant;
+import static org.folio.consortia.utils.EntityUtils.createTenantEntity;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -46,6 +67,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @EntityScan(basePackageClasses = TenantEntity.class)
 class TenantServiceTest {
 
+  private final static String CONSORTIUM_ID = "7698e46-c3e3-11ed-afa1-0242ac120002";
+  private static final String CENTRAL_TENANT_ID = "diku";
   @InjectMocks
   private TenantServiceImpl tenantService;
   @Mock
@@ -58,6 +81,11 @@ class TenantServiceTest {
   private ConsortiumRepository consortiumRepository;
   @Mock
   private ConsortiumService consortiumService;
+  @Mock
+  private FolioExecutionContext folioExecutionContext;
+  @Mock
+  private ConsortiaConfigurationClient configurationClient;
+
   @Mock
   UsersClient usersClient;
   @Mock
@@ -75,7 +103,8 @@ class TenantServiceTest {
 
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(tenantRepository.existsById(any())).thenReturn(true);
-    when(tenantRepository.findByConsortiumId(any(), any(PageRequest.of(offset, limit).getClass()))).thenReturn(new PageImpl<>(tenantEntityList, PageRequest.of(offset, limit), tenantEntityList.size()));
+    when(tenantRepository.findByConsortiumId(any(), any(PageRequest.of(offset, limit).getClass())))
+      .thenReturn(new PageImpl<>(tenantEntityList, PageRequest.of(offset, limit), tenantEntityList.size()));
 
     var tenantCollection = tenantService.get(consortiumId, 0, 10);
     Assertions.assertEquals(2, tenantCollection.getTotalRecords());
@@ -83,16 +112,24 @@ class TenantServiceTest {
 
   @Test
   void shouldSaveTenant() throws JsonProcessingException {
-    UUID consortiumId = UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002");
+    UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
     TenantEntity tenantEntity1 = createTenantEntity("ABC1", "TestName1");
     Tenant tenant = createTenant("TestID", "Test");
+    TenantEntity centralTenant = createTenantEntity("diku", "diku");
     var userCollectionString = getMockData("mockdata/user_collection.json");
     UserCollection userCollection = new ObjectMapper().readValue(userCollectionString, UserCollection.class);
 
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(tenantRepository.existsById(any())).thenReturn(false);
+    when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
+    doNothing().when(configurationClient).saveConfiguration(createConsortiaConfiguration(CENTRAL_TENANT_ID));
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
+    when(folioExecutionContext.getTenantId()).thenReturn("diku");
+    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
+    Map<String, Collection<String>> okapiHeaders = new HashMap<>();
+    okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
+    when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
     when(usersClient.getUserCollection(anyString(), anyInt(), anyInt())).thenReturn(userCollection);
 
     var tenant1 = tenantService.save(consortiumId, tenant);
@@ -110,7 +147,7 @@ class TenantServiceTest {
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
 
-    var tenant1 = tenantService.update(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), tenant.getId(), tenant);
+    var tenant1 = tenantService.update(UUID.fromString(CONSORTIUM_ID), tenant.getId(), tenant);
     Assertions.assertEquals(tenant.getId(), tenant1.getId());
     Assertions.assertEquals("TestName2", tenant1.getName());
   }
@@ -142,7 +179,8 @@ class TenantServiceTest {
     Mockito.when(userTenantRepository.existsByTenantId(tenantId)).thenReturn(true);
 
     // Call the method
-    assertThrows(IllegalArgumentException.class, () -> tenantService.delete(consortiumId, tenantId));
+    assertThrows(IllegalArgumentException.class, () ->
+      tenantService.delete(consortiumId, tenantId));
   }
 
   @Test
@@ -154,7 +192,8 @@ class TenantServiceTest {
     when(tenantRepository.existsById(tenantId)).thenReturn(false);
 
     // Call the method
-    assertThrows(ResourceNotFoundException.class, () -> tenantService.delete(consortiumId, tenantId));
+    assertThrows(ResourceNotFoundException.class, () ->
+      tenantService.delete(consortiumId, tenantId));
   }
 
   @Test
@@ -166,7 +205,9 @@ class TenantServiceTest {
     when(tenantRepository.existsById(any())).thenReturn(true);
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
-    assertThrows(java.lang.IllegalArgumentException.class, () -> tenantService.update(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), tenant.getId() + "1234", tenant));
+
+    assertThrows(java.lang.IllegalArgumentException.class, () ->
+      tenantService.update(UUID.fromString(CONSORTIUM_ID), tenant.getId() + "1234", tenant));
   }
 
   @Test
@@ -177,18 +218,41 @@ class TenantServiceTest {
     when(consortiumRepository.existsById(any())).thenReturn(true);
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
-    assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class, () -> tenantService.update(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), tenant.getId() + "1234", tenant));
+
+    assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class, () ->
+      tenantService.update(UUID.fromString(CONSORTIUM_ID), tenant.getId() + "1234", tenant));
+  }
+
+  @Test
+  void shouldThrowResourceAlreadyExistExceptionWhileSavingCentralTenant() {
+    UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
+    Tenant tenant = createTenant("TestID", "Test", true);
+
+    when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
+    when(tenantRepository.existsById(any())).thenReturn(false);
+    when(tenantRepository.existsByIsCentralTrue()).thenReturn(true);
+
+    assertThrows(org.folio.consortia.exception.ResourceAlreadyExistException.class,
+      () -> tenantService.save(UUID.fromString(CONSORTIUM_ID), tenant));
   }
 
   @Test
   void shouldNotSaveTenantForDuplicateId() {
     TenantEntity tenantEntity1 = createTenantEntity("TestID", "Test");
     Tenant tenant = createTenant("TestID", "Testq");
+    TenantEntity centralTenant = createTenantEntity("diku", "diku");
 
     when(tenantRepository.existsById(any())).thenReturn(true);
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
+    when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
+    when(folioExecutionContext.getTenantId()).thenReturn("diku");
+    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
+    Map<String, Collection<String>> okapiHeaders = new HashMap<>();
+    okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
+    when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
-    assertThrows(org.folio.consortia.exception.ResourceAlreadyExistException.class, () -> tenantService.save(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"), tenant));
+    assertThrows(org.folio.consortia.exception.ResourceAlreadyExistException.class, () ->
+      tenantService.save(UUID.fromString(CONSORTIUM_ID), tenant));
   }
 
   @Test
