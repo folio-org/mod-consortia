@@ -1,12 +1,29 @@
 package org.folio.consortia.service;
 
+import static org.folio.consortia.utils.InputOutputTestUtils.getMockData;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.domain.dto.Tenant;
+import org.folio.consortia.domain.dto.UserCollection;
 import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.entity.TenantEntity;
+import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
-import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.impl.TenantServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -21,18 +38,8 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @EnableAutoConfiguration(exclude = BatchAutoConfiguration.class)
@@ -51,7 +58,10 @@ class TenantServiceTest {
   private ConsortiumRepository consortiumRepository;
   @Mock
   private ConsortiumService consortiumService;
-
+  @Mock
+  UsersClient usersClient;
+  @Mock
+  UserTenantService userTenantService;
   @Test
   void shouldGetTenantList() {
     int offset = 0;
@@ -72,15 +82,18 @@ class TenantServiceTest {
   }
 
   @Test
-  void shouldSaveTenant() {
+  void shouldSaveTenant() throws JsonProcessingException {
     UUID consortiumId = UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002");
     TenantEntity tenantEntity1 = createTenantEntity("ABC1", "TestName1");
     Tenant tenant = createTenant("TestID", "Test");
+    var userCollectionString = getMockData("mockdata/user_collection.json");
+    UserCollection userCollection = new ObjectMapper().readValue(userCollectionString, UserCollection.class);
 
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(tenantRepository.existsById(any())).thenReturn(false);
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
+    when(usersClient.getUserCollection(anyString(), anyInt(), anyInt())).thenReturn(userCollection);
 
     var tenant1 = tenantService.save(consortiumId, tenant);
     Assertions.assertEquals(tenant, tenant1);
@@ -190,6 +203,20 @@ class TenantServiceTest {
     when(tenantRepository.findById(anyString())).thenReturn(Optional.empty());
     var tenantEntity = tenantService.getByTenantId(UUID.randomUUID().toString());
     assertNull(tenantEntity);
+  }
+
+  @Test
+  void createPrimaryUserAffiliationsAsyncSuccessTest() throws JsonProcessingException {
+    UUID consortiumId = UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002");
+    TenantEntity tenantEntity1 = createTenantEntity("ABC1", "TestName1");
+    Tenant tenant = createTenant("TestID", "Test");
+    var userCollectionString = getMockData("mockdata/user_collection.json");
+    UserCollection userCollection = new ObjectMapper().readValue(userCollectionString, UserCollection.class);
+
+    when(usersClient.getUserCollection(anyString(), anyInt(), anyInt())).thenReturn(userCollection);
+
+    tenantService.createPrimaryUserAffiliationsAsync(consortiumId, tenantEntity1, tenant).join();
+
   }
 
   private ConsortiumEntity createConsortiumEntity() {

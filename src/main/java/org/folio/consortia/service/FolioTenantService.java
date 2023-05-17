@@ -1,6 +1,7 @@
 package org.folio.consortia.service;
 
-import lombok.extern.log4j.Log4j2;
+import java.sql.ResultSet;
+
 import org.apache.commons.lang3.BooleanUtils;
 import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.spring.FolioExecutionContext;
@@ -11,7 +12,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.sql.ResultSet;
+import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Service
@@ -34,7 +35,6 @@ public class FolioTenantService extends TenantService {
   protected void afterTenantUpdate(TenantAttributes tenantAttributes) {
     try {
       kafkaService.createKafkaTopics();
-      kafkaService.restartEventListeners();
     } catch (Exception e) {
       log.error(e.getMessage(), e);
       throw e;

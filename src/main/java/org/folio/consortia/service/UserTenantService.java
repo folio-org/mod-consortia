@@ -69,10 +69,11 @@ public interface UserTenantService {
    *
    * @param consortiumId  the consortiumId
    * @param consortiaTenant  the consortiaTenant
-   * @param userEventDto  the kafka userEventDto
+   * @param userId  id of existing user
+   * @param username  the name of existing user
    * @return userTenantDto
    */
-  UserTenant createPrimaryUserTenantAffiliation(UUID consortiumId, TenantEntity consortiaTenant, UserEvent userEventDto);
+  UserTenant createPrimaryUserTenantAffiliation(UUID consortiumId, TenantEntity consortiaTenant, String userId, String username);
 
   /**
    * Deletes user_tenant by userId and tenantId.

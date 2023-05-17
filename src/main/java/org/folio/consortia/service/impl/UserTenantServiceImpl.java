@@ -150,12 +150,12 @@ public class UserTenantServiceImpl implements UserTenantService {
 
   @Override
   @Transactional
-  public UserTenant createPrimaryUserTenantAffiliation(UUID consortiumId, TenantEntity consortiaTenant, UserEvent userEvent) {
+  public UserTenant createPrimaryUserTenantAffiliation(UUID consortiumId, TenantEntity consortiaTenant, String userId, String username) {
     UserTenantEntity userTenantEntity = new UserTenantEntity();
 
     userTenantEntity.setId(UUID.randomUUID());
-    userTenantEntity.setUserId(UUID.fromString(userEvent.getUserDto().getId()));
-    userTenantEntity.setUsername(userEvent.getUserDto().getUsername());
+    userTenantEntity.setUserId(UUID.fromString(userId));
+    userTenantEntity.setUsername(username);
     userTenantEntity.setTenant(consortiaTenant);
     userTenantEntity.setIsPrimary(IS_PRIMARY_TRUE);
 

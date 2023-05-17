@@ -70,7 +70,9 @@
           "permissionsRequired": [
             "consortia.tenants.item.post"
           ],
-          "modulePermissions": []
+          "modulePermissions": [
+            "users.collection.get"
+          ]
         },
         {
           "methods": [
