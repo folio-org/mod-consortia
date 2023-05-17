@@ -1,10 +1,10 @@
 package org.folio.consortia.service;
 
+import java.util.UUID;
+
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
 import org.folio.consortia.domain.entity.TenantEntity;
-
-import java.util.UUID;
 
 public interface TenantService {
 

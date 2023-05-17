@@ -1,8 +1,14 @@
 package org.folio.consortia.service.impl;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import static org.folio.consortia.utils.HelperUtils.checkIdenticalOrThrow;
+import static org.folio.consortia.utils.TenantContextUtils.createFolioExecutionContextForTenant;
+import static org.folio.consortia.utils.TenantContextUtils.runInFolioContext;
+
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
 import org.folio.consortia.client.ConsortiaConfigurationClient;
+import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.domain.dto.ConsortiaConfiguration;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
@@ -13,6 +19,7 @@ import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.TenantService;
+import org.folio.consortia.service.UserTenantService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
 import org.springframework.core.convert.ConversionService;
@@ -21,11 +28,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
-
-import static org.folio.consortia.utils.HelperUtils.checkIdenticalOrThrow;
-import static org.folio.consortia.utils.TenantContextUtils.createFolioExecutionContextForTenant;
-import static org.folio.consortia.utils.TenantContextUtils.runInFolioContext;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @Service
 @Log4j2
@@ -42,6 +46,8 @@ public class TenantServiceImpl implements TenantService {
   private final FolioExecutionContext folioExecutionContext;
   private final FolioModuleMetadata folioMetadata;
   private final ConsortiaConfigurationClient configurationClient;
+  private final UsersClient usersClient;
+  private final UserTenantService userTenantService;
 
   @Override
   public TenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
@@ -81,13 +87,40 @@ public class TenantServiceImpl implements TenantService {
     }
 
     checkTenantNotExistsAndConsortiumExistsOrThrow(consortiumId, tenantDto.getId());
-    Tenant savedTenant = saveTenant(consortiumId, tenantDto);
+    TenantEntity savedTenantEntity = saveTenantEntity(consortiumId, tenantDto);
+    var savedTenant = converter.convert(savedTenantEntity, Tenant.class);
 
     runInFolioContext(createFolioExecutionContextForTenant(tenantDto.getId(), currentTenantContext, folioMetadata),
-      () -> configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId)));
+        () -> {
+          configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
+          createPrimaryUserAffiliationsAsync(consortiumId, toEntity(consortiumId, tenantDto), tenantDto);
+        });
     log.info("save:: saved consortia configuration with centralTenantId={} by tenantId={} context", centralTenantId, tenantDto.getId());
 
     return savedTenant;
+  }
+
+  public CompletableFuture<Void> createPrimaryUserAffiliationsAsync(UUID consortiumId, TenantEntity consortiaTenant, Tenant tenantDto) {
+    return CompletableFuture
+      .runAsync(() -> {
+        log.info("Start creating user primary affiliation for tenant {}", tenantDto.getId());
+        var users = usersClient.getUserCollection("", 0, Integer.MAX_VALUE);
+        users.getUsers()
+          .forEach(user -> {
+            var consortiaUserTenant = userTenantRepository.findByUserIdAndTenantId(UUID.fromString(user.getId()), tenantDto.getId())
+              .orElse(null);
+            if (consortiaUserTenant != null && consortiaUserTenant.getIsPrimary()) {
+              log.debug("Primary affiliation already exists for tenant/user: {}/{}", tenantDto.getId(), user.getUsername());
+            } else {
+              userTenantService.createPrimaryUserTenantAffiliation(consortiumId, consortiaTenant, user.getId(), user.getUsername());
+            }
+          });
+      })
+      .thenAccept(v -> log.info("Successfully created primary affiliations for tenant {}", tenantDto.getId()))
+      .exceptionally(t -> {
+        log.error("Failed to create primary affiliations for new tenant", t);
+        return null;
+      });
   }
 
   @Override
@@ -107,11 +140,16 @@ public class TenantServiceImpl implements TenantService {
   }
 
   private Tenant saveTenant(UUID consortiumId, Tenant tenantDto) {
+    TenantEntity savedTenant = saveTenantEntity(consortiumId, tenantDto);
+    return converter.convert(savedTenant, Tenant.class);
+  }
+
+  private TenantEntity saveTenantEntity(UUID consortiumId, Tenant tenantDto) {
     log.debug("saveTenant:: Trying to save tenant with consoritumId={} and tenant with id={}", consortiumId, tenantDto);
     TenantEntity entity = toEntity(consortiumId, tenantDto);
     TenantEntity savedTenant = tenantRepository.save(entity);
     log.info("saveTenant: Tenant '{}' successfully saved", savedTenant.getId());
-    return converter.convert(savedTenant, Tenant.class);
+    return savedTenant;
   }
 
   private void checkTenantNotExistsAndConsortiumExistsOrThrow(UUID consortiumId, String tenantId) {
