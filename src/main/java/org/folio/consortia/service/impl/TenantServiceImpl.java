@@ -1,7 +1,6 @@
 package org.folio.consortia.service.impl;
 
 import com.google.common.io.Resources;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
@@ -14,7 +13,6 @@ import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.entity.TenantEntity;
-import org.folio.consortia.exception.ConsortiumClientException;
 import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.TenantRepository;
@@ -59,6 +57,7 @@ public class TenantServiceImpl implements TenantService {
   private final ConsortiaConfigurationClient configurationClient;
   private final UsersClient usersClient;
   private final PermissionsClient permissionsClient;
+  private final UserTenantServiceImpl userTenantService;
 
   @Override
   public TenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
@@ -172,7 +171,7 @@ public class TenantServiceImpl implements TenantService {
   }
 
   private void createShadowAdminUserWithPermissions(UUID userId) {
-    User userOptional = getUser(userId);
+    User userOptional = userTenantService.getUser(userId);
     if (Objects.isNull(userOptional.getId())) {
       userOptional = createUser(userId);
     }
@@ -223,19 +222,5 @@ public class TenantServiceImpl implements TenantService {
     result.setUsername("Admin");
     result.setActive(true);
     return result;
-  }
-
-  private User getUser(UUID userId) {
-    try {
-      log.info("Getting user by userId {}.", userId);
-      return usersClient.getUsersByUserId(String.valueOf(userId));
-    } catch (FeignException.NotFound e) {
-      log.info("User with userId {} does not exist in schema, going to use new one", userId);
-      return new User();
-    } catch (FeignException.Forbidden e) {
-      throw new ConsortiumClientException(e);
-    } catch (FeignException e) {
-      throw new IllegalStateException(e);
-    }
   }
 }

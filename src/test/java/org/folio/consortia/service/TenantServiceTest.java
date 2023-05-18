@@ -13,6 +13,7 @@ import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.impl.TenantServiceImpl;
+import org.folio.consortia.service.impl.UserTenantServiceImpl;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.junit.jupiter.api.Assertions;
@@ -71,9 +72,9 @@ class TenantServiceTest {
   @Mock
   private ConsortiaConfigurationClient configurationClient;
   @Mock
-  private UsersClient usersClient;
-  @Mock
   private PermissionsClient permissionsClient;
+  @Mock
+  private UserTenantServiceImpl userTenantService;
 
   @Test
   void shouldGetTenantList() {
@@ -96,18 +97,20 @@ class TenantServiceTest {
   }
 
   @Test
-  void shouldSaveTenant() {
+  void shouldSaveTenantWithNewUserAndPermissions() {
     UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
     TenantEntity tenantEntity1 = createTenantEntity("ABC1", "TestName1");
     Tenant tenant = createTenant("TestID", "Test");
     TenantEntity centralTenant = createTenantEntity("diku", "diku");
-    PermissionUser permissionUser = new PermissionUser();
     PermissionUserCollection permissionUserCollection = new PermissionUserCollection();
-    permissionUserCollection.setPermissionUsers(List.of(permissionUser));
+    permissionUserCollection.setPermissionUsers(List.of());
+    User user = new User();
+    user.setId(UUID.randomUUID().toString());
 
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
-    when(usersClient.getUsersByUserId(any())).thenReturn(new User());
+    when(userTenantService.getUser(any())).thenReturn(new User());
     when(permissionsClient.get(any())).thenReturn(permissionUserCollection);
+    when(permissionsClient.create(any())).thenReturn(PermissionUser.of(UUID.randomUUID().toString(), user.getId(), List.of("users.collection.get")));
     when(tenantRepository.existsById(any())).thenReturn(false);
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);

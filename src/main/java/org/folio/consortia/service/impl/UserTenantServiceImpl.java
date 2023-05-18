@@ -247,7 +247,7 @@ public class UserTenantServiceImpl implements UserTenantService {
    *
    * @param userId user id.
    */
-  private User getUser(UUID userId) {
+  public User getUser(UUID userId) {
     try {
       log.info("Getting user by userId {}.", userId);
       return usersClient.getUsersByUserId(String.valueOf(userId));
