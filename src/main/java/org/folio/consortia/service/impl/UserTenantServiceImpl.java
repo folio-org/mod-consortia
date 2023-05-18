@@ -303,8 +303,10 @@ public class UserTenantServiceImpl implements UserTenantService {
       log.info("Removing orphaned shadow users from all tenants exist in consortia for the user: {}", userId);
       tenantIds.forEach(tenantId -> {
         prepareContextForTenant(tenantId, currentTenantContext);
-        usersClient.deleteUsersByUserId(userId.toString());
-        log.info("Removed shadow user: {} from tenant : {}", userId, tenantId);
+        try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, currentTenantContext))) {
+          usersClient.deleteUser(userId.toString());
+          log.info("Removed shadow user: {} from tenant : {}", userId, tenantId);
+        }
       });
       userTenantRepository.deleteByUserIdAndIsPrimaryFalse(userId);
     }

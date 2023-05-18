@@ -23,5 +23,5 @@ public interface UsersClient {
   void updateUser(@PathVariable String id, @RequestBody User user);
 
   @DeleteMapping(value = "/{userId}")
-  void deleteUsersByUserId(@PathVariable String userId);
+  void deleteUser(@PathVariable String userId);
 }
