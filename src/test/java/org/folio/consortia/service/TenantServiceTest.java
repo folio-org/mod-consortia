@@ -9,6 +9,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -264,10 +266,11 @@ class TenantServiceTest {
     var userCollectionString = getMockData("mockdata/user_collection.json");
     UserCollection userCollection = new ObjectMapper().readValue(userCollectionString, UserCollection.class);
 
+    // stub collection of 2 users
     when(usersClient.getUserCollection(anyString(), anyInt(), anyInt())).thenReturn(userCollection);
 
     tenantService.createPrimaryUserAffiliationsAsync(consortiumId, tenantEntity1, tenant).join();
-
+    verify(userTenantService, times(2)).createPrimaryUserTenantAffiliation(any(),any(),anyString(),anyString());
   }
 
   private ConsortiumEntity createConsortiumEntity() {
