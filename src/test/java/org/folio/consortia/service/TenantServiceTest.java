@@ -1,7 +1,12 @@
 package org.folio.consortia.service;
 
 import org.folio.consortia.client.ConsortiaConfigurationClient;
+import org.folio.consortia.client.PermissionsClient;
+import org.folio.consortia.client.UsersClient;
+import org.folio.consortia.domain.dto.PermissionUser;
+import org.folio.consortia.domain.dto.PermissionUserCollection;
 import org.folio.consortia.domain.dto.Tenant;
+import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.ConsortiumRepository;
@@ -65,6 +70,10 @@ class TenantServiceTest {
   private FolioExecutionContext folioExecutionContext;
   @Mock
   private ConsortiaConfigurationClient configurationClient;
+  @Mock
+  private UsersClient usersClient;
+  @Mock
+  private PermissionsClient permissionsClient;
 
   @Test
   void shouldGetTenantList() {
@@ -92,8 +101,13 @@ class TenantServiceTest {
     TenantEntity tenantEntity1 = createTenantEntity("ABC1", "TestName1");
     Tenant tenant = createTenant("TestID", "Test");
     TenantEntity centralTenant = createTenantEntity("diku", "diku");
+    PermissionUser permissionUser = new PermissionUser();
+    PermissionUserCollection permissionUserCollection = new PermissionUserCollection();
+    permissionUserCollection.setPermissionUsers(List.of(permissionUser));
 
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
+    when(usersClient.getUsersByUserId(any())).thenReturn(new User());
+    when(permissionsClient.get(any())).thenReturn(permissionUserCollection);
     when(tenantRepository.existsById(any())).thenReturn(false);
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
@@ -105,7 +119,7 @@ class TenantServiceTest {
     okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
-    var tenant1 = tenantService.save(consortiumId, tenant);
+    var tenant1 = tenantService.save(consortiumId, UUID.randomUUID(), tenant);
     Assertions.assertEquals(tenant, tenant1);
   }
 
@@ -206,7 +220,7 @@ class TenantServiceTest {
     when(tenantRepository.existsByIsCentralTrue()).thenReturn(true);
 
     assertThrows(org.folio.consortia.exception.ResourceAlreadyExistException.class,
-      () -> tenantService.save(UUID.fromString(CONSORTIUM_ID), tenant));
+      () -> tenantService.save(UUID.fromString(CONSORTIUM_ID), null, tenant));
   }
 
   @Test
@@ -225,7 +239,7 @@ class TenantServiceTest {
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
     assertThrows(org.folio.consortia.exception.ResourceAlreadyExistException.class, () ->
-      tenantService.save(UUID.fromString(CONSORTIUM_ID), tenant));
+      tenantService.save(UUID.fromString(CONSORTIUM_ID), null, tenant));
   }
 
   @Test
@@ -241,5 +255,4 @@ class TenantServiceTest {
     var tenantEntity = tenantService.getByTenantId(UUID.randomUUID().toString());
     assertNull(tenantEntity);
   }
-
 }

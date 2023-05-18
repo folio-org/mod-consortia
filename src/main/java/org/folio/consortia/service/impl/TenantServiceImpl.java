@@ -1,12 +1,20 @@
 package org.folio.consortia.service.impl;
 
+import com.google.common.io.Resources;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.collections4.CollectionUtils;
 import org.folio.consortia.client.ConsortiaConfigurationClient;
+import org.folio.consortia.client.PermissionsClient;
+import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.domain.dto.ConsortiaConfiguration;
+import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
+import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.entity.TenantEntity;
+import org.folio.consortia.exception.ConsortiumClientException;
 import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.TenantRepository;
@@ -21,6 +29,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.folio.consortia.utils.HelperUtils.checkIdenticalOrThrow;
@@ -32,6 +46,7 @@ import static org.folio.consortia.utils.TenantContextUtils.runInFolioContext;
 @RequiredArgsConstructor
 public class TenantServiceImpl implements TenantService {
 
+  private static final String PERMISSIONS_FILE_PATH = "permissions/admin-user-permissions.csv";
   private static final String TENANTS_IDS_NOT_MATCHED_ERROR_MSG = "Request body tenantId and path param tenantId should be identical";
   private static final String TENANT_HAS_ACTIVE_USER_ASSOCIATIONS_ERROR_MSG = "Cannot delete tenant with ID {tenantId} because it has an association with a user. " +
     "Please remove the user association before attempting to delete the tenant.";
@@ -42,6 +57,8 @@ public class TenantServiceImpl implements TenantService {
   private final FolioExecutionContext folioExecutionContext;
   private final FolioModuleMetadata folioMetadata;
   private final ConsortiaConfigurationClient configurationClient;
+  private final UsersClient usersClient;
+  private final PermissionsClient permissionsClient;
 
   @Override
   public TenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
@@ -68,7 +85,7 @@ public class TenantServiceImpl implements TenantService {
 
   @Override
   @Transactional
-  public Tenant save(UUID consortiumId, Tenant tenantDto) {
+  public Tenant save(UUID consortiumId, UUID adminUserId, Tenant tenantDto) {
     log.debug("save:: Trying to save a tenant by consortiumId '{}', tenant object with id '{}' and isCentral={}", consortiumId, tenantDto.getId(), tenantDto.getIsCentral());
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     String centralTenantId;
@@ -84,7 +101,11 @@ public class TenantServiceImpl implements TenantService {
     Tenant savedTenant = saveTenant(consortiumId, tenantDto);
 
     runInFolioContext(createFolioExecutionContextForTenant(tenantDto.getId(), currentTenantContext, folioMetadata),
-      () -> configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId)));
+      () -> {
+        createShadowAdminUserWithPermissions(adminUserId);
+        configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
+      }
+    );
     log.info("save:: saved consortia configuration with centralTenantId={} by tenantId={} context", centralTenantId, tenantDto.getId());
 
     return savedTenant;
@@ -148,5 +169,73 @@ public class TenantServiceImpl implements TenantService {
     ConsortiaConfiguration configuration = new ConsortiaConfiguration();
     configuration.setCentralTenantId(tenantId);
     return configuration;
+  }
+
+  private void createShadowAdminUserWithPermissions(UUID userId) {
+    User userOptional = getUser(userId);
+    if (Objects.isNull(userOptional.getId())) {
+      userOptional = createUser(userId);
+    }
+    Optional<PermissionUser> permissionUserOptional = permissionsClient.get("userId==" + userOptional.getId())
+      .getPermissionUsers()
+      .stream()
+      .findFirst();
+    if (permissionUserOptional.isEmpty()) {
+      createPermissionUser(userOptional.getId());
+    }
+  }
+
+  private PermissionUser createPermissionUser(String userId) {
+    List<String> perms = readPermissionsFromResource(PERMISSIONS_FILE_PATH);
+
+    if (CollectionUtils.isEmpty(perms)) {
+      throw new IllegalStateException("No user permissions found in " + PERMISSIONS_FILE_PATH);
+    }
+
+    var permissionUser = PermissionUser.of(UUID.randomUUID().toString(), userId, perms);
+    log.info("Creating {}.", permissionUser);
+    return permissionsClient.create(permissionUser);
+  }
+
+  private List<String> readPermissionsFromResource(String permissionsFilePath) {
+    List<String> result = new ArrayList<>();
+    var url = Resources.getResource(permissionsFilePath);
+
+    try {
+      result = Resources.readLines(url, StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      log.error(String.format("Can't read user permissions from %s.", permissionsFilePath), e);
+    }
+
+    return result;
+  }
+
+  private User createUser(UUID userId) {
+    var result = createUserObject(userId);
+    log.info("Creating {}.", result);
+    usersClient.saveUser(result);
+    return result;
+  }
+
+  private User createUserObject(UUID userId) {
+    final var result = new User();
+    result.setId(userId.toString());
+    result.setUsername("Admin");
+    result.setActive(true);
+    return result;
+  }
+
+  private User getUser(UUID userId) {
+    try {
+      log.info("Getting user by userId {}.", userId);
+      return usersClient.getUsersByUserId(String.valueOf(userId));
+    } catch (FeignException.NotFound e) {
+      log.info("User with userId {} does not exist in schema, going to use new one", userId);
+      return new User();
+    } catch (FeignException.Forbidden e) {
+      throw new ConsortiumClientException(e);
+    } catch (FeignException e) {
+      throw new IllegalStateException(e);
+    }
   }
 }
