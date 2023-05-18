@@ -300,6 +300,7 @@ public class UserTenantServiceImpl implements UserTenantService {
     List<UserTenantEntity> userTenantEntities = userTenantRepository.getByUserIdAndIsPrimaryFalse(userId);
     if (CollectionUtils.isNotEmpty(userTenantEntities)) {
       List<String> tenantIds = userTenantEntities.stream().map(userTenantEntity -> userTenantEntity.getTenant().getId()).toList();
+
       log.info("Removing orphaned shadow users from all tenants exist in consortia for the user: {}", userId);
       tenantIds.forEach(tenantId -> {
         try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, currentTenantContext))) {
@@ -307,6 +308,7 @@ public class UserTenantServiceImpl implements UserTenantService {
           log.info("Removed shadow user: {} from tenant : {}", userId, tenantId);
         }
       });
+
       userTenantRepository.deleteByUserIdAndIsPrimaryFalse(userId);
     }
   }
