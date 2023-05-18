@@ -35,11 +35,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 
 /**
@@ -301,13 +299,12 @@ public class UserTenantServiceImpl implements UserTenantService {
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     List<UserTenantEntity> userTenantEntities = userTenantRepository.getByUserIdAndIsPrimaryFalse(userId);
     if (CollectionUtils.isNotEmpty(userTenantEntities)) {
-      Map<String, List<UserTenantEntity>> listMap = userTenantEntities.stream().collect(Collectors.groupingBy(userTenantEntity -> userTenantEntity.getTenant().getId()));
+      List<String> tenantIds = userTenantEntities.stream().map(userTenantEntity -> userTenantEntity.getTenant().getId()).toList();
       log.info("Removing orphaned shadow users from all tenants exist in consortia for the user: {}", userId);
-      listMap.forEach((key, value) -> {
-        prepareContextForTenant(key, currentTenantContext);
-        String id = value.stream().findFirst().get().getUserId().toString();
-        usersClient.deleteUsers("?query=(id=(" + id + ")");
-        log.info("Removed shadow user: {} from tenant : {}", id, key);
+      tenantIds.forEach(tenantId -> {
+        prepareContextForTenant(tenantId, currentTenantContext);
+        usersClient.deleteUsersByUserId(userId.toString());
+        log.info("Removed shadow user: {} from tenant : {}", userId, tenantId);
       });
       userTenantRepository.deleteByUserIdAndIsPrimaryFalse(userId);
     }
