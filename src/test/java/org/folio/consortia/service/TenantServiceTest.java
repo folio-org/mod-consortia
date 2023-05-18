@@ -30,6 +30,7 @@ import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.impl.TenantServiceImpl;
+import org.folio.consortia.utils.EntityUtils;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.junit.jupiter.api.Assertions;
@@ -100,7 +101,7 @@ class TenantServiceTest {
   void shouldSaveTenant() throws JsonProcessingException {
     UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
     TenantEntity tenantEntity1 = createTenantEntity("ABC1", "TestName1");
-    Tenant tenant = createTenant("TestID", "Test");
+    Tenant tenant = EntityUtils.createTenant("TestID", "Test", true);
     TenantEntity centralTenant = createTenantEntity("diku", "diku");
     var userCollectionString = getMockData("mockdata/user_collection.json");
     UserCollection userCollection = new ObjectMapper().readValue(userCollectionString, UserCollection.class);
@@ -212,7 +213,7 @@ class TenantServiceTest {
   @Test
   void shouldThrowResourceAlreadyExistExceptionWhileSavingCentralTenant() {
     UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
-    Tenant tenant = createTenant("TestID", "Test", true);
+    Tenant tenant = EntityUtils.createTenant("TestID", "Test", true);
 
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(tenantRepository.existsById(any())).thenReturn(false);
@@ -225,8 +226,8 @@ class TenantServiceTest {
   @Test
   void shouldNotSaveTenantForDuplicateId() {
     TenantEntity tenantEntity1 = createTenantEntity("TestID", "Test");
-    Tenant tenant = createTenant("TestID", "Testq");
-    TenantEntity centralTenant = createTenantEntity("diku", "diku");
+    Tenant tenant = EntityUtils.createTenant("TestID", "Testq", true);
+    TenantEntity centralTenant = EntityUtils.createTenantEntity("diku", "diku");
 
     when(tenantRepository.existsById(any())).thenReturn(true);
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
@@ -279,6 +280,7 @@ class TenantServiceTest {
   private TenantEntity createTenantEntity(String id, String name) {
     TenantEntity tenantEntity = new TenantEntity();
     tenantEntity.setId(id);
+    tenantEntity.setIsCentral(false);
     tenantEntity.setName(name);
     return tenantEntity;
   }
