@@ -110,6 +110,7 @@ class TenantServiceTest {
     user.setId(UUID.randomUUID().toString());
 
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
+    when(userTenantService.prepareShadowUser(any(), any(), any())).thenReturn(user);
     when(userTenantService.getUser(any())).thenReturn(new User());
     when(permissionsClient.get(any())).thenReturn(permissionUserCollection);
     when(permissionsClient.create(any())).thenReturn(PermissionUser.of(UUID.randomUUID().toString(), user.getId(), List.of("users.collection.get")));
@@ -127,6 +128,40 @@ class TenantServiceTest {
     var tenant1 = tenantService.save(consortiumId, UUID.randomUUID(), tenant);
     Assertions.assertEquals(tenant, tenant1);
   }
+
+  @Test
+  void shouldSaveTenantWithExistingAndPermissions() {
+    UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
+    TenantEntity tenantEntity1 = createTenantEntity("ABC1", "TestName1");
+    Tenant tenant = createTenant("TestID", "Test");
+    TenantEntity centralTenant = createTenantEntity("diku", "diku");
+    PermissionUser permissionUser = new PermissionUser();
+    permissionUser.setPermissions(List.of("users.collection.get"));
+    PermissionUserCollection permissionUserCollection = new PermissionUserCollection();
+    permissionUserCollection.setPermissionUsers(List.of(permissionUser));
+    User user = new User();
+    user.setId(UUID.randomUUID().toString());
+
+    when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
+    when(userTenantService.prepareShadowUser(any(), any(), any())).thenReturn(user);
+    when(userTenantService.getUser(any())).thenReturn(user);
+    when(permissionsClient.get(any())).thenReturn(permissionUserCollection);
+    doNothing().when(permissionsClient).addPermission(any(), any());
+    when(tenantRepository.existsById(any())).thenReturn(false);
+    when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
+    when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
+    doNothing().when(configurationClient).saveConfiguration(createConsortiaConfiguration(CENTRAL_TENANT_ID));
+    when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
+    when(folioExecutionContext.getTenantId()).thenReturn("diku");
+    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
+    Map<String, Collection<String>> okapiHeaders = new HashMap<>();
+    okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
+    when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
+
+    var tenant1 = tenantService.save(consortiumId, UUID.randomUUID(), tenant);
+    Assertions.assertEquals(tenant, tenant1);
+  }
+
 
   @Test
   void shouldUpdateTenant() {

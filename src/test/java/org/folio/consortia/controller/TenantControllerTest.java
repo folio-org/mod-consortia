@@ -12,6 +12,7 @@ import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
+import org.folio.consortia.service.UserTenantService;
 import org.folio.consortia.service.impl.ConsortiaConfigurationServiceImpl;
 import org.folio.consortia.support.BaseTest;
 import org.junit.jupiter.api.Test;
@@ -64,6 +65,8 @@ class TenantControllerTest extends BaseTest {
   PermissionsClient permissionsClient;
   @MockBean
   UsersClient usersClient;
+  @MockBean
+  UserTenantService userTenantService;
 
   /* Success cases */
   @Test
@@ -90,9 +93,14 @@ class TenantControllerTest extends BaseTest {
     var headers = defaultHeaders();
     TenantEntity centralTenant = createTenantEntity(CENTRAL_TENANT_ID, CENTRAL_TENANT_ID, "AAA", true);
     PermissionUser permissionUser = new PermissionUser();
+    permissionUser.setPermissions(List.of("test.permission"));
     PermissionUserCollection permissionUserCollection = new PermissionUserCollection();
     permissionUserCollection.setPermissionUsers(List.of(permissionUser));
+    User user = new User();
+    user.setId(UUID.randomUUID().toString());
 
+    when(userTenantService.prepareShadowUser(any(), any(), any())).thenReturn(user);
+    when(userTenantService.getUser(any())).thenReturn(user);
     when(usersClient.getUsersByUserId(any())).thenReturn(new User());
     when(permissionsClient.get(any())).thenReturn(permissionUserCollection);
     when(consortiumRepository.existsById(any())).thenReturn(true);

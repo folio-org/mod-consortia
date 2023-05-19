@@ -58,7 +58,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   private static final Boolean IS_PRIMARY_TRUE = true;
   private static final Boolean IS_PRIMARY_FALSE = false;
   private static final Integer RANDOM_STRING_COUNT = 5;
-  private static final String PATRON_GROUP = null;
+  public static final String PATRON_GROUP = null;
 
   private final UserTenantRepository userTenantRepository;
   private final FolioExecutionContext folioExecutionContext;
@@ -128,7 +128,7 @@ public class UserTenantServiceImpl implements UserTenantService {
       throw new ResourceNotFoundException(String.format(NOT_FOUND_PRIMARY_AFFILIATION_MSG, USER_ID, userTenantDto.getUserId()));
     }
 
-    User shadowUser = prepareShadowUser(userTenantDto.getUserId(), userTenant.get(), currentTenantContext);
+    User shadowUser = prepareShadowUser(userTenantDto.getUserId(), userTenant.get().getTenant().getId(), currentTenantContext);
     createOrUpdateShadowUser(userTenantDto.getUserId(), shadowUser, userTenantDto, currentTenantContext);
 
     try (var context = new FolioExecutionContextSetter(prepareContextForTenant(currentTenantId, currentTenantContext))) {
@@ -200,8 +200,8 @@ public class UserTenantServiceImpl implements UserTenantService {
     return new UserTenant();
   }
 
-  private User prepareShadowUser(UUID userId, UserTenantEntity userTenantEntity, FolioExecutionContext folioExecutionContext) {
-    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(userTenantEntity.getTenant().getId(), folioExecutionContext))) {
+  public User prepareShadowUser(UUID userId, String tenantId, FolioExecutionContext folioExecutionContext) {
+    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioExecutionContext))) {
       User user = new User();
       User userOptional = getUser(userId);
 
@@ -221,7 +221,7 @@ public class UserTenantServiceImpl implements UserTenantService {
         user.setPatronGroup(userOptional.getPatronGroup());
         user.setActive(true);
       } else {
-        log.warn("Could not find real user with id: {} in his home tenant: {}", userId.toString(), userTenantEntity.getTenant().getId());
+        log.warn("Could not find real user with id: {} in his home tenant: {}", userId.toString(), tenantId);
         throw new ResourceNotFoundException(USER_ID, userId.toString());
       }
       return user;

@@ -8,6 +8,7 @@ import org.folio.consortia.client.ConsortiaConfigurationClient;
 import org.folio.consortia.client.PermissionsClient;
 import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.domain.dto.ConsortiaConfiguration;
+import org.folio.consortia.domain.dto.Permission;
 import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
@@ -99,10 +100,10 @@ public class TenantServiceImpl implements TenantService {
 
     checkTenantNotExistsAndConsortiumExistsOrThrow(consortiumId, tenantDto.getId());
     Tenant savedTenant = saveTenant(consortiumId, tenantDto);
-
+    User shadowAdminUser = userTenantService.prepareShadowUser(adminUserId, currentTenantContext.getTenantId(), currentTenantContext);
     runInFolioContext(createFolioExecutionContextForTenant(tenantDto.getId(), currentTenantContext, folioMetadata),
       () -> {
-        createShadowAdminUserWithPermissions(adminUserId);
+        createShadowAdminUserWithPermissions(shadowAdminUser);
         configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
       }
     );
@@ -171,17 +172,19 @@ public class TenantServiceImpl implements TenantService {
     return configuration;
   }
 
-  private void createShadowAdminUserWithPermissions(UUID userId) {
-    User userOptional = userTenantService.getUser(userId);
+  private void createShadowAdminUserWithPermissions(User user) {
+    User userOptional = userTenantService.getUser(UUID.fromString(user.getId()));
     if (Objects.isNull(userOptional.getId())) {
-      userOptional = createUser(userId);
+      userOptional = createUser(user);
     }
     Optional<PermissionUser> permissionUserOptional = permissionsClient.get("userId==" + userOptional.getId())
       .getPermissionUsers()
       .stream()
       .findFirst();
-    if (permissionUserOptional.isEmpty()) {
-      createPermissionUser(userOptional.getId());
+    if (permissionUserOptional.isPresent()) {
+      addPermissions(permissionUserOptional.get());
+    } else {
+      createPermissionUser(user.getId());
     }
   }
 
@@ -210,18 +213,28 @@ public class TenantServiceImpl implements TenantService {
     return result;
   }
 
-  private User createUser(UUID userId) {
-    var result = createUserObject(userId);
-    log.info("Creating {}.", result);
-    usersClient.saveUser(result);
-    return result;
+  private void addPermissions(PermissionUser permissionUser) {
+    var permissions = readPermissionsFromResource(PERMISSIONS_FILE_PATH);
+    if (CollectionUtils.isEmpty(permissions)) {
+      throw new IllegalStateException("No user permissions found in " + PERMISSIONS_FILE_PATH);
+    }
+
+    permissions.removeAll(permissionUser.getPermissions());
+    permissions.forEach(permission -> {
+      var p = new Permission();
+      p.setPermissionName(permission);
+      try {
+        log.info("Adding to user {} permission {}.", permissionUser.getUserId(), p);
+        permissionsClient.addPermission(permissionUser.getUserId(), p);
+      } catch (Exception e) {
+        log.error(String.format("Error adding permission %s to %s.", permission, permissionUser.getUserId()), e);
+      }
+    });
   }
 
-  private User createUserObject(UUID userId) {
-    final var result = new User();
-    result.setId(userId.toString());
-    result.setUsername("Admin");
-    result.setActive(true);
-    return result;
+  private User createUser(User user) {
+    log.info("Creating {}.", user);
+    usersClient.saveUser(user);
+    return user;
   }
 }
