@@ -19,6 +19,7 @@ import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.TenantService;
+import org.folio.consortia.service.UserTenantService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
 import org.springframework.core.convert.ConversionService;
@@ -57,7 +58,7 @@ public class TenantServiceImpl implements TenantService {
   private final ConsortiaConfigurationClient configurationClient;
   private final UsersClient usersClient;
   private final PermissionsClient permissionsClient;
-  private final UserTenantServiceImpl userTenantService;
+  private final UserTenantService userTenantService;
 
   @Override
   public TenantCollection get(UUID consortiumId, Integer offset, Integer limit) {

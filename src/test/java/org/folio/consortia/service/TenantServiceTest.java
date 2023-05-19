@@ -68,6 +68,8 @@ class TenantServiceTest {
   @Mock
   private ConsortiumService consortiumService;
   @Mock
+  private UsersClient usersClient;
+  @Mock
   private FolioExecutionContext folioExecutionContext;
   @Mock
   private ConsortiaConfigurationClient configurationClient;

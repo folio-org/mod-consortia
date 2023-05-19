@@ -1,5 +1,6 @@
 package org.folio.consortia.service;
 
+import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.dto.UserEvent;
 import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
@@ -109,6 +110,15 @@ public interface UserTenantService {
 
   /**
    * Deletes orphaned shadow_users.
+   *
+   * @param userId id of user.
    */
   void deleteShadowUsers(UUID userId);
+
+  /**
+   * Get existing user.
+   *
+   * @param userId id of user.
+   */
+  User getUser(UUID userId);
 }
