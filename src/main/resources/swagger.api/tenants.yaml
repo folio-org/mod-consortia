@@ -24,7 +24,7 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
     post:
-      summary: Save tenant with predefined permissions
+      summary: Save tenant
       operationId: saveTenant
       parameters:
         - $ref: "#/components/parameters/consortiumId"

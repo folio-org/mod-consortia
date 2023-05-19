@@ -28,6 +28,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -101,15 +103,27 @@ public class TenantServiceImpl implements TenantService {
     checkTenantNotExistsAndConsortiumExistsOrThrow(consortiumId, tenantDto.getId());
     Tenant savedTenant = saveTenant(consortiumId, tenantDto);
     User shadowAdminUser = userTenantService.prepareShadowUser(adminUserId, currentTenantContext.getTenantId(), currentTenantContext);
+    executeAfterTransactionCommits(() ->
     runInFolioContext(createFolioExecutionContextForTenant(tenantDto.getId(), currentTenantContext, folioMetadata),
       () -> {
         createShadowAdminUserWithPermissions(shadowAdminUser);
         configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
       }
-    );
+    ));
     log.info("save:: saved consortia configuration with centralTenantId={} by tenantId={} context", centralTenantId, tenantDto.getId());
 
     return savedTenant;
+  }
+
+  private void executeAfterTransactionCommits(Runnable task) {
+    TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+      @Override
+      public void afterCompletion(int status) {
+        if (status == 0){
+          task.run();
+        }
+      }
+    });
   }
 
   @Override
@@ -207,7 +221,7 @@ public class TenantServiceImpl implements TenantService {
     try {
       result = Resources.readLines(url, StandardCharsets.UTF_8);
     } catch (IOException e) {
-      log.error(String.format("Can't read user permissions from %s.", permissionsFilePath), e);
+      log.error("Can't read user permissions from %s.", permissionsFilePath, e);
     }
 
     return result;
@@ -227,7 +241,7 @@ public class TenantServiceImpl implements TenantService {
         log.info("Adding to user {} permission {}.", permissionUser.getUserId(), p);
         permissionsClient.addPermission(permissionUser.getUserId(), p);
       } catch (Exception e) {
-        log.error(String.format("Error adding permission %s to %s.", permission, permissionUser.getUserId()), e);
+        log.error("Error adding permission %s to %s.", permission, permissionUser.getUserId(), e);
       }
     });
   }

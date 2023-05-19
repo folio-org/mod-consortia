@@ -23,6 +23,7 @@ public interface TenantService {
    *
    * @param consortiumId  the consortiumId
    * @param tenantDto  the tenantDto
+   * @param adminUserId the id of admin_user
    * @return tenantDto
    */
   Tenant save(UUID consortiumId, UUID adminUserId, Tenant tenantDto);
