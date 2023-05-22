@@ -178,7 +178,7 @@ public class TenantServiceImpl implements TenantService {
     if (Objects.isNull(userOptional.getId())) {
       userOptional = createUser(user);
     }
-    Optional<PermissionUser> permissionUserOptional = permissionService.getPermissionUserById(userOptional.getId());
+    Optional<PermissionUser> permissionUserOptional = permissionService.getPermissionUserByUserId(userOptional.getId());
     if (permissionUserOptional.isPresent()) {
       addPermissions(permissionUserOptional.get());
     } else {
@@ -228,7 +228,7 @@ public class TenantServiceImpl implements TenantService {
   }
 
   private User createUser(User user) {
-    log.info("Creating {}.", user);
+    log.info("Creating user with id {}.", user.getId());
     usersClient.saveUser(user);
     return user;
   }

@@ -20,7 +20,7 @@ public class PermissionServiceImpl implements PermissionService {
   private final PermissionsClient permissionsClient;
 
   @Override
-  public Optional<PermissionUser> getPermissionUserById(String userId) {
+  public Optional<PermissionUser> getPermissionUserByUserId(String userId) {
     return permissionsClient.get("userId==" + userId)
       .getPermissionUsers()
       .stream()

@@ -335,7 +335,7 @@ public class UserTenantServiceImpl implements UserTenantService {
 
   private PermissionUser createPermissionUser(String userId) {
     List<String> emptyPermissionList = new ArrayList<>();
-    Optional<PermissionUser> permissionUserOptional = permissionService.getPermissionUserById(userId);
+    Optional<PermissionUser> permissionUserOptional = permissionService.getPermissionUserByUserId(userId);
     if (permissionUserOptional.isPresent()) {
       // this case possible because for initial admin users setup we are creating user and permissions separately
       log.info("PermissionUser already exist {}.", permissionUserOptional.get());

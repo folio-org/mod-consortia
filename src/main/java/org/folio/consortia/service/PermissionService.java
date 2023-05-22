@@ -15,7 +15,7 @@ public interface PermissionService {
   *
   * @return PermissionUser
   */
-  Optional<PermissionUser> getPermissionUserById(String userId);
+  Optional<PermissionUser> getPermissionUserByUserId(String userId);
 
   /**
   * Creates permissionUser with given permissions.
