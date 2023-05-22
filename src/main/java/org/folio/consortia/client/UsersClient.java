@@ -5,6 +5,7 @@ import org.folio.consortia.domain.dto.UserCollection;
 import org.folio.spring.config.FeignClientConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,4 +27,7 @@ public interface UsersClient {
 
   @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
   void updateUser(@PathVariable String id, @RequestBody User user);
+
+  @DeleteMapping(value = "/{userId}")
+  void deleteUser(@PathVariable String userId);
 }
