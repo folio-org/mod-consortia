@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.folio.consortia.client.PermissionsClient;
 import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.domain.dto.Personal;
@@ -20,6 +19,7 @@ import org.folio.consortia.exception.PrimaryAffiliationException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.ConsortiumService;
+import org.folio.consortia.service.PermissionService;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.consortia.utils.HelperUtils;
 import org.folio.spring.DefaultFolioExecutionContext;
@@ -65,8 +65,8 @@ public class UserTenantServiceImpl implements UserTenantService {
   private final ConversionService converter;
   private final ConsortiumService consortiumService;
   private final UsersClient usersClient;
-  private final PermissionsClient permissionsClient;
   private final FolioModuleMetadata folioModuleMetadata;
+  private final PermissionService permissionService;
 
   @Override
   public UserTenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
@@ -335,18 +335,13 @@ public class UserTenantServiceImpl implements UserTenantService {
 
   private PermissionUser createPermissionUser(String userId) {
     List<String> emptyPermissionList = new ArrayList<>();
-    Optional<PermissionUser> permissionUserOptional = permissionsClient.get("userId==" + userId)
-      .getPermissionUsers()
-      .stream()
-      .findFirst();
+    Optional<PermissionUser> permissionUserOptional = permissionService.getPermissionUserById(userId);
     if (permissionUserOptional.isPresent()) {
       // this case possible because for initial admin users setup we are creating user and permissions separately
       log.info("PermissionUser already exist {}.", permissionUserOptional.get());
       return permissionUserOptional.get();
     } else {
-      var permissionUser = PermissionUser.of(UUID.randomUUID().toString(), userId, emptyPermissionList);
-      log.info("Creating permissionUser {}.", permissionUser);
-      return permissionsClient.create(permissionUser);
+      return permissionService.createPermissionUserWithPermissions(UUID.randomUUID().toString(), userId, emptyPermissionList);
     }
   }
 }

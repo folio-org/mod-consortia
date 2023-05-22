@@ -82,6 +82,8 @@ class UserTenantServiceTest {
   private FolioExecutionContext folioExecutionContext;
   @Mock
   private FolioModuleMetadata folioModuleMetadata;
+  @Mock
+  private PermissionService permissionService;
 
   /* Success cases */
   @Test

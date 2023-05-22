@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.folio.consortia.client.ConsortiaConfigurationClient;
-import org.folio.consortia.client.PermissionsClient;
 import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.domain.dto.ConsortiaConfiguration;
 import org.folio.consortia.domain.dto.Permission;
@@ -14,11 +13,13 @@ import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.entity.TenantEntity;
+import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.ConsortiumService;
+import org.folio.consortia.service.PermissionService;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.spring.FolioExecutionContext;
@@ -28,8 +29,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -60,7 +59,7 @@ public class TenantServiceImpl implements TenantService {
   private final FolioModuleMetadata folioMetadata;
   private final ConsortiaConfigurationClient configurationClient;
   private final UsersClient usersClient;
-  private final PermissionsClient permissionsClient;
+  private final PermissionService permissionService;
   private final UserTenantService userTenantService;
 
   @Override
@@ -103,27 +102,15 @@ public class TenantServiceImpl implements TenantService {
     checkTenantNotExistsAndConsortiumExistsOrThrow(consortiumId, tenantDto.getId());
     Tenant savedTenant = saveTenant(consortiumId, tenantDto);
     User shadowAdminUser = userTenantService.prepareShadowUser(adminUserId, currentTenantContext.getTenantId(), currentTenantContext);
-    executeAfterTransactionCommits(() ->
     runInFolioContext(createFolioExecutionContextForTenant(tenantDto.getId(), currentTenantContext, folioMetadata),
       () -> {
+        userTenantRepository.save(createUserTenantEntity(consortiumId, shadowAdminUser, tenantDto));
         createShadowAdminUserWithPermissions(shadowAdminUser);
         configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
-      }
-    ));
+      });
     log.info("save:: saved consortia configuration with centralTenantId={} by tenantId={} context", centralTenantId, tenantDto.getId());
 
     return savedTenant;
-  }
-
-  private void executeAfterTransactionCommits(Runnable task) {
-    TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-      @Override
-      public void afterCompletion(int status) {
-        if (status == 0){
-          task.run();
-        }
-      }
-    });
   }
 
   @Override
@@ -191,10 +178,7 @@ public class TenantServiceImpl implements TenantService {
     if (Objects.isNull(userOptional.getId())) {
       userOptional = createUser(user);
     }
-    Optional<PermissionUser> permissionUserOptional = permissionsClient.get("userId==" + userOptional.getId())
-      .getPermissionUsers()
-      .stream()
-      .findFirst();
+    Optional<PermissionUser> permissionUserOptional = permissionService.getPermissionUserById(userOptional.getId());
     if (permissionUserOptional.isPresent()) {
       addPermissions(permissionUserOptional.get());
     } else {
@@ -208,10 +192,7 @@ public class TenantServiceImpl implements TenantService {
     if (CollectionUtils.isEmpty(perms)) {
       throw new IllegalStateException("No user permissions found in " + PERMISSIONS_FILE_PATH);
     }
-
-    var permissionUser = PermissionUser.of(UUID.randomUUID().toString(), userId, perms);
-    log.info("Creating {}.", permissionUser);
-    return permissionsClient.create(permissionUser);
+    return permissionService.createPermissionUserWithPermissions(UUID.randomUUID().toString(), userId, perms);
   }
 
   private List<String> readPermissionsFromResource(String permissionsFilePath) {
@@ -239,7 +220,7 @@ public class TenantServiceImpl implements TenantService {
       p.setPermissionName(permission);
       try {
         log.info("Adding to user {} permission {}.", permissionUser.getUserId(), p);
-        permissionsClient.addPermission(permissionUser.getUserId(), p);
+        permissionService.addPermissionToUser(permissionUser.getUserId(), p);
       } catch (Exception e) {
         log.error("Error adding permission %s to %s.", permission, permissionUser.getUserId(), e);
       }
@@ -250,5 +231,17 @@ public class TenantServiceImpl implements TenantService {
     log.info("Creating {}.", user);
     usersClient.saveUser(user);
     return user;
+  }
+
+  private UserTenantEntity createUserTenantEntity(UUID consortiumId, User user, Tenant tenant) {
+    UserTenantEntity userTenantEntity = new UserTenantEntity();
+    TenantEntity tenantEntity = toEntity(consortiumId, tenant);
+
+    userTenantEntity.setUserId(UUID.fromString(user.getId()));
+    userTenantEntity.setId(UUID.randomUUID());
+    userTenantEntity.setIsPrimary(Boolean.FALSE);
+    userTenantEntity.setUsername(user.getUsername());
+    userTenantEntity.setTenant(tenantEntity);
+    return userTenantEntity;
   }
 }

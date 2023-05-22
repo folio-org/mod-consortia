@@ -16,9 +16,7 @@ import org.folio.consortia.service.impl.TenantServiceImpl;
 import org.folio.consortia.service.impl.UserTenantServiceImpl;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.integration.XOkapiHeaders;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -30,7 +28,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -80,16 +77,8 @@ class TenantServiceTest {
   private PermissionsClient permissionsClient;
   @Mock
   private UserTenantServiceImpl userTenantService;
-
-  @BeforeEach
-  public void init() {
-    TransactionSynchronizationManager.initSynchronization();
-  }
-
-  @AfterEach
-  public void clear() {
-    TransactionSynchronizationManager.clear();
-  }
+  @Mock
+  private PermissionService permissionService;
 
   @Test
   void shouldGetTenantList() {
