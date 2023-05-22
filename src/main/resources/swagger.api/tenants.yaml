@@ -28,6 +28,7 @@ paths:
       operationId: saveTenant
       parameters:
         - $ref: "#/components/parameters/consortiumId"
+        - $ref: "#/components/parameters/create_primary_affiliations"
       requestBody:
         $ref: "#/components/requestBodies/TenantBody"
       responses:
@@ -169,3 +170,10 @@ components:
         minimum: 0
         maximum: 2147483647
         type: integer
+    create_primary_affiliations:
+      name: forceCreatePrimaryAffiliations
+      in: query
+      description: Force create primary affiliations even if tenant exists in consortia
+      schema:
+        default: false
+        type: boolean

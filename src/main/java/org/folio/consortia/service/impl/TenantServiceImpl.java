@@ -4,14 +4,19 @@ import static org.folio.consortia.utils.HelperUtils.checkIdenticalOrThrow;
 import static org.folio.consortia.utils.TenantContextUtils.createFolioExecutionContextForTenant;
 import static org.folio.consortia.utils.TenantContextUtils.runInFolioContext;
 
+import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import org.apache.commons.lang3.StringUtils;
 import org.folio.consortia.client.ConsortiaConfigurationClient;
 import org.folio.consortia.client.UsersClient;
+import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.domain.dto.ConsortiaConfiguration;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
+import org.folio.consortia.domain.dto.User;
+import org.folio.consortia.domain.dto.UserEvent;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.exception.ResourceNotFoundException;
@@ -48,6 +53,7 @@ public class TenantServiceImpl implements TenantService {
   private final ConsortiaConfigurationClient configurationClient;
   private final UsersClient usersClient;
   private final UserTenantService userTenantService;
+  private final KafkaService kafkaService;
 
   @Override
   public TenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
@@ -74,10 +80,11 @@ public class TenantServiceImpl implements TenantService {
 
   @Override
   @Transactional
-  public Tenant save(UUID consortiumId, Tenant tenantDto) {
+  public Tenant save(UUID consortiumId, Tenant tenantDto, boolean forceCreatePrimaryAff) {
     log.debug("save:: Trying to save a tenant by consortiumId '{}', tenant object with id '{}' and isCentral={}", consortiumId, tenantDto.getId(), tenantDto.getIsCentral());
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     String centralTenantId;
+    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
 
     if (tenantDto.getIsCentral()) {
       checkCentralTenantExistsOrThrow();
@@ -86,25 +93,40 @@ public class TenantServiceImpl implements TenantService {
       centralTenantId = getCentralTenantId();
     }
 
-    checkTenantNotExistsAndConsortiumExistsOrThrow(consortiumId, tenantDto.getId());
-    TenantEntity savedTenantEntity = saveTenantEntity(consortiumId, tenantDto);
-    var savedTenant = converter.convert(savedTenantEntity, Tenant.class);
+    TenantEntity tenantEntity;
+    if (forceCreatePrimaryAff) {
+      tenantEntity = getOrCreateTenantEntity(consortiumId, tenantDto);
+    }
+    else {
+      checkTenantNotExistsOrThrow(tenantDto.getId());
+      tenantEntity = saveTenantEntity(consortiumId, tenantDto);
+    }
+    var savedTenant = converter.convert(tenantEntity, Tenant.class);
 
     runInFolioContext(createFolioExecutionContextForTenant(tenantDto.getId(), currentTenantContext, folioMetadata),
         () -> {
           configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
-          createPrimaryUserAffiliationsAsync(consortiumId, toEntity(consortiumId, tenantDto), tenantDto);
+          createPrimaryUserAffiliationsAsync(consortiumId, tenantEntity, tenantDto, currentTenantContext.getUserId());
         });
     log.info("save:: saved consortia configuration with centralTenantId={} by tenantId={} context", centralTenantId, tenantDto.getId());
 
     return savedTenant;
   }
 
-  public CompletableFuture<Void> createPrimaryUserAffiliationsAsync(UUID consortiumId, TenantEntity consortiaTenant, Tenant tenantDto) {
+  private TenantEntity getOrCreateTenantEntity(UUID consortiumId, Tenant tenantDto) {
+    if (tenantRepository.existsById(tenantDto.getId())) {
+      return getByTenantId(tenantDto.getId());
+    } else {
+      return saveTenantEntity(consortiumId, tenantDto);
+    }
+  }
+
+  public CompletableFuture<Void> createPrimaryUserAffiliationsAsync(UUID consortiumId, TenantEntity consortiaTenant, Tenant tenantDto,
+    UUID contextUserId) {
     return CompletableFuture
       .runAsync(() -> {
         log.info("Start creating user primary affiliation for tenant {}", tenantDto.getId());
-        var users = usersClient.getUserCollection("", 0, Integer.MAX_VALUE);
+        var users = usersClient.getUserCollection(StringUtils.EMPTY, 0, Integer.MAX_VALUE);
         users.getUsers()
           .forEach(user -> {
             var consortiaUserTenant = userTenantRepository.findByUserIdAndTenantId(UUID.fromString(user.getId()), tenantDto.getId())
@@ -113,6 +135,7 @@ public class TenantServiceImpl implements TenantService {
               log.debug("Primary affiliation already exists for tenant/user: {}/{}", tenantDto.getId(), user.getUsername());
             } else {
               userTenantService.createPrimaryUserTenantAffiliation(consortiumId, consortiaTenant, user.getId(), user.getUsername());
+              sendCreatePrimaryAffiliationEvent(consortiaTenant, tenantDto, contextUserId, user);
             }
           });
       })
@@ -121,6 +144,17 @@ public class TenantServiceImpl implements TenantService {
         log.error("Failed to create primary affiliations for new tenant", t);
         return null;
       });
+  }
+
+  private void sendCreatePrimaryAffiliationEvent(TenantEntity consortiaTenant, Tenant tenantDto, UUID contextUserId, User user) {
+    var ue = new UserEvent().tenantId(tenantDto.getId())
+      .userDto(user)
+      .action(UserEvent.ActionEnum.CREATE)
+      .actionDate(new Date())
+      .eventDate(new Date())
+      .performedBy(contextUserId);
+
+    kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_CREATED, consortiaTenant.getConsortiumId().toString(), ue.toString());
   }
 
   @Override
@@ -154,6 +188,12 @@ public class TenantServiceImpl implements TenantService {
 
   private void checkTenantNotExistsAndConsortiumExistsOrThrow(UUID consortiumId, String tenantId) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
+    if (tenantRepository.existsById(tenantId)) {
+      throw new ResourceAlreadyExistException("id", tenantId);
+    }
+  }
+
+  private void checkTenantNotExistsOrThrow(String tenantId) {
     if (tenantRepository.existsById(tenantId)) {
       throw new ResourceAlreadyExistException("id", tenantId);
     }
