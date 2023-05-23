@@ -36,7 +36,7 @@ public class PermissionServiceTest {
 
   @Test
   void shouldThrowErrorForEmptyPermissionFileWhileCreating() {
-    Assertions.assertThrows(IllegalStateException.class, () -> permissionUserService.createPermissionUser(UUID.randomUUID().toString(), EMPTY_PERMISSIONS_FILE_PATH));
+    Assertions.assertThrows(IllegalStateException.class, () -> permissionUserService.createWithPermissionsFromFile(UUID.randomUUID().toString(), EMPTY_PERMISSIONS_FILE_PATH));
   }
 
   @Test

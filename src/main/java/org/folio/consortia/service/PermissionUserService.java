@@ -16,7 +16,7 @@ public interface PermissionUserService {
   Optional<PermissionUser> getByUserId(String userId);
 
   /**
-  * Creates permissionUser with given permissions.
+  * Creates permissionUser with empty permissions list.
   *
   * @param id the id of permissionUser
   * @param userId the id of user
@@ -24,6 +24,16 @@ public interface PermissionUserService {
   * @return PermissionUser
   */
   PermissionUser createWithEmptyPermissions(String id, String userId);
+
+  /**
+   * Creates permissionUser for userId with permissions getting from file.
+   *
+   * @param userId  the id of user
+   * @param permissionsFilePath  the path of file includes permission names to add
+   *
+   * @return PermissionUser
+   */
+  PermissionUser createWithPermissionsFromFile(String userId, String permissionsFilePath);
 
   /**
    * Add permissions for existed permission user.
@@ -34,15 +44,4 @@ public interface PermissionUserService {
    * @return
    */
   void addPermissions(PermissionUser permissionUser, String permissionsFilePath);
-
-  /**
-   * Creates permissionUser for userId.
-   *
-   * @param userId  the id of user
-   * @param permissionsFilePath  the path of file includes permission names to add
-   *
-   * @return PermissionUser
-   */
-  PermissionUser createPermissionUser(String userId, String permissionsFilePath);
-
 }

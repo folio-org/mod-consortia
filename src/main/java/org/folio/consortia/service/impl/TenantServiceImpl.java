@@ -170,7 +170,7 @@ public class TenantServiceImpl implements TenantService {
     if (permissionUserOptional.isPresent()) {
       permissionUserService.addPermissions(permissionUserOptional.get(), SHADOW_ADMIN_PERMISSION_FILE_PATH);
     } else {
-      permissionUserService.createPermissionUser(user.getId(), SHADOW_ADMIN_PERMISSION_FILE_PATH);
+      permissionUserService.createWithPermissionsFromFile(user.getId(), SHADOW_ADMIN_PERMISSION_FILE_PATH);
     }
   }
 
