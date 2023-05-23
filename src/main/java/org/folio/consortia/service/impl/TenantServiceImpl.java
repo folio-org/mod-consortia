@@ -93,7 +93,7 @@ public class TenantServiceImpl implements TenantService {
     User shadowAdminUser = userService.prepareShadowUser(adminUserId, currentTenantContext.getTenantId());
     userTenantRepository.save(createUserTenantEntity(consortiumId, shadowAdminUser, tenantDto));
 
-    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantDto.getId(), folioModuleMetadata, folioExecutionContext))) {
+    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantDto.getId(), folioModuleMetadata, currentTenantContext))) {
       createShadowAdminUserWithPermissions(shadowAdminUser);
       configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
     }
