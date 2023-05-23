@@ -80,6 +80,7 @@ public class PermissionUserServiceImpl implements PermissionUserService {
       result = Resources.readLines(url, StandardCharsets.UTF_8);
     } catch (IOException e) {
       log.error("Can't read user permissions from {}.", permissionsFilePath, e);
+      throw new IllegalStateException("Can't read user permissions... ", e);
     }
     return result;
   }

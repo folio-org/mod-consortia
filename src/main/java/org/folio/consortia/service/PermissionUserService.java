@@ -28,7 +28,7 @@ public interface PermissionUserService {
   PermissionUser createWithEmptyPermissions(String id, String userId, List<String> permissionList);
 
   /**
-   * Adds permissions to permissionUser.
+   * Add permissions for existed permission user.
    *
    * @param permissionUser  the permissionUser
    * @param permissionsFilePath  the path of file includes permission names to add
