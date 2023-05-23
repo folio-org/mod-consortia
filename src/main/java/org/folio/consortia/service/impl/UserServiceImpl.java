@@ -39,8 +39,8 @@ public class UserServiceImpl implements UserService {
     return user;
   }
 
-  public void updateUser(String userId, User user) {
-    usersClient.updateUser(userId, user);
+  public void updateUser(User user) {
+    usersClient.updateUser(user.getId(), user);
   }
 
   @Override

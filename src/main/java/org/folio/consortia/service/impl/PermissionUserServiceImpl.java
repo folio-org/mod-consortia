@@ -33,8 +33,8 @@ public class PermissionUserServiceImpl implements PermissionUserService {
   }
 
   @Override
-  public PermissionUser createWithEmptyPermissions(String id, String userId, List<String> permissionList) {
-    var permissionUser = PermissionUser.of(UUID.randomUUID().toString(), userId, permissionList);
+  public PermissionUser createWithEmptyPermissions(String id, String userId) {
+    var permissionUser = PermissionUser.of(UUID.randomUUID().toString(), userId, List.of());
     log.info("Creating permissionUser {}.", permissionUser);
     return permissionsClient.create(permissionUser);
   }

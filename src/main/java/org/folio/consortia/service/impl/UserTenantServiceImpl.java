@@ -203,7 +203,7 @@ public class UserTenantServiceImpl implements UserTenantService {
 
   private void createActiveUserWithPermissions(User user) {
     log.info("Creating permissionUser for userId {} with empty set of permissions", user.getId());
-    permissionUserService.createWithEmptyPermissions(UUID.randomUUID().toString(), user.getId(), List.of());
+    permissionUserService.createWithEmptyPermissions(UUID.randomUUID().toString(), user.getId());
     log.info("Creating user with id {}.", user.getId());
     userService.createUser(user);
   }
@@ -214,7 +214,7 @@ public class UserTenantServiceImpl implements UserTenantService {
     } else {
       user.setActive(true);
       log.info("Updating User with id '{}' with active 'true'. ", user.getId());
-      userService.updateUser(user.getId(), user);
+      userService.updateUser(user);
     }
   }
 
@@ -224,7 +224,7 @@ public class UserTenantServiceImpl implements UserTenantService {
     } else {
       user.setActive(false);
       log.info("Updating User with id '{}' with active 'false'. ", user.getId());
-      userService.updateUser(user.getId(), user);
+      userService.updateUser(user);
     }
   }
 

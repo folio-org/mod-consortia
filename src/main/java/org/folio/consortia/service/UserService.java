@@ -21,7 +21,7 @@ public interface UserService {
    *
    * @param user user.
    */
-   void updateUser(String userId, User user);
+   void updateUser(User user);
 
   /**
    * Get existing user by id.
@@ -42,7 +42,7 @@ public interface UserService {
   /**
    * Prepare shadow user from real user.
    *
-   * @param userId id of user.
+   * @param userId id of "real" user.
    * @param tenantId id of tenant.
    *
    * return user.

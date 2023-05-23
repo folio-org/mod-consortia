@@ -48,7 +48,7 @@ class UserServiceTest {
   void shouldUpdateUser() {
     User user = createUserEntity(false);
     Mockito.doNothing().when(usersClient).updateUser(user.getId(), user);
-    Assertions.assertDoesNotThrow(() -> userService.updateUser(user.getId(), user));
+    Assertions.assertDoesNotThrow(() -> userService.updateUser(user));
   }
 
   @Test

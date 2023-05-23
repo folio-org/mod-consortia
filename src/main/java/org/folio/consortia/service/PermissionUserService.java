@@ -2,7 +2,6 @@ package org.folio.consortia.service;
 
 import org.folio.consortia.domain.dto.PermissionUser;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface PermissionUserService {
@@ -21,11 +20,10 @@ public interface PermissionUserService {
   *
   * @param id the id of permissionUser
   * @param userId the id of user
-  * @param permissionList list of permissions
   *
   * @return PermissionUser
   */
-  PermissionUser createWithEmptyPermissions(String id, String userId, List<String> permissionList);
+  PermissionUser createWithEmptyPermissions(String id, String userId);
 
   /**
    * Add permissions for existed permission user.
