@@ -1,6 +1,5 @@
 package org.folio.consortia.service;
 
-import org.folio.consortia.domain.dto.Permission;
 import org.folio.consortia.domain.dto.PermissionUser;
 
 import java.util.List;
@@ -26,13 +25,26 @@ public interface PermissionUserService {
   *
   * @return PermissionUser
   */
-  PermissionUser createWithPermissions(String id, String userId, List<String> permissionList);
+  PermissionUser createWithEmptyPermissions(String id, String userId, List<String> permissionList);
 
   /**
-  * Add permissions for existed permission user.
-  *
-  * @param id the id of permissionUser
-  * @param permission permission
-  */
-  void addPermissionToUser(String id, Permission permission);
+   * Adds permissions to permissionUser.
+   *
+   * @param permissionUser  the permissionUser
+   * @param permissionsFilePath  the path of file includes permission names to add
+   *
+   * @return
+   */
+  void addPermissions(PermissionUser permissionUser, String permissionsFilePath);
+
+  /**
+   * Creates permissionUser for userId.
+   *
+   * @param userId  the id of user
+   * @param permissionsFilePath  the path of file includes permission names to add
+   *
+   * @return PermissionUser
+   */
+  PermissionUser createPermissionUser(String userId, String permissionsFilePath);
+
 }

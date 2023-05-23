@@ -12,6 +12,7 @@ import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
+import org.folio.consortia.service.UserService;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.consortia.service.impl.ConsortiaConfigurationServiceImpl;
 import org.folio.consortia.support.BaseTest;
@@ -67,6 +68,8 @@ class TenantControllerTest extends BaseTest {
   UsersClient usersClient;
   @MockBean
   UserTenantService userTenantService;
+  @MockBean
+  UserService userService;
 
   /* Success cases */
   @Test
@@ -99,8 +102,8 @@ class TenantControllerTest extends BaseTest {
     User user = new User();
     user.setId(UUID.randomUUID().toString());
 
-    when(userTenantService.prepareShadowUser(any(), any())).thenReturn(user);
-    when(userTenantService.getUser(any())).thenReturn(user);
+    when(userService.prepareShadowUser(any(), any())).thenReturn(user);
+    when(userService.getById(any())).thenReturn(user);
     when(usersClient.getUsersByUserId(any())).thenReturn(new User());
     when(permissionsClient.get(any())).thenReturn(permissionUserCollection);
     when(consortiumRepository.existsById(any())).thenReturn(true);

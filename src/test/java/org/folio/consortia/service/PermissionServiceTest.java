@@ -2,7 +2,7 @@ package org.folio.consortia.service;
 
 import org.folio.consortia.client.PermissionsClient;
 import org.folio.consortia.domain.dto.PermissionUser;
-import org.folio.consortia.service.impl.PermissionServiceImpl;
+import org.folio.consortia.service.impl.PermissionUserServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -12,7 +12,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,9 +23,7 @@ public class PermissionServiceTest {
   private static final String PERMISSIONS_FILE_PATH = "permissions/test-user-permissions.csv";
   private static final String EMPTY_PERMISSIONS_FILE_PATH = "permissions/test-user--empty-permissions.csv";
   @InjectMocks
-  PermissionServiceImpl permissionService;
-  @Mock
-  PermissionUserService permissionUserService;
+  PermissionUserServiceImpl permissionUserService;
   @Mock
   PermissionsClient permissionsClient;
 
@@ -34,12 +31,12 @@ public class PermissionServiceTest {
   void shouldThrowErrorForEmptyPermissionFileWhileAdding() {
     PermissionUser permissionUser = PermissionUser.of(UUID.randomUUID().toString(), UUID.randomUUID().toString(), List.of());
 
-    Assertions.assertThrows(IllegalStateException.class, () -> permissionService.addPermissions(permissionUser, EMPTY_PERMISSIONS_FILE_PATH));
+    Assertions.assertThrows(IllegalStateException.class, () -> permissionUserService.addPermissions(permissionUser, EMPTY_PERMISSIONS_FILE_PATH));
   }
 
   @Test
   void shouldThrowErrorForEmptyPermissionFileWhileCreating() {
-    Assertions.assertThrows(IllegalStateException.class, () -> permissionService.createPermissionUser(UUID.randomUUID().toString(), EMPTY_PERMISSIONS_FILE_PATH));
+    Assertions.assertThrows(IllegalStateException.class, () -> permissionUserService.createPermissionUser(UUID.randomUUID().toString(), EMPTY_PERMISSIONS_FILE_PATH));
   }
 
   @Test
@@ -47,6 +44,6 @@ public class PermissionServiceTest {
     PermissionUser permissionUser = PermissionUser.of(UUID.randomUUID().toString(), UUID.randomUUID().toString(), List.of());
 
     Mockito.doNothing().when(permissionsClient).addPermission(any(),any());
-    Assertions.assertDoesNotThrow(() -> permissionService.addPermissions(permissionUser, PERMISSIONS_FILE_PATH));
+    Assertions.assertDoesNotThrow(() -> permissionUserService.addPermissions(permissionUser, PERMISSIONS_FILE_PATH));
   }
 }

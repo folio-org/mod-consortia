@@ -2,7 +2,6 @@ package org.folio.consortia.service;
 
 import org.folio.consortia.client.ConsortiaConfigurationClient;
 import org.folio.consortia.client.PermissionsClient;
-import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.domain.dto.PermissionUserCollection;
 import org.folio.consortia.domain.dto.Tenant;
@@ -68,8 +67,6 @@ class TenantServiceTest {
   @Mock
   private ConsortiumService consortiumService;
   @Mock
-  private UsersClient usersClient;
-  @Mock
   private FolioExecutionContext folioExecutionContext;
   @Mock
   private ConsortiaConfigurationClient configurationClient;
@@ -80,7 +77,9 @@ class TenantServiceTest {
   @Mock
   private PermissionUserService permissionUserService;
   @Mock
-  private PermissionService permissionService;
+  private PermissionUserService permissionService;
+  @Mock
+  private UserService userService;
 
   @Test
   void shouldGetTenantList() {
@@ -114,8 +113,9 @@ class TenantServiceTest {
     user.setId(UUID.randomUUID().toString());
 
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
-    when(userTenantService.prepareShadowUser(any(), any())).thenReturn(user);
-    when(userTenantService.getUser(any())).thenReturn(new User());
+    when(userService.prepareShadowUser(any(), any())).thenReturn(user);
+    when(userService.createUser(any())).thenReturn(user);
+    when(userService.getById(any())).thenReturn(new User());
     when(permissionsClient.get(any())).thenReturn(permissionUserCollection);
     when(permissionsClient.create(any())).thenReturn(PermissionUser.of(UUID.randomUUID().toString(), user.getId(), List.of("users.collection.get")));
     when(tenantRepository.existsById(any())).thenReturn(false);
@@ -147,8 +147,8 @@ class TenantServiceTest {
     user.setId(UUID.randomUUID().toString());
 
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
-    when(userTenantService.prepareShadowUser(any(), any())).thenReturn(user);
-    when(userTenantService.getUser(any())).thenReturn(user);
+    when(userService.prepareShadowUser(any(), any())).thenReturn(user);
+    when(userService.getById(any())).thenReturn(user);
     when(permissionsClient.get(any())).thenReturn(permissionUserCollection);
     doNothing().when(permissionsClient).addPermission(any(), any());
     when(tenantRepository.existsById(any())).thenReturn(false);

@@ -3,7 +3,6 @@ package org.folio.consortia.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.consortia.client.ConsortiaConfigurationClient;
-import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.domain.dto.ConsortiaConfiguration;
 import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.domain.dto.Tenant;
@@ -15,11 +14,7 @@ import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
-import org.folio.consortia.service.ConsortiumService;
-import org.folio.consortia.service.PermissionService;
-import org.folio.consortia.service.PermissionUserService;
-import org.folio.consortia.service.TenantService;
-import org.folio.consortia.service.UserTenantService;
+import org.folio.consortia.service.*;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.scope.FolioExecutionContextSetter;
@@ -41,7 +36,7 @@ import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTena
 @RequiredArgsConstructor
 public class TenantServiceImpl implements TenantService {
 
-  private static final String PERMISSIONS_FILE_PATH = "permissions/admin-user-permissions.csv";
+  private static final String SHADOW_ADMIN_PERMISSION_FILE_PATH = "permissions/admin-user-permissions.csv";
   private static final String TENANTS_IDS_NOT_MATCHED_ERROR_MSG = "Request body tenantId and path param tenantId should be identical";
   private static final String TENANT_HAS_ACTIVE_USER_ASSOCIATIONS_ERROR_MSG = "Cannot delete tenant with ID {tenantId} because it has an association with a user. " +
     "Please remove the user association before attempting to delete the tenant.";
@@ -52,10 +47,8 @@ public class TenantServiceImpl implements TenantService {
   private final FolioExecutionContext folioExecutionContext;
   private final FolioModuleMetadata folioMetadata;
   private final ConsortiaConfigurationClient configurationClient;
-  private final UsersClient usersClient;
   private final PermissionUserService permissionUserService;
-  private final PermissionService permissionService;
-  private final UserTenantService userTenantService;
+  private final UserService userService;
   private final FolioModuleMetadata folioModuleMetadata;
 
   @Override
@@ -97,10 +90,10 @@ public class TenantServiceImpl implements TenantService {
 
     checkTenantNotExistsAndConsortiumExistsOrThrow(consortiumId, tenantDto.getId());
     Tenant savedTenant = saveTenant(consortiumId, tenantDto);
-    User shadowAdminUser = userTenantService.prepareShadowUser(adminUserId, currentTenantContext.getTenantId());
+    User shadowAdminUser = userService.prepareShadowUser(adminUserId, currentTenantContext.getTenantId());
+    userTenantRepository.save(createUserTenantEntity(consortiumId, shadowAdminUser, tenantDto));
 
     try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantDto.getId(), folioModuleMetadata, folioExecutionContext))) {
-      userTenantRepository.save(createUserTenantEntity(consortiumId, shadowAdminUser, tenantDto));
       createShadowAdminUserWithPermissions(shadowAdminUser);
       configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
     }
@@ -169,22 +162,16 @@ public class TenantServiceImpl implements TenantService {
   }
 
   private void createShadowAdminUserWithPermissions(User user) {
-    User userOptional = userTenantService.getUser(UUID.fromString(user.getId()));
+    User userOptional = userService.getById(UUID.fromString(user.getId()));
     if (Objects.isNull(userOptional.getId())) {
-      userOptional = createUser(user);
+      userOptional = userService.createUser(user);
     }
     Optional<PermissionUser> permissionUserOptional = permissionUserService.getByUserId(userOptional.getId());
     if (permissionUserOptional.isPresent()) {
-      permissionService.addPermissions(permissionUserOptional.get(), PERMISSIONS_FILE_PATH);
+      permissionUserService.addPermissions(permissionUserOptional.get(), SHADOW_ADMIN_PERMISSION_FILE_PATH);
     } else {
-      permissionService.createPermissionUser(user.getId(), PERMISSIONS_FILE_PATH);
+      permissionUserService.createPermissionUser(user.getId(), SHADOW_ADMIN_PERMISSION_FILE_PATH);
     }
-  }
-
-  private User createUser(User user) {
-    log.info("Creating user with id {}.", user.getId());
-    usersClient.saveUser(user);
-    return user;
   }
 
   private UserTenantEntity createUserTenantEntity(UUID consortiumId, User user, Tenant tenant) {
