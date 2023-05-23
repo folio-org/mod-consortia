@@ -3,6 +3,7 @@ package org.folio.consortia.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.consortia.client.ConsortiaConfigurationClient;
+import org.folio.consortia.config.FolioExecutionContextHelper;
 import org.folio.consortia.domain.dto.ConsortiaConfiguration;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
@@ -13,8 +14,6 @@ import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.TenantService;
-import org.folio.spring.FolioExecutionContext;
-import org.folio.spring.FolioModuleMetadata;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 import static org.folio.consortia.utils.HelperUtils.checkIdenticalOrThrow;
-import static org.folio.consortia.utils.TenantContextUtils.createFolioExecutionContextForTenant;
 import static org.folio.consortia.utils.TenantContextUtils.runInFolioContext;
 
 @Service
@@ -39,9 +37,8 @@ public class TenantServiceImpl implements TenantService {
   private final UserTenantRepository userTenantRepository;
   private final ConversionService converter;
   private final ConsortiumService consortiumService;
-  private final FolioExecutionContext folioExecutionContext;
-  private final FolioModuleMetadata folioMetadata;
   private final ConsortiaConfigurationClient configurationClient;
+  private final FolioExecutionContextHelper contextHelper;
 
   @Override
   public TenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
@@ -70,7 +67,6 @@ public class TenantServiceImpl implements TenantService {
   @Transactional
   public Tenant save(UUID consortiumId, Tenant tenantDto) {
     log.debug("save:: Trying to save a tenant by consortiumId '{}', tenant object with id '{}' and isCentral={}", consortiumId, tenantDto.getId(), tenantDto.getIsCentral());
-    FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     String centralTenantId;
 
     if (tenantDto.getIsCentral()) {
@@ -83,7 +79,7 @@ public class TenantServiceImpl implements TenantService {
     checkTenantNotExistsAndConsortiumExistsOrThrow(consortiumId, tenantDto.getId());
     Tenant savedTenant = saveTenant(consortiumId, tenantDto);
 
-    runInFolioContext(createFolioExecutionContextForTenant(tenantDto.getId(), currentTenantContext, folioMetadata),
+    runInFolioContext(contextHelper.getFolioExecutionContext(tenantDto.getId()),
       () -> configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId)));
     log.info("save:: saved consortia configuration with centralTenantId={} by tenantId={} context", centralTenantId, tenantDto.getId());
 

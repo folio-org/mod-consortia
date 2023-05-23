@@ -16,9 +16,6 @@ public interface PermissionsClient {
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   PermissionUserCollection get(@RequestParam("query") String query);
 
-  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  PermissionUserCollection get(@RequestParam("query") String query);
-
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   PermissionUser create(@RequestBody PermissionUser permissionUser);
 
