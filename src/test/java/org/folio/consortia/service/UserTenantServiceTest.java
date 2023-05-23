@@ -3,6 +3,7 @@ package org.folio.consortia.service;
 import feign.FeignException;
 import org.folio.consortia.client.PermissionsClient;
 import org.folio.consortia.client.UsersClient;
+import org.folio.consortia.config.FolioExecutionContextHelper;
 import org.folio.consortia.domain.converter.UserTenantConverter;
 import org.folio.consortia.domain.dto.Personal;
 import org.folio.consortia.domain.dto.User;
@@ -82,6 +83,8 @@ class UserTenantServiceTest {
   private FolioExecutionContext folioExecutionContext;
   @Mock
   private FolioModuleMetadata folioModuleMetadata;
+  @Mock
+  private FolioExecutionContextHelper folioExecutionContextHelper;
 
   /* Success cases */
   @Test
