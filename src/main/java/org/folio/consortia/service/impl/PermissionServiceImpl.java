@@ -23,10 +23,10 @@ public class PermissionServiceImpl implements PermissionService {
   private final PermissionUserService permissionUserService;
 
   @Override
-  public void addPermissions(PermissionUser permissionUser, String fileName) {
-    var permissions = readPermissionsFromResource(fileName);
+  public void addPermissions(PermissionUser permissionUser, String permissionsFilePath) {
+    var permissions = readPermissionsFromResource(permissionsFilePath);
     if (CollectionUtils.isEmpty(permissions)) {
-      throw new IllegalStateException("No user permissions found in " + fileName);
+      throw new IllegalStateException("No user permissions found in " + permissionsFilePath);
     }
     // remove duplicate permissions already existing in permission user.
     permissions.removeAll(permissionUser.getPermissions());
@@ -37,18 +37,18 @@ public class PermissionServiceImpl implements PermissionService {
         log.info("Adding to user {} permission {}.", permissionUser.getUserId(), p);
         permissionUserService.addPermissionToUser(permissionUser.getUserId(), p);
       } catch (Exception e) {
-        log.error("Error adding permission %s to %s.", permission, permissionUser.getUserId(), e);
+        log.error("Error adding permission: {} to userId: {}.", permission, permissionUser.getUserId(), e);
         throw e;
       }
     });
   }
 
   @Override
-  public PermissionUser createPermissionUser(String userId, String fileName) {
-    List<String> perms = readPermissionsFromResource(fileName);
+  public PermissionUser createPermissionUser(String userId, String permissionsFilePath) {
+    List<String> perms = readPermissionsFromResource(permissionsFilePath);
 
     if (CollectionUtils.isEmpty(perms)) {
-      throw new IllegalStateException("No user permissions found in " + fileName);
+      throw new IllegalStateException("No user permissions found in " + permissionsFilePath);
     }
     return permissionUserService.createWithPermissions(UUID.randomUUID().toString(), userId, perms);
   }
