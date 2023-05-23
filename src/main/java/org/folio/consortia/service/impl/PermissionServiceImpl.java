@@ -1,41 +1,69 @@
 package org.folio.consortia.service.impl;
 
+import com.google.common.io.Resources;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.folio.consortia.client.PermissionsClient;
+import org.apache.commons.collections4.CollectionUtils;
 import org.folio.consortia.domain.dto.Permission;
 import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.service.PermissionService;
+import org.folio.consortia.service.PermissionUserService;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @Log4j2
 @RequiredArgsConstructor
 public class PermissionServiceImpl implements PermissionService {
-
-  private final PermissionsClient permissionsClient;
+  private final PermissionUserService permissionUserService;
 
   @Override
-  public Optional<PermissionUser> getPermissionUserByUserId(String userId) {
-    return permissionsClient.get("userId==" + userId)
-      .getPermissionUsers()
-      .stream()
-      .findFirst();
+  public void addPermissions(PermissionUser permissionUser, String fileName) {
+    var permissions = readPermissionsFromResource(fileName);
+    if (CollectionUtils.isEmpty(permissions)) {
+      throw new IllegalStateException("No user permissions found in " + fileName);
+    }
+    // remove duplicate permissions already existing in permission user.
+    permissions.removeAll(permissionUser.getPermissions());
+    permissions.forEach(permission -> {
+      var p = new Permission();
+      p.setPermissionName(permission);
+      try {
+        log.info("Adding to user {} permission {}.", permissionUser.getUserId(), p);
+        permissionUserService.addPermissionToUser(permissionUser.getUserId(), p);
+      } catch (Exception e) {
+        log.error("Error adding permission %s to %s.", permission, permissionUser.getUserId(), e);
+        throw e;
+      }
+    });
   }
 
   @Override
-  public PermissionUser createPermissionUserWithPermissions(String id, String userId, List<String> permissionList) {
-    var permissionUser = PermissionUser.of(UUID.randomUUID().toString(), userId, permissionList);
-    log.info("Creating permissionUser {}.", permissionUser);
-    return permissionsClient.create(permissionUser);
+  public PermissionUser createPermissionUser(String userId, String fileName) {
+    List<String> perms = readPermissionsFromResource(fileName);
+
+    if (CollectionUtils.isEmpty(perms)) {
+      throw new IllegalStateException("No user permissions found in " + fileName);
+    }
+    return permissionUserService.createWithPermissions(UUID.randomUUID().toString(), userId, perms);
   }
 
-  @Override
-  public void addPermissionToUser(String id, Permission permission) {
-    permissionsClient.addPermission(id, permission);
+  private List<String> readPermissionsFromResource(String permissionsFilePath) {
+    List<String> result = new ArrayList<>();
+    var url = Resources.getResource(permissionsFilePath);
+
+    try {
+      result = Resources.readLines(url, StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      log.error("Can't read user permissions from %s.", permissionsFilePath, e);
+    }
+
+    return result;
   }
+
 }

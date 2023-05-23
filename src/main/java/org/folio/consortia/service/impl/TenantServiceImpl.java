@@ -1,13 +1,10 @@
 package org.folio.consortia.service.impl;
 
-import com.google.common.io.Resources;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.collections4.CollectionUtils;
 import org.folio.consortia.client.ConsortiaConfigurationClient;
 import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.domain.dto.ConsortiaConfiguration;
-import org.folio.consortia.domain.dto.Permission;
 import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
@@ -20,6 +17,7 @@ import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.PermissionService;
+import org.folio.consortia.service.PermissionUserService;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.spring.FolioExecutionContext;
@@ -30,10 +28,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -59,6 +53,7 @@ public class TenantServiceImpl implements TenantService {
   private final FolioModuleMetadata folioMetadata;
   private final ConsortiaConfigurationClient configurationClient;
   private final UsersClient usersClient;
+  private final PermissionUserService permissionUserService;
   private final PermissionService permissionService;
   private final UserTenantService userTenantService;
 
@@ -178,53 +173,12 @@ public class TenantServiceImpl implements TenantService {
     if (Objects.isNull(userOptional.getId())) {
       userOptional = createUser(user);
     }
-    Optional<PermissionUser> permissionUserOptional = permissionService.getPermissionUserByUserId(userOptional.getId());
+    Optional<PermissionUser> permissionUserOptional = permissionUserService.getByUserId(userOptional.getId());
     if (permissionUserOptional.isPresent()) {
-      addPermissions(permissionUserOptional.get());
+      permissionService.addPermissions(permissionUserOptional.get(), PERMISSIONS_FILE_PATH);
     } else {
-      createPermissionUser(user.getId());
+      permissionService.createPermissionUser(user.getId(), PERMISSIONS_FILE_PATH);
     }
-  }
-
-  private PermissionUser createPermissionUser(String userId) {
-    List<String> perms = readPermissionsFromResource(PERMISSIONS_FILE_PATH);
-
-    if (CollectionUtils.isEmpty(perms)) {
-      throw new IllegalStateException("No user permissions found in " + PERMISSIONS_FILE_PATH);
-    }
-    return permissionService.createPermissionUserWithPermissions(UUID.randomUUID().toString(), userId, perms);
-  }
-
-  private List<String> readPermissionsFromResource(String permissionsFilePath) {
-    List<String> result = new ArrayList<>();
-    var url = Resources.getResource(permissionsFilePath);
-
-    try {
-      result = Resources.readLines(url, StandardCharsets.UTF_8);
-    } catch (IOException e) {
-      log.error("Can't read user permissions from %s.", permissionsFilePath, e);
-    }
-
-    return result;
-  }
-
-  private void addPermissions(PermissionUser permissionUser) {
-    var permissions = readPermissionsFromResource(PERMISSIONS_FILE_PATH);
-    if (CollectionUtils.isEmpty(permissions)) {
-      throw new IllegalStateException("No user permissions found in " + PERMISSIONS_FILE_PATH);
-    }
-
-    permissions.removeAll(permissionUser.getPermissions());
-    permissions.forEach(permission -> {
-      var p = new Permission();
-      p.setPermissionName(permission);
-      try {
-        log.info("Adding to user {} permission {}.", permissionUser.getUserId(), p);
-        permissionService.addPermissionToUser(permissionUser.getUserId(), p);
-      } catch (Exception e) {
-        log.error("Error adding permission %s to %s.", permission, permissionUser.getUserId(), e);
-      }
-    });
   }
 
   private User createUser(User user) {

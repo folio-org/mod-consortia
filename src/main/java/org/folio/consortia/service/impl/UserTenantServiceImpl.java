@@ -6,7 +6,6 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.folio.consortia.client.UsersClient;
-import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.domain.dto.Personal;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.dto.UserEvent;
@@ -19,7 +18,7 @@ import org.folio.consortia.exception.PrimaryAffiliationException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.ConsortiumService;
-import org.folio.consortia.service.PermissionService;
+import org.folio.consortia.service.PermissionUserService;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.consortia.utils.HelperUtils;
 import org.folio.spring.DefaultFolioExecutionContext;
@@ -33,7 +32,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -66,7 +64,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   private final ConsortiumService consortiumService;
   private final UsersClient usersClient;
   private final FolioModuleMetadata folioModuleMetadata;
-  private final PermissionService permissionService;
+  private final PermissionUserService permissionUserService;
 
   @Override
   public UserTenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
@@ -262,7 +260,8 @@ public class UserTenantServiceImpl implements UserTenantService {
   }
 
   private void createActiveUserWithPermissions(User user) {
-    createPermissionUser(user.getId());
+    log.info("Creating permissionUser for userId {} with empty set of permissions", user.getId());
+    permissionUserService.createWithPermissions(UUID.randomUUID().toString(), user.getId(), List.of());
     log.info("Creating user with id {}.", user.getId());
     usersClient.saveUser(user);
   }
@@ -331,17 +330,5 @@ public class UserTenantServiceImpl implements UserTenantService {
     entity.setTenant(tenant);
     entity.setIsPrimary(IS_PRIMARY_FALSE);
     return entity;
-  }
-
-  private PermissionUser createPermissionUser(String userId) {
-    List<String> emptyPermissionList = new ArrayList<>();
-    Optional<PermissionUser> permissionUserOptional = permissionService.getPermissionUserByUserId(userId);
-    if (permissionUserOptional.isPresent()) {
-      // this case possible because for initial admin users setup we are creating user and permissions separately
-      log.info("PermissionUser already exist {}.", permissionUserOptional.get());
-      return permissionUserOptional.get();
-    } else {
-      return permissionService.createPermissionUserWithPermissions(UUID.randomUUID().toString(), userId, emptyPermissionList);
-    }
   }
 }

@@ -78,6 +78,8 @@ class TenantServiceTest {
   @Mock
   private UserTenantServiceImpl userTenantService;
   @Mock
+  private PermissionUserService permissionUserService;
+  @Mock
   private PermissionService permissionService;
 
   @Test

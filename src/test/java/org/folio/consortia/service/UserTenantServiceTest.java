@@ -83,7 +83,7 @@ class UserTenantServiceTest {
   @Mock
   private FolioModuleMetadata folioModuleMetadata;
   @Mock
-  private PermissionService permissionService;
+  private PermissionUserService permissionUserService;
 
   /* Success cases */
   @Test
