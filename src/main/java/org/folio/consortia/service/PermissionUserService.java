@@ -29,12 +29,10 @@ public interface PermissionUserService {
   PermissionUser createWithPermissions(String id, String userId, List<String> permissionList);
 
   /**
-  * Creates permissionUser with given permissions.
+  * Add permissions for existed permission user.
   *
   * @param id the id of permissionUser
   * @param permission permission
-  *
-  * @return PermissionUser
   */
   void addPermissionToUser(String id, Permission permission);
 }
