@@ -8,19 +8,19 @@ public interface PermissionService {
    * Adds permissions to permissionUser.
    *
    * @param permissionUser  the permissionUser
-   * @param fileName  the name of file
+   * @param permissionsFilePath  the path of file includes permission names to add
    *
    * @return
    */
-  void addPermissions(PermissionUser permissionUser, String fileName);
+  void addPermissions(PermissionUser permissionUser, String permissionsFilePath);
 
   /**
    * Creates permissionUser for userId.
    *
    * @param userId  the id of user
-   * @param fileName  the name of file
+   * @param permissionsFilePath  the path of file includes permission names to add
    *
    * @return PermissionUser
    */
-  PermissionUser createPermissionUser(String userId, String fileName);
+  PermissionUser createPermissionUser(String userId, String permissionsFilePath);
 }

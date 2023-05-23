@@ -99,7 +99,7 @@ class TenantControllerTest extends BaseTest {
     User user = new User();
     user.setId(UUID.randomUUID().toString());
 
-    when(userTenantService.prepareShadowUser(any(), any(), any())).thenReturn(user);
+    when(userTenantService.prepareShadowUser(any(), any())).thenReturn(user);
     when(userTenantService.getUser(any())).thenReturn(user);
     when(usersClient.getUsersByUserId(any())).thenReturn(new User());
     when(permissionsClient.get(any())).thenReturn(permissionUserCollection);

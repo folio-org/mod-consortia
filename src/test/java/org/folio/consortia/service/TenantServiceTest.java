@@ -114,7 +114,7 @@ class TenantServiceTest {
     user.setId(UUID.randomUUID().toString());
 
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
-    when(userTenantService.prepareShadowUser(any(), any(), any())).thenReturn(user);
+    when(userTenantService.prepareShadowUser(any(), any())).thenReturn(user);
     when(userTenantService.getUser(any())).thenReturn(new User());
     when(permissionsClient.get(any())).thenReturn(permissionUserCollection);
     when(permissionsClient.create(any())).thenReturn(PermissionUser.of(UUID.randomUUID().toString(), user.getId(), List.of("users.collection.get")));
@@ -147,7 +147,7 @@ class TenantServiceTest {
     user.setId(UUID.randomUUID().toString());
 
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
-    when(userTenantService.prepareShadowUser(any(), any(), any())).thenReturn(user);
+    when(userTenantService.prepareShadowUser(any(), any())).thenReturn(user);
     when(userTenantService.getUser(any())).thenReturn(user);
     when(permissionsClient.get(any())).thenReturn(permissionUserCollection);
     doNothing().when(permissionsClient).addPermission(any(), any());

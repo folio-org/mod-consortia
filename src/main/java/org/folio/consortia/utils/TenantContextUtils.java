@@ -34,6 +34,14 @@ public class TenantContextUtils {
     return getContextFromKafkaHeaders(headers, moduleMetadata, centralTenantId);
   }
 
+  public static FolioExecutionContext prepareContextForTenant(String tenantId, FolioModuleMetadata folioModuleMetadata, FolioExecutionContext context) {
+    if (MapUtils.isNotEmpty(context.getOkapiHeaders())) {
+      context.getOkapiHeaders().put(XOkapiHeaders.TENANT, List.of(tenantId));
+      log.info("FOLIO context initialized with tenant {}", tenantId);
+    }
+    return new DefaultFolioExecutionContext(folioModuleMetadata, context.getOkapiHeaders());
+  }
+
   public static void runInFolioContext(FolioExecutionContext context, Runnable runnable) {
     try (var fec = new FolioExecutionContextSetter(context)) {
       runnable.run();

@@ -22,6 +22,7 @@ import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
+import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,8 +34,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.folio.consortia.utils.HelperUtils.checkIdenticalOrThrow;
-import static org.folio.consortia.utils.TenantContextUtils.createFolioExecutionContextForTenant;
-import static org.folio.consortia.utils.TenantContextUtils.runInFolioContext;
+import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
 
 @Service
 @Log4j2
@@ -56,6 +56,7 @@ public class TenantServiceImpl implements TenantService {
   private final PermissionUserService permissionUserService;
   private final PermissionService permissionService;
   private final UserTenantService userTenantService;
+  private final FolioModuleMetadata folioModuleMetadata;
 
   @Override
   public TenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
@@ -96,15 +97,14 @@ public class TenantServiceImpl implements TenantService {
 
     checkTenantNotExistsAndConsortiumExistsOrThrow(consortiumId, tenantDto.getId());
     Tenant savedTenant = saveTenant(consortiumId, tenantDto);
-    User shadowAdminUser = userTenantService.prepareShadowUser(adminUserId, currentTenantContext.getTenantId(), currentTenantContext);
-    runInFolioContext(createFolioExecutionContextForTenant(tenantDto.getId(), currentTenantContext, folioMetadata),
-      () -> {
-        userTenantRepository.save(createUserTenantEntity(consortiumId, shadowAdminUser, tenantDto));
-        createShadowAdminUserWithPermissions(shadowAdminUser);
-        configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
-      });
-    log.info("save:: saved consortia configuration with centralTenantId={} by tenantId={} context", centralTenantId, tenantDto.getId());
+    User shadowAdminUser = userTenantService.prepareShadowUser(adminUserId, currentTenantContext.getTenantId());
 
+    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantDto.getId(), folioModuleMetadata, folioExecutionContext))) {
+      userTenantRepository.save(createUserTenantEntity(consortiumId, shadowAdminUser, tenantDto));
+      createShadowAdminUserWithPermissions(shadowAdminUser);
+      configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
+    }
+    log.info("save:: saved consortia configuration with centralTenantId={} by tenantId={} context", centralTenantId, tenantDto.getId());
     return savedTenant;
   }
 

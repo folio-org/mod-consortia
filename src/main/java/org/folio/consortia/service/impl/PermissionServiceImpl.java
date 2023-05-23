@@ -60,9 +60,8 @@ public class PermissionServiceImpl implements PermissionService {
     try {
       result = Resources.readLines(url, StandardCharsets.UTF_8);
     } catch (IOException e) {
-      log.error("Can't read user permissions from %s.", permissionsFilePath, e);
+      log.error("Can't read user permissions from {}.", permissionsFilePath, e);
     }
-
     return result;
   }
 

@@ -5,7 +5,6 @@ import org.folio.consortia.domain.dto.UserEvent;
 import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.domain.entity.TenantEntity;
-import org.folio.spring.FolioExecutionContext;
 
 import java.util.UUID;
 
@@ -128,7 +127,8 @@ public interface UserTenantService {
    *
    * @param userId id of user.
    * @param tenantId id of tenant.
-   * @param folioExecutionContext folio context
+   *
+   * return user.
    */
-  User prepareShadowUser(UUID userId, String tenantId, FolioExecutionContext folioExecutionContext);
+  User prepareShadowUser(UUID userId, String tenantId);
 }
