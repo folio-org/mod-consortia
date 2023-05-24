@@ -4,21 +4,18 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.consortia.client.UsersClient;
+import org.folio.consortia.config.FolioExecutionContextHelper;
 import org.folio.consortia.domain.dto.Personal;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.exception.ConsortiumClientException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.UserService;
 import org.folio.consortia.utils.HelperUtils;
-import org.folio.spring.FolioExecutionContext;
-import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 import java.util.UUID;
-
-import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
 
 @Service
 @Log4j2
@@ -28,8 +25,7 @@ public class UserServiceImpl implements UserService {
   private static final String USER_ID = "userId";
 
   private final UsersClient usersClient;
-  private final FolioExecutionContext folioExecutionContext;
-  private final FolioModuleMetadata folioModuleMetadata;
+  private final FolioExecutionContextHelper contextHelper;
   private static final Integer RANDOM_STRING_COUNT = 5;
 
   @Override
@@ -64,7 +60,7 @@ public class UserServiceImpl implements UserService {
   }
 
   public User prepareShadowUser(UUID userId, String tenantId) {
-    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioModuleMetadata, (FolioExecutionContext) folioExecutionContext.getInstance()))) {
+    try (var context = new FolioExecutionContextSetter(contextHelper.getFolioExecutionContext(tenantId))) {
       User user = new User();
       User userOptional = usersClient.getUsersByUserId(userId.toString());
 
