@@ -83,7 +83,9 @@
           "permissionsRequired": [
             "consortia.tenants.item.put"
           ],
-          "modulePermissions": []
+          "modulePermissions": [
+            "users.collection.get"
+          ]
         },
         {
           "methods": [
