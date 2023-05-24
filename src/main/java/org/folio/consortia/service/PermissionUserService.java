@@ -17,13 +17,11 @@ public interface PermissionUserService {
 
   /**
   * Creates permissionUser with empty permissions list.
-  *
-  * @param id the id of permissionUser
   * @param userId the id of user
   *
   * @return PermissionUser
   */
-  PermissionUser createWithEmptyPermissions(String id, String userId);
+  PermissionUser createWithEmptyPermissions(String userId);
 
   /**
    * Creates permissionUser for userId with permissions getting from file.

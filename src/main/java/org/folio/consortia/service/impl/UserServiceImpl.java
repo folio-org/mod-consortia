@@ -81,7 +81,6 @@ public class UserServiceImpl implements UserService {
           personal.setPreferredContactTypeId(userPersonal.getPreferredContactTypeId());
           user.setPersonal(personal);
         }
-        user.setPatronGroup(userOptional.getPatronGroup());
         user.setActive(true);
       } else {
         log.warn("Could not find real user with id: {} in his home tenant: {}", userId.toString(), tenantId);

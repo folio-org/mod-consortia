@@ -32,7 +32,7 @@ public class PermissionUserServiceImpl implements PermissionUserService {
   }
 
   @Override
-  public PermissionUser createWithEmptyPermissions(String id, String userId) {
+  public PermissionUser createWithEmptyPermissions(String userId) {
     var permissionUser = PermissionUser.of(UUID.randomUUID().toString(), userId, List.of());
     log.info("Creating permissionUser {}.", permissionUser);
     return permissionsClient.create(permissionUser);
@@ -59,8 +59,7 @@ public class PermissionUserServiceImpl implements PermissionUserService {
     // remove duplicate permissions already existing in permission user.
     permissions.removeAll(permissionUser.getPermissions());
     permissions.forEach(permission -> {
-      var p = new Permission();
-      p.setPermissionName(permission);
+      var p = new Permission(permission);
       try {
         log.info("Adding to user {} permission {}.", permissionUser.getUserId(), p);
         permissionsClient.addPermission(permissionUser.getUserId(), p);

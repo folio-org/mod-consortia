@@ -113,6 +113,4 @@ public interface UserTenantService {
    * @param userId id of user.
    */
   void deleteShadowUsers(UUID userId);
-
-
 }

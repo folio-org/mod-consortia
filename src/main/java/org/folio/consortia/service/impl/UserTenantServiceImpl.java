@@ -203,7 +203,7 @@ public class UserTenantServiceImpl implements UserTenantService {
 
   private void createActiveUserWithPermissions(User user) {
     log.info("Creating permissionUser for userId {} with empty set of permissions", user.getId());
-    permissionUserService.createWithEmptyPermissions(UUID.randomUUID().toString(), user.getId());
+    permissionUserService.createWithEmptyPermissions(user.getId());
     log.info("Creating user with id {}.", user.getId());
     userService.createUser(user);
   }
