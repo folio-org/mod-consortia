@@ -121,14 +121,6 @@ public class TenantServiceImpl implements TenantService {
     return savedTenant;
   }
 
-  private TenantEntity getOrCreateTenantEntity(UUID consortiumId, Tenant tenantDto) {
-    if (tenantRepository.existsById(tenantDto.getId())) {
-      return getByTenantId(tenantDto.getId());
-    } else {
-      return saveTenantEntity(consortiumId, tenantDto);
-    }
-  }
-
   public CompletableFuture<Void> createPrimaryUserAffiliationsAsync(UUID consortiumId, TenantEntity consortiaTenant,
       Tenant tenantDto, UUID contextUserId) {
     return CompletableFuture.runAsync(() -> {
@@ -175,7 +167,7 @@ public class TenantServiceImpl implements TenantService {
     var tenantEntity = saveTenantEntity(consortiumId, tenantDto);
     var savedTenant = converter.convert(tenantEntity, Tenant.class);
 
-    if (forceCreatePrimaryAff) {
+    if (forceCreatePrimaryAff.booleanValue()) {
       try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantDto.getId(), folioModuleMetadata, currentTenantContext))) {
         createPrimaryUserAffiliationsAsync(consortiumId, tenantEntity, tenantDto, currentTenantContext.getUserId());
       }
@@ -202,12 +194,6 @@ public class TenantServiceImpl implements TenantService {
 
   private void checkTenantNotExistsAndConsortiumExistsOrThrow(UUID consortiumId, String tenantId) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    if (tenantRepository.existsById(tenantId)) {
-      throw new ResourceAlreadyExistException("id", tenantId);
-    }
-  }
-
-  private void checkTenantNotExistsOrThrow(String tenantId) {
     if (tenantRepository.existsById(tenantId)) {
       throw new ResourceAlreadyExistException("id", tenantId);
     }
