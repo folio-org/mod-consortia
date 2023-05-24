@@ -21,12 +21,12 @@ public interface TenantService {
   /**
    * Inserts single tenant based on consortiumId.
    *
-   * @param consortiumId          the consortiumId
-   * @param tenantDto             the tenantDto
-   * @param forceCreatePrimaryAff
+   * @param consortiumId  the consortiumId
+   * @param tenantDto  the tenantDto
+   * @param adminUserId the id of admin_user
    * @return tenantDto
    */
-  Tenant save(UUID consortiumId, Tenant tenantDto, boolean forceCreatePrimaryAff);
+  Tenant save(UUID consortiumId, UUID adminUserId, Tenant tenantDto, boolean forceCreatePrimaryAff);
 
   /**
    * Updates single tenant based on consortiumId.

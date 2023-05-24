@@ -104,6 +104,10 @@ class UserTenantServiceTest {
   private FolioExecutionContext folioExecutionContext;
   @Mock
   private FolioModuleMetadata folioModuleMetadata;
+  @Mock
+  private PermissionUserService permissionUserService;
+  @Mock
+  private UserService userService;
 
   /* Success cases */
   @Test
@@ -227,7 +231,8 @@ class UserTenantServiceTest {
     when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
       .thenReturn(Optional.of(createConsortiumEntity()));
     when(userTenantRepository.findByUserIdAndIsPrimary(any(), any())).thenReturn(Optional.of(userTenant));
-    when(usersClient.getUsersByUserId(any())).thenReturn(createUserEntity(false));
+    when(userService.getById(any())).thenReturn(createUserEntity(false));
+    when(userService.prepareShadowUser(any(),any())).thenReturn(createUserEntity(false));
     doNothing().when(usersClient).updateUser(any(), any(User.class));
     when(userTenantRepository.save(userTenant)).thenReturn(userTenant);
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
@@ -251,7 +256,8 @@ class UserTenantServiceTest {
     when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
       .thenReturn(Optional.of(createConsortiumEntity()));
     when(userTenantRepository.findByUserIdAndIsPrimary(any(), any())).thenReturn(Optional.of(userTenant));
-    when(usersClient.getUsersByUserId(any())).thenReturn(createUserEntity(true));
+    when(userService.getById(any())).thenReturn(createUserEntity(true));
+    when(userService.prepareShadowUser(any(),any())).thenReturn(createUserEntity(true));
     doNothing().when(usersClient).updateUser(any(), any(User.class));
     when(userTenantRepository.save(userTenant)).thenReturn(userTenant);
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
@@ -277,7 +283,8 @@ class UserTenantServiceTest {
     when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
       .thenReturn(Optional.of(createConsortiumEntity()));
     when(userTenantRepository.findByUserIdAndIsPrimary(any(), any())).thenReturn(Optional.of(userTenant));
-    when(usersClient.getUsersByUserId(any())).thenReturn(createNullUserEntity());
+    when(userService.getById(any())).thenReturn(createNullUserEntity());
+    when(userService.prepareShadowUser(any(),any())).thenReturn(createNullUserEntity());
     when(permissionsClient.get(any())).thenReturn(permissionUserCollection);
     doNothing().when(usersClient).saveUser(any());
     when(userTenantRepository.save(userTenant)).thenReturn(userTenant);
@@ -304,7 +311,8 @@ class UserTenantServiceTest {
     when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
       .thenReturn(Optional.of(createConsortiumEntity()));
     when(userTenantRepository.findByUserIdAndIsPrimary(any(), any())).thenReturn(Optional.of(userTenant));
-    when(usersClient.getUsersByUserId(any())).thenReturn(createNullUserEntity());
+    when(userService.getById(any())).thenReturn(createNullUserEntity());
+    when(userService.prepareShadowUser(any(),any())).thenReturn(createNullUserEntity());
     when(permissionsClient.get(any())).thenReturn(permissionUserCollection);
     when(permissionsClient.create(any())).thenReturn(permissionUser);
     doNothing().when(usersClient).saveUser(any());
@@ -349,7 +357,8 @@ class UserTenantServiceTest {
     userTenant.setIsPrimary(false);
 
     when(consortiumRepository.existsById(UUID.fromString(CONSORTIUM_ID))).thenReturn(true);
-    when(usersClient.getUsersByUserId(any())).thenReturn(createNullUserEntity());
+    when(userService.getById(any())).thenReturn(createNullUserEntity());
+    when(userService.prepareShadowUser(any(),any())).thenReturn(createNullUserEntity());
     when(userTenantRepository.findByUserIdAndTenantId(userId, tenantId))
       .thenReturn(Optional.of(userTenant));
     doNothing().when(userTenantRepository).deleteByUserIdAndTenantId(userId, tenantId);
@@ -468,7 +477,7 @@ class UserTenantServiceTest {
     when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
       .thenReturn(Optional.of(createConsortiumEntity()));
     when(userTenantRepository.findByUserIdAndIsPrimary(any(), any())).thenReturn(Optional.of(userTenant));
-    when(usersClient.getUsersByUserId(any())).thenThrow(FeignException.Forbidden.class);
+    when(userService.getById(any())).thenThrow(org.folio.consortia.exception.ConsortiumClientException.class);
     doNothing().when(usersClient).updateUser(any(), any(User.class));
     when(userTenantRepository.save(userTenant)).thenReturn(userTenant);
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
@@ -495,7 +504,7 @@ class UserTenantServiceTest {
     when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
       .thenReturn(Optional.of(createConsortiumEntity()));
     when(userTenantRepository.findByUserIdAndIsPrimary(any(), any())).thenReturn(Optional.of(userTenant));
-    when(usersClient.getUsersByUserId(any())).thenThrow(FeignException.NotFound.class);
+    when(userService.getById(any())).thenThrow(org.folio.consortia.exception.ResourceNotFoundException.class);
     doNothing().when(usersClient).updateUser(any(), any(User.class));
     when(userTenantRepository.save(userTenant)).thenReturn(userTenant);
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
@@ -521,7 +530,7 @@ class UserTenantServiceTest {
     when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID)))
       .thenReturn(Optional.of(createConsortiumEntity()));
     when(userTenantRepository.findByUserIdAndIsPrimary(any(), any())).thenReturn(Optional.of(userTenant));
-    when(usersClient.getUsersByUserId(any())).thenThrow(FeignException.class);
+    when(userService.getById(any())).thenThrow(java.lang.IllegalStateException.class);
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
     when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
     Map<String, Collection<String>> okapiHeaders = new HashMap<>();

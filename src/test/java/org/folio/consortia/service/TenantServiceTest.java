@@ -25,9 +25,13 @@ import java.util.UUID;
 import org.folio.consortia.client.ConsortiaConfigurationClient;
 import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.config.kafka.KafkaService;
+import org.folio.consortia.client.PermissionsClient;
+import org.folio.consortia.domain.dto.PermissionUser;
+import org.folio.consortia.domain.dto.PermissionUserCollection;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.UserCollection;
 import org.folio.consortia.domain.entity.ConsortiumEntity;
+import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.exception.ResourceNotFoundException;
@@ -36,6 +40,7 @@ import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.impl.TenantServiceImpl;
 import org.folio.consortia.utils.EntityUtils;
+import org.folio.consortia.service.impl.UserTenantServiceImpl;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.junit.jupiter.api.Assertions;
@@ -83,6 +88,17 @@ class TenantServiceTest {
   UsersClient usersClient;
   @Mock
   UserTenantService userTenantService;
+  @Mock
+  private PermissionsClient permissionsClient;
+  @Mock
+  private UserTenantServiceImpl userTenantService;
+  @Mock
+  private PermissionUserService permissionUserService;
+  @Mock
+  private PermissionUserService permissionService;
+  @Mock
+  private UserService userService;
+
   @Test
   void shouldGetTenantList() {
     int offset = 0;
@@ -104,15 +120,57 @@ class TenantServiceTest {
   }
 
   @Test
-  void shouldSaveTenant() throws JsonProcessingException {
+  void shouldSaveTenantWithNewUserAndPermissions() {
+    UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
+    TenantEntity tenantEntity1 = createTenantEntity("ABC1", "TestName1");
+    Tenant tenant = createTenant("TestID", "Test");
+    TenantEntity centralTenant = createTenantEntity("diku", "diku");
+    PermissionUserCollection permissionUserCollection = new PermissionUserCollection();
+    permissionUserCollection.setPermissionUsers(List.of());
+    User user = new User();
+    user.setId(UUID.randomUUID().toString());
+
+    when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
+    when(userService.prepareShadowUser(any(), any())).thenReturn(user);
+    when(userService.createUser(any())).thenReturn(user);
+    when(userService.getById(any())).thenReturn(new User());
+    when(permissionsClient.get(any())).thenReturn(permissionUserCollection);
+    when(permissionsClient.create(any())).thenReturn(PermissionUser.of(UUID.randomUUID().toString(), user.getId(), List.of("users.collection.get")));
+    when(tenantRepository.existsById(any())).thenReturn(false);
+    when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
+    when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
+    doNothing().when(configurationClient).saveConfiguration(createConsortiaConfiguration(CENTRAL_TENANT_ID));
+    when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
+    when(folioExecutionContext.getTenantId()).thenReturn("diku");
+    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
+    Map<String, Collection<String>> okapiHeaders = new HashMap<>();
+    okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
+    when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
+
+    var tenant1 = tenantService.save(consortiumId, UUID.randomUUID(), tenant);
+    Assertions.assertEquals(tenant, tenant1);
+  }
+
+  @Test
+  void shouldSaveTenantWithExistingAndPermissions() throws JsonProcessingException {
     UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
     TenantEntity tenantEntity1 = createTenantEntity("ABC1", "TestName1");
     Tenant tenant = EntityUtils.createTenant("TestID", "Test", true);
     TenantEntity centralTenant = createTenantEntity("diku", "diku");
+    PermissionUser permissionUser = new PermissionUser();
+    permissionUser.setPermissions(List.of("users.collection.get"));
+    PermissionUserCollection permissionUserCollection = new PermissionUserCollection();
+    permissionUserCollection.setPermissionUsers(List.of(permissionUser));
+    User user = new User();
+    user.setId(UUID.randomUUID().toString());
     var userCollectionString = getMockData("mockdata/user_collection.json");
     UserCollection userCollection = new ObjectMapper().readValue(userCollectionString, UserCollection.class);
 
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
+    when(userService.prepareShadowUser(any(), any())).thenReturn(user);
+    when(userService.getById(any())).thenReturn(user);
+    when(permissionsClient.get(any())).thenReturn(permissionUserCollection);
+    doNothing().when(permissionsClient).addPermission(any(), any());
     when(tenantRepository.existsById(any())).thenReturn(false);
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
@@ -125,9 +183,10 @@ class TenantServiceTest {
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
     when(usersClient.getUserCollection(anyString(), anyInt(), anyInt())).thenReturn(userCollection);
 
-    var tenant1 = tenantService.save(consortiumId, tenant, false);
+    var tenant1 = tenantService.save(consortiumId, UUID.randomUUID(), tenant, false);
     Assertions.assertEquals(tenant, tenant1);
   }
+
 
   @Test
   void shouldUpdateTenant() {
@@ -226,7 +285,7 @@ class TenantServiceTest {
     when(tenantRepository.existsByIsCentralTrue()).thenReturn(true);
 
     assertThrows(org.folio.consortia.exception.ResourceAlreadyExistException.class,
-      () -> tenantService.save(UUID.fromString(CONSORTIUM_ID), tenant, false));
+      () -> tenantService.save(UUID.fromString(CONSORTIUM_ID), null, tenant, false));
   }
 
   @Test
@@ -245,21 +304,7 @@ class TenantServiceTest {
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
     assertThrows(org.folio.consortia.exception.ResourceAlreadyExistException.class, () ->
-      tenantService.save(UUID.fromString(CONSORTIUM_ID), tenant, false));
-  }
-
-  @Test
-  void shouldRetrieveEntityByTenantId() {
-    when(tenantRepository.findById(anyString())).thenReturn(Optional.of(new TenantEntity()));
-    var tenantEntity = tenantService.getByTenantId(UUID.randomUUID().toString());
-    assertNotNull(tenantEntity);
-  }
-
-  @Test
-  void shouldNotRetrieveEntityByTenantId() {
-    when(tenantRepository.findById(anyString())).thenReturn(Optional.empty());
-    var tenantEntity = tenantService.getByTenantId(UUID.randomUUID().toString());
-    assertNull(tenantEntity);
+      tenantService.save(UUID.fromString(CONSORTIUM_ID), null, tenant, false));
   }
 
   @Test
@@ -281,25 +326,17 @@ class TenantServiceTest {
     verify(userTenantService, times(2)).createPrimaryUserTenantAffiliation(any(), any(), anyString(), anyString());
   }
 
-  private ConsortiumEntity createConsortiumEntity() {
-    ConsortiumEntity consortiumEntity = new ConsortiumEntity();
-    consortiumEntity.setId(UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002"));
-    consortiumEntity.setName("TestConsortium");
-    return consortiumEntity;
+  @Test
+  void shouldRetrieveEntityByTenantId() {
+    when(tenantRepository.findById(anyString())).thenReturn(Optional.of(new TenantEntity()));
+    var tenantEntity = tenantService.getByTenantId(UUID.randomUUID().toString());
+    assertNotNull(tenantEntity);
   }
 
-  private TenantEntity createTenantEntity(String id, String name) {
-    TenantEntity tenantEntity = new TenantEntity();
-    tenantEntity.setId(id);
-    tenantEntity.setIsCentral(false);
-    tenantEntity.setName(name);
-    return tenantEntity;
-  }
-
-  private Tenant createTenant(String id, String name) {
-    Tenant tenant = new Tenant();
-    tenant.setId(id);
-    tenant.setName(name);
-    return tenant;
+  @Test
+  void shouldNotRetrieveEntityByTenantId() {
+    when(tenantRepository.findById(anyString())).thenReturn(Optional.empty());
+    var tenantEntity = tenantService.getByTenantId(UUID.randomUUID().toString());
+    assertNull(tenantEntity);
   }
 }

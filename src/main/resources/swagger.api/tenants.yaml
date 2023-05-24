@@ -28,7 +28,7 @@ paths:
       operationId: saveTenant
       parameters:
         - $ref: "#/components/parameters/consortiumId"
-        - $ref: "#/components/parameters/create_primary_affiliations"
+        - $ref: "#/components/parameters/adminUserId"
       requestBody:
         $ref: "#/components/requestBodies/TenantBody"
       responses:
@@ -51,6 +51,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/consortiumId"
         - $ref: "#/components/parameters/tenantId"
+        - $ref: "#/components/parameters/create_primary_affiliations"
       requestBody:
         $ref: "#/components/requestBodies/TenantBody"
       responses:
@@ -144,6 +145,13 @@ components:
         $ref: "schemas/common.yaml#/uuid"
       required: true
       description: The ID of consortium
+    adminUserId:
+      in: query
+      name: adminUserId
+      schema:
+        $ref: "schemas/common.yaml#/uuid"
+      required: true
+      description: The ID of adminUser
     tenantId:
       in: path
       name: tenantId

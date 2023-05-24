@@ -13,20 +13,22 @@ import org.folio.consortia.client.ConsortiaConfigurationClient;
 import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.domain.dto.ConsortiaConfiguration;
+import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.dto.UserEvent;
 import org.folio.consortia.domain.entity.TenantEntity;
+import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
-import org.folio.consortia.service.ConsortiumService;
-import org.folio.consortia.service.TenantService;
+import org.folio.consortia.service.*;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
+import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -41,6 +43,7 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 public class TenantServiceImpl implements TenantService {
 
+  private static final String SHADOW_ADMIN_PERMISSION_FILE_PATH = "permissions/admin-user-permissions.csv";
   private static final String TENANTS_IDS_NOT_MATCHED_ERROR_MSG = "Request body tenantId and path param tenantId should be identical";
   private static final String TENANT_HAS_ACTIVE_USER_ASSOCIATIONS_ERROR_MSG = "Cannot delete tenant with ID {tenantId} because it has an association with a user. "
       + "Please remove the user association before attempting to delete the tenant.";
@@ -51,6 +54,9 @@ public class TenantServiceImpl implements TenantService {
   private final FolioExecutionContext folioExecutionContext;
   private final FolioModuleMetadata folioMetadata;
   private final ConsortiaConfigurationClient configurationClient;
+  private final PermissionUserService permissionUserService;
+  private final UserService userService;
+  private final FolioModuleMetadata folioModuleMetadata;
   private final UsersClient usersClient;
   private final UserTenantService userTenantService;
   private final KafkaService kafkaService;
@@ -80,7 +86,7 @@ public class TenantServiceImpl implements TenantService {
 
   @Override
   @Transactional
-  public Tenant save(UUID consortiumId, Tenant tenantDto, boolean forceCreatePrimaryAff) {
+  public Tenant save(UUID consortiumId, UUID adminUserId, Tenant tenantDto, boolean forceCreatePrimaryAff) {
     log.debug("save:: Trying to save a tenant by consortiumId '{}', tenant object with id '{}' and isCentral={}", consortiumId,
         tenantDto.getId(), tenantDto.getIsCentral());
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
@@ -94,6 +100,17 @@ public class TenantServiceImpl implements TenantService {
       centralTenantId = getCentralTenantId();
     }
 
+    checkTenantNotExistsAndConsortiumExistsOrThrow(consortiumId, tenantDto.getId());
+    Tenant savedTenant = saveTenant(consortiumId, tenantDto);
+    User shadowAdminUser = userService.prepareShadowUser(adminUserId, currentTenantContext.getTenantId());
+    userTenantRepository.save(createUserTenantEntity(consortiumId, shadowAdminUser, tenantDto));
+
+    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantDto.getId(), folioModuleMetadata, currentTenantContext))) {
+      createShadowAdminUserWithPermissions(shadowAdminUser);
+      configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
+    }
+
+    ///
     TenantEntity tenantEntity;
     if (forceCreatePrimaryAff) {
       tenantEntity = getOrCreateTenantEntity(consortiumId, tenantDto);
@@ -107,8 +124,8 @@ public class TenantServiceImpl implements TenantService {
       configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
       createPrimaryUserAffiliationsAsync(consortiumId, tenantEntity, tenantDto, currentTenantContext.getUserId());
     });
+    ///
     log.info("save:: saved consortia configuration with centralTenantId={} by tenantId={} context", centralTenantId, tenantDto.getId());
-
     return savedTenant;
   }
 
@@ -225,5 +242,30 @@ public class TenantServiceImpl implements TenantService {
     ConsortiaConfiguration configuration = new ConsortiaConfiguration();
     configuration.setCentralTenantId(tenantId);
     return configuration;
+  }
+
+  private void createShadowAdminUserWithPermissions(User user) {
+    User userOptional = userService.getById(UUID.fromString(user.getId()));
+    if (Objects.isNull(userOptional.getId())) {
+      userOptional = userService.createUser(user);
+    }
+    Optional<PermissionUser> permissionUserOptional = permissionUserService.getByUserId(userOptional.getId());
+    if (permissionUserOptional.isPresent()) {
+      permissionUserService.addPermissions(permissionUserOptional.get(), SHADOW_ADMIN_PERMISSION_FILE_PATH);
+    } else {
+      permissionUserService.createWithPermissionsFromFile(user.getId(), SHADOW_ADMIN_PERMISSION_FILE_PATH);
+    }
+  }
+
+  private UserTenantEntity createUserTenantEntity(UUID consortiumId, User user, Tenant tenant) {
+    UserTenantEntity userTenantEntity = new UserTenantEntity();
+    TenantEntity tenantEntity = toEntity(consortiumId, tenant);
+
+    userTenantEntity.setUserId(UUID.fromString(user.getId()));
+    userTenantEntity.setId(UUID.randomUUID());
+    userTenantEntity.setIsPrimary(Boolean.FALSE);
+    userTenantEntity.setUsername(user.getUsername());
+    userTenantEntity.setTenant(tenantEntity);
+    return userTenantEntity;
   }
 }
