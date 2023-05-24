@@ -15,10 +15,13 @@ import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
-import org.folio.consortia.service.*;
+import org.folio.consortia.service.ConsortiumService;
+import org.folio.consortia.service.PermissionUserService;
+import org.folio.consortia.service.TenantService;
+import org.folio.consortia.service.UserService;
 import org.folio.spring.FolioExecutionContext;
-import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.scope.FolioExecutionContextSetter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -42,6 +45,7 @@ public class TenantServiceImpl implements TenantService {
     "Please remove the user association before attempting to delete the tenant.";
   private final TenantRepository tenantRepository;
   private final UserTenantRepository userTenantRepository;
+  @Qualifier("conversionService")
   private final ConversionService converter;
   private final ConsortiumService consortiumService;
   private final FolioExecutionContext folioExecutionContext;

@@ -19,6 +19,7 @@ import org.folio.consortia.service.UserService;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.scope.FolioExecutionContextSetter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -49,7 +50,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   private static final Boolean IS_PRIMARY_FALSE = false;
   private final UserTenantRepository userTenantRepository;
   private final FolioExecutionContext folioExecutionContext;
-  private final ConversionService converter;
+  @Qualifier("conversionService") private final ConversionService converter;
   private final ConsortiumService consortiumService;
   private final UserService userService;
   private final PermissionUserService permissionUserService;
@@ -105,7 +106,6 @@ public class UserTenantServiceImpl implements UserTenantService {
   @Transactional
   public UserTenant save(UUID consortiumId, UserTenant userTenantDto) {
     log.debug("Going to save user with id: {} into tenant: {}", userTenantDto.getUserId(), userTenantDto.getTenantId());
-    FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     String currentTenantId = folioExecutionContext.getTenantId();
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
 
@@ -116,7 +116,7 @@ public class UserTenantServiceImpl implements UserTenantService {
     }
 
     User shadowUser = userService.prepareShadowUser(userTenantDto.getUserId(), userTenant.get().getTenant().getId());
-    createOrUpdateShadowUser(userTenantDto.getUserId(), shadowUser, userTenantDto, currentTenantContext);
+    createOrUpdateShadowUser(userTenantDto.getUserId(), shadowUser, userTenantDto);
 
     try (var context = new FolioExecutionContextSetter(contextHelper.getFolioExecutionContext(currentTenantId))) {
       UserTenantEntity userTenantEntity = toEntity(userTenantDto, consortiumId, shadowUser);

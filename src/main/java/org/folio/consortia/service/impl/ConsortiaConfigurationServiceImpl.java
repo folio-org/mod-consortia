@@ -9,6 +9,7 @@ import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.ConsortiaConfigurationRepository;
 import org.folio.consortia.service.ConsortiaConfigurationService;
 import org.folio.spring.FolioExecutionContext;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +24,7 @@ public class ConsortiaConfigurationServiceImpl implements ConsortiaConfiguration
   private static final String CONSORTIA_CONFIGURATION_EXIST_MSG_TEMPLATE =
     "System can not have more than one configuration record";
   private final ConsortiaConfigurationRepository configurationRepository;
-  private final ConversionService converter;
+  @Qualifier("conversionService") private final ConversionService converter;
   private final FolioExecutionContext folioExecutionContext;
 
   @Override
