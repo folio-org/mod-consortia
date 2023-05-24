@@ -1,6 +1,7 @@
 package org.folio.consortia.service;
 
 import org.folio.consortia.client.ConsortiaConfigurationClient;
+import org.folio.consortia.config.FolioExecutionContextHelper;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.exception.ResourceNotFoundException;
@@ -9,7 +10,6 @@ import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.impl.TenantServiceImpl;
 import org.folio.spring.FolioExecutionContext;
-import org.folio.spring.integration.XOkapiHeaders;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -34,12 +34,14 @@ import java.util.UUID;
 import static org.folio.consortia.utils.EntityUtils.createConsortiaConfiguration;
 import static org.folio.consortia.utils.EntityUtils.createTenant;
 import static org.folio.consortia.utils.EntityUtils.createTenantEntity;
+import static org.folio.spring.integration.XOkapiHeaders.TENANT;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -62,9 +64,12 @@ class TenantServiceTest {
   @Mock
   private ConsortiumService consortiumService;
   @Mock
-  private FolioExecutionContext folioExecutionContext;
+  private FolioExecutionContext folioExecutionContext = new FolioExecutionContext() {
+  };
   @Mock
   private ConsortiaConfigurationClient configurationClient;
+  @Mock
+  private FolioExecutionContextHelper contextHelper;
 
   @Test
   void shouldGetTenantList() {
@@ -93,17 +98,13 @@ class TenantServiceTest {
     Tenant tenant = createTenant("TestID", "Test");
     TenantEntity centralTenant = createTenantEntity("diku", "diku");
 
+    doReturn(folioExecutionContext).when(contextHelper).getFolioExecutionContext(anyString());
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(tenantRepository.existsById(any())).thenReturn(false);
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
     doNothing().when(configurationClient).saveConfiguration(createConsortiaConfiguration(CENTRAL_TENANT_ID));
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
-    when(folioExecutionContext.getTenantId()).thenReturn("diku");
-    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
-    Map<String, Collection<String>> okapiHeaders = new HashMap<>();
-    okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
-    when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
     var tenant1 = tenantService.save(consortiumId, tenant);
     Assertions.assertEquals(tenant, tenant1);
@@ -221,7 +222,7 @@ class TenantServiceTest {
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
     when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
     Map<String, Collection<String>> okapiHeaders = new HashMap<>();
-    okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
+    okapiHeaders.put(TENANT, List.of("diku"));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
     assertThrows(org.folio.consortia.exception.ResourceAlreadyExistException.class, () ->
