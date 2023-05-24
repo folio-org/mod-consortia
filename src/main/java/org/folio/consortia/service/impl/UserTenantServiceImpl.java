@@ -19,7 +19,6 @@ import org.folio.consortia.service.UserService;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.scope.FolioExecutionContextSetter;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -50,7 +49,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   private static final Boolean IS_PRIMARY_FALSE = false;
   private final UserTenantRepository userTenantRepository;
   private final FolioExecutionContext folioExecutionContext;
-  @Qualifier("conversionService") private final ConversionService converter;
+  private final ConversionService converter;
   private final ConsortiumService consortiumService;
   private final UserService userService;
   private final PermissionUserService permissionUserService;

@@ -9,7 +9,6 @@ import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.ConsortiumService;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,7 +26,7 @@ public class ConsortiumServiceImpl implements ConsortiumService {
   private static final String CONSORTIUM_RESOURCE_EXIST_MSG_TEMPLATE = "System can not have more than one consortium record";
 
   private final ConsortiumRepository repository;
-  @Qualifier("conversionService") private final ConversionService converter;
+  private final ConversionService converter;
 
   @Override
   public Consortium save(Consortium consortiumDto) {
