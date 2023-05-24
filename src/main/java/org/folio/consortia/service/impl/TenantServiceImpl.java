@@ -1,12 +1,14 @@
 package org.folio.consortia.service.impl;
 
 import static org.folio.consortia.utils.HelperUtils.checkIdenticalOrThrow;
-import static org.folio.consortia.utils.TenantContextUtils.createFolioExecutionContextForTenant;
-import static org.folio.consortia.utils.TenantContextUtils.runInFolioContext;
+import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
 
 import java.util.Date;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.folio.consortia.client.ConsortiaConfigurationClient;
@@ -24,7 +26,10 @@ import org.folio.consortia.exception.ResourceAlreadyExistException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
-import org.folio.consortia.service.*;
+import org.folio.consortia.service.ConsortiumService;
+import org.folio.consortia.service.PermissionUserService;
+import org.folio.consortia.service.TenantService;
+import org.folio.consortia.service.UserService;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
@@ -86,7 +91,7 @@ public class TenantServiceImpl implements TenantService {
 
   @Override
   @Transactional
-  public Tenant save(UUID consortiumId, UUID adminUserId, Tenant tenantDto, boolean forceCreatePrimaryAff) {
+  public Tenant save(UUID consortiumId, UUID adminUserId, Tenant tenantDto) {
     log.debug("save:: Trying to save a tenant by consortiumId '{}', tenant object with id '{}' and isCentral={}", consortiumId,
         tenantDto.getId(), tenantDto.getIsCentral());
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
@@ -101,30 +106,17 @@ public class TenantServiceImpl implements TenantService {
     }
 
     checkTenantNotExistsAndConsortiumExistsOrThrow(consortiumId, tenantDto.getId());
-    Tenant savedTenant = saveTenant(consortiumId, tenantDto);
+    TenantEntity savedTenantEntity = saveTenantEntity(consortiumId, tenantDto);
+    var savedTenant = converter.convert(savedTenantEntity, Tenant.class);
+
     User shadowAdminUser = userService.prepareShadowUser(adminUserId, currentTenantContext.getTenantId());
     userTenantRepository.save(createUserTenantEntity(consortiumId, shadowAdminUser, tenantDto));
 
     try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantDto.getId(), folioModuleMetadata, currentTenantContext))) {
       createShadowAdminUserWithPermissions(shadowAdminUser);
+      createPrimaryUserAffiliationsAsync(consortiumId, savedTenantEntity, tenantDto, currentTenantContext.getUserId());
       configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
     }
-
-    ///
-    TenantEntity tenantEntity;
-    if (forceCreatePrimaryAff) {
-      tenantEntity = getOrCreateTenantEntity(consortiumId, tenantDto);
-    } else {
-      checkTenantNotExistsOrThrow(tenantDto.getId());
-      tenantEntity = saveTenantEntity(consortiumId, tenantDto);
-    }
-    var savedTenant = converter.convert(tenantEntity, Tenant.class);
-
-    runInFolioContext(createFolioExecutionContextForTenant(tenantDto.getId(), currentTenantContext, folioMetadata), () -> {
-      configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
-      createPrimaryUserAffiliationsAsync(consortiumId, tenantEntity, tenantDto, currentTenantContext.getUserId());
-    });
-    ///
     log.info("save:: saved consortia configuration with centralTenantId={} by tenantId={} context", centralTenantId, tenantDto.getId());
     return savedTenant;
   }
@@ -142,8 +134,11 @@ public class TenantServiceImpl implements TenantService {
     return CompletableFuture.runAsync(() -> {
       log.info("Start creating user primary affiliation for tenant {}", tenantDto.getId());
       var users = usersClient.getUserCollection(StringUtils.EMPTY, 0, Integer.MAX_VALUE);
-      users.getUsers()
-        .forEach(user -> {
+      log.info("{} tenant users found", users.getUsers().size());
+      IntStream.range(0, users.getUsers().size())
+        .forEach(idx -> {
+          var user = users.getUsers().get(idx);
+          log.info("Processing users: {} of {}", idx + 1, users.getUsers().size());
           var consortiaUserTenant = userTenantRepository.findByUserIdAndTenantId(UUID.fromString(user.getId()), tenantDto.getId())
             .orElse(null);
           if (consortiaUserTenant != null && consortiaUserTenant.getIsPrimary()) {
@@ -173,15 +168,18 @@ public class TenantServiceImpl implements TenantService {
   }
 
   @Override
-  public Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto) {
+  public Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto, Boolean forceCreatePrimaryAff) {
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     checkTenantAndConsortiumExistsOrThrow(consortiumId, tenantId);
     checkIdenticalOrThrow(tenantId, tenantDto.getId(), TENANTS_IDS_NOT_MATCHED_ERROR_MSG);
     var tenantEntity = saveTenantEntity(consortiumId, tenantDto);
     var savedTenant = converter.convert(tenantEntity, Tenant.class);
 
-    runInFolioContext(createFolioExecutionContextForTenant(tenantDto.getId(), currentTenantContext, folioMetadata),
-        () -> createPrimaryUserAffiliationsAsync(consortiumId, tenantEntity, tenantDto, currentTenantContext.getUserId()));
+    if (forceCreatePrimaryAff) {
+      try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantDto.getId(), folioModuleMetadata, currentTenantContext))) {
+        createPrimaryUserAffiliationsAsync(consortiumId, tenantEntity, tenantDto, currentTenantContext.getUserId());
+      }
+    }
     return savedTenant;
   }
 

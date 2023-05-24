@@ -26,7 +26,7 @@ public interface TenantService {
    * @param adminUserId the id of admin_user
    * @return tenantDto
    */
-  Tenant save(UUID consortiumId, UUID adminUserId, Tenant tenantDto, boolean forceCreatePrimaryAff);
+  Tenant save(UUID consortiumId, UUID adminUserId, Tenant tenantDto);
 
   /**
    * Updates single tenant based on consortiumId.
@@ -34,9 +34,10 @@ public interface TenantService {
    * @param consortiumId  the consortiumId
    * @param tenantId the tenantId
    * @param tenantDto  the tenantDto
+   * @param forceCreatePrimaryAff force create primary affiliations flag
    * @return tenantDto
    */
-  Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto);
+  Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto, Boolean forceCreatePrimaryAff);
 
   /**
    * Deletes single tenant based on consortiumId.

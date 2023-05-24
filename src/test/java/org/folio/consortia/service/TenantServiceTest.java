@@ -1,6 +1,8 @@
 package org.folio.consortia.service;
 
 import static org.folio.consortia.utils.EntityUtils.createConsortiaConfiguration;
+import static org.folio.consortia.utils.EntityUtils.createTenant;
+import static org.folio.consortia.utils.EntityUtils.createTenantEntity;
 import static org.folio.consortia.utils.EntityUtils.createUserTenantEntity;
 import static org.folio.consortia.utils.InputOutputTestUtils.getMockData;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -23,15 +25,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.folio.consortia.client.ConsortiaConfigurationClient;
+import org.folio.consortia.client.PermissionsClient;
 import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.config.kafka.KafkaService;
-import org.folio.consortia.client.PermissionsClient;
 import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.domain.dto.PermissionUserCollection;
 import org.folio.consortia.domain.dto.Tenant;
-import org.folio.consortia.domain.dto.UserCollection;
-import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.dto.User;
+import org.folio.consortia.domain.dto.UserCollection;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.exception.ResourceNotFoundException;
@@ -39,8 +40,6 @@ import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.impl.TenantServiceImpl;
-import org.folio.consortia.utils.EntityUtils;
-import org.folio.consortia.service.impl.UserTenantServiceImpl;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.junit.jupiter.api.Assertions;
@@ -90,8 +89,6 @@ class TenantServiceTest {
   UserTenantService userTenantService;
   @Mock
   private PermissionsClient permissionsClient;
-  @Mock
-  private UserTenantServiceImpl userTenantService;
   @Mock
   private PermissionUserService permissionUserService;
   @Mock
@@ -155,7 +152,7 @@ class TenantServiceTest {
   void shouldSaveTenantWithExistingAndPermissions() throws JsonProcessingException {
     UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
     TenantEntity tenantEntity1 = createTenantEntity("ABC1", "TestName1");
-    Tenant tenant = EntityUtils.createTenant("TestID", "Test", true);
+    Tenant tenant = createTenant("TestID", "Test", true);
     TenantEntity centralTenant = createTenantEntity("diku", "diku");
     PermissionUser permissionUser = new PermissionUser();
     permissionUser.setPermissions(List.of("users.collection.get"));
@@ -183,7 +180,7 @@ class TenantServiceTest {
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
     when(usersClient.getUserCollection(anyString(), anyInt(), anyInt())).thenReturn(userCollection);
 
-    var tenant1 = tenantService.save(consortiumId, UUID.randomUUID(), tenant, false);
+    var tenant1 = tenantService.save(consortiumId, UUID.randomUUID(), tenant);
     Assertions.assertEquals(tenant, tenant1);
   }
 
@@ -199,7 +196,7 @@ class TenantServiceTest {
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
 
-    var tenant1 = tenantService.update(UUID.fromString(CONSORTIUM_ID), tenant.getId(), tenant);
+    var tenant1 = tenantService.update(UUID.fromString(CONSORTIUM_ID), tenant.getId(), tenant, false);
     Assertions.assertEquals(tenant.getId(), tenant1.getId());
     Assertions.assertEquals("TestName2", tenant1.getName());
   }
@@ -259,7 +256,7 @@ class TenantServiceTest {
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
 
     assertThrows(java.lang.IllegalArgumentException.class, () ->
-      tenantService.update(UUID.fromString(CONSORTIUM_ID), tenant.getId() + "1234", tenant));
+      tenantService.update(UUID.fromString(CONSORTIUM_ID), tenant.getId() + "1234", tenant, false));
   }
 
   @Test
@@ -272,27 +269,27 @@ class TenantServiceTest {
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
 
     assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class, () ->
-      tenantService.update(UUID.fromString(CONSORTIUM_ID), tenant.getId() + "1234", tenant));
+      tenantService.update(UUID.fromString(CONSORTIUM_ID), tenant.getId() + "1234", tenant, false));
   }
 
   @Test
   void shouldThrowResourceAlreadyExistExceptionWhileSavingCentralTenant() {
     UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
-    Tenant tenant = EntityUtils.createTenant("TestID", "Test", true);
+    Tenant tenant = createTenant("TestID", "Test", true);
 
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(tenantRepository.existsById(any())).thenReturn(false);
     when(tenantRepository.existsByIsCentralTrue()).thenReturn(true);
 
     assertThrows(org.folio.consortia.exception.ResourceAlreadyExistException.class,
-      () -> tenantService.save(UUID.fromString(CONSORTIUM_ID), null, tenant, false));
+      () -> tenantService.save(UUID.fromString(CONSORTIUM_ID), null, tenant));
   }
 
   @Test
   void shouldNotSaveTenantForDuplicateId() {
     TenantEntity tenantEntity1 = createTenantEntity("TestID", "Test");
-    Tenant tenant = EntityUtils.createTenant("TestID", "Testq", true);
-    TenantEntity centralTenant = EntityUtils.createTenantEntity("diku", "diku");
+    Tenant tenant = createTenant("TestID", "Testq", true);
+    TenantEntity centralTenant = createTenantEntity("diku", "diku");
 
     when(tenantRepository.existsById(any())).thenReturn(true);
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
@@ -304,7 +301,7 @@ class TenantServiceTest {
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
     assertThrows(org.folio.consortia.exception.ResourceAlreadyExistException.class, () ->
-      tenantService.save(UUID.fromString(CONSORTIUM_ID), null, tenant, false));
+      tenantService.save(UUID.fromString(CONSORTIUM_ID), null, tenant));
   }
 
   @Test
