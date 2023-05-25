@@ -23,7 +23,7 @@ class FolioExecutionContextHelperTest extends BaseTest {
     {
       "users": [
         {
-          "username": "system-user",
+          "username": "mod-consortia-system-user",
           "id": "a85c45b7-d427-4122-8532-5570219c5e59",
           "active": true,
           "departments": [],
@@ -58,7 +58,7 @@ class FolioExecutionContextHelperTest extends BaseTest {
 
     // request to get list of users by 'username' (='data-export-system-user')
     wireMockServer.stubFor(
-      get(urlEqualTo("/users?query=username%3D%3Dmod--system-user"))
+      get(urlEqualTo("/users?query=username%3D%3Dmod-consortia-system-user"))
         .willReturn(aResponse()
           .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
           .withBody(SYSTEM_USER)));
