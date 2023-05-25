@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
-public class FolioExecutionContextHelperTest extends BaseTest {
+class FolioExecutionContextHelperTest extends BaseTest {
 
   @Autowired
   private FolioExecutionContextHelper contextHelper;
@@ -58,7 +58,7 @@ public class FolioExecutionContextHelperTest extends BaseTest {
 
     // request to get list of users by 'username' (='data-export-system-user')
     wireMockServer.stubFor(
-      get(urlEqualTo("/users?query=username%3D%3Dmod-consortia"))
+      get(urlEqualTo("/users?query=username%3D%3Dmod--system-user"))
         .willReturn(aResponse()
           .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
           .withBody(SYSTEM_USER)));

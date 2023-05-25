@@ -30,7 +30,7 @@ import lombok.extern.log4j.Log4j2;
 public class SecurityManagerService {
 
   private static final String PERMISSIONS_FILE_PATH = "permissions/system-user-permissions.csv";
-  private static final String USER_LAST_NAME = "SystemConsortium";
+  private static final String USER_LAST_NAME = "SystemConsortia";
 
   private final PermissionsClient permissionsClient;
   private final UsersClient usersClient;

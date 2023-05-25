@@ -39,10 +39,9 @@ public class FolioExecutionContextHelper {
   }
 
   public FolioExecutionContext getFolioExecutionContext(String tenantId) {
-    Map<String, Collection<String>> tenantOkapiHeaders = new HashMap<>() {{
-      put(XOkapiHeaders.TENANT, List.of(tenantId));
-      put(XOkapiHeaders.URL, List.of(okapiUrl));
-    }};
+    Map<String, Collection<String>> tenantOkapiHeaders = new HashMap<>();
+    tenantOkapiHeaders.put(XOkapiHeaders.TENANT, List.of(tenantId));
+    tenantOkapiHeaders.put(XOkapiHeaders.URL, List.of(okapiUrl));
 
     try (var context = new FolioExecutionContextSetter(new DefaultFolioExecutionContext(folioModuleMetadata, tenantOkapiHeaders))) {
       String systemUserToken = authService.getTokenForSystemUser(tenantId, okapiUrl);
