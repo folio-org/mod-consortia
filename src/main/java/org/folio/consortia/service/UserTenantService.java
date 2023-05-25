@@ -1,11 +1,10 @@
 package org.folio.consortia.service;
 
-import org.folio.consortia.domain.dto.UserEvent;
+import java.util.UUID;
+
 import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.domain.entity.TenantEntity;
-
-import java.util.UUID;
 
 /**
  * Service to work with user tenant associations, it provides ability to add association between user and tenant
