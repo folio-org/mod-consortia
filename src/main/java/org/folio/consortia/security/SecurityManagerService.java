@@ -1,28 +1,28 @@
 package org.folio.consortia.security;
 
-import com.google.common.io.Resources;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-
 import org.folio.consortia.client.PermissionsClient;
 import org.folio.consortia.client.UsersClient;
-
+import org.folio.consortia.domain.dto.Permission;
+import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.domain.dto.Personal;
 import org.folio.consortia.domain.dto.SystemUserParameters;
 import org.folio.consortia.domain.dto.User;
-import org.folio.consortia.domain.dto.Permission;
-import org.folio.consortia.domain.dto.PermissionUser;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import com.google.common.io.Resources;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @Component
 @Log4j2
@@ -52,18 +52,18 @@ public class SecurityManagerService {
     } else {
       user = createUser(username);
       authService.saveCredentials(SystemUserParameters.builder()
-          .id(UUID.randomUUID())
-          .username(username)
-          .password(password)
-          .okapiUrl(okapiUrl)
-          .tenantId(tenantId)
-          .build());
+        .id(UUID.randomUUID())
+        .username(username)
+        .password(password)
+        .okapiUrl(okapiUrl)
+        .tenantId(tenantId)
+        .build());
     }
 
     Optional<PermissionUser> permissionUserOptional = permissionsClient.get("userId==" + user.getId())
-        .getPermissionUsers()
-        .stream()
-        .findFirst();
+      .getPermissionUsers()
+      .stream()
+      .findFirst();
     if (permissionUserOptional.isPresent()) {
       addPermissions(permissionUserOptional.get());
     } else {
@@ -72,7 +72,10 @@ public class SecurityManagerService {
   }
 
   private Optional<User> getUser(String username) {
-    return usersClient.getUsersByQuery("username==" + username).getUsers().stream().findFirst();
+    return usersClient.getUsersByQuery("username==" + username)
+      .getUsers()
+      .stream()
+      .findFirst();
   }
 
   private User createUser(String username) {

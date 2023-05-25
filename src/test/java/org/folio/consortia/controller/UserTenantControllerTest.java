@@ -21,6 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -62,7 +63,7 @@ class UserTenantControllerTest extends BaseTest {
   private ConsortiumRepository consortiumRepository;
   @MockBean
   private UserTenantRepository userTenantRepository;
-  @MockBean
+  @SpyBean
   private UsersClient usersClient;
 
 

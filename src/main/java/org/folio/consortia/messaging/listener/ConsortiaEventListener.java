@@ -2,6 +2,8 @@ package org.folio.consortia.messaging.listener;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+
+import org.folio.consortia.config.FolioExecutionContextHelper;
 import org.folio.consortia.service.ConsortiaConfigurationService;
 import org.folio.consortia.service.UserAffiliationService;
 import org.folio.spring.FolioModuleMetadata;
@@ -25,6 +27,7 @@ public class ConsortiaEventListener {
   private final UserAffiliationService userAffiliationService;
   private final ConsortiaConfigurationService configurationService;
   private final FolioModuleMetadata folioMetadata;
+  private final FolioExecutionContextHelper contextHelper;
 
   @KafkaListener(
     id = USER_CREATED_LISTENER_ID,
@@ -55,8 +58,7 @@ public class ConsortiaEventListener {
     String centralTenantId;
 
     // getting central tenant for this requested tenant from get central in its own schema
-    try (var context = new FolioExecutionContextSetter(createFolioExecutionContext(
-      messageHeaders, folioMetadata, requestedTenantId))) {
+    try (var context = new FolioExecutionContextSetter(contextHelper.getFolioExecutionContext(requestedTenantId))) {
       centralTenantId = configurationService.getCentralTenantId(requestedTenantId);
     }
 
