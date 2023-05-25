@@ -3,7 +3,6 @@ package org.folio.consortia.service;
 import static org.folio.consortia.utils.EntityUtils.createConsortiaConfiguration;
 import static org.folio.consortia.utils.EntityUtils.createTenant;
 import static org.folio.consortia.utils.EntityUtils.createTenantEntity;
-import static org.folio.consortia.utils.EntityUtils.createUserTenantEntity;
 import static org.folio.consortia.utils.InputOutputTestUtils.getMockData;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -12,8 +11,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -34,7 +31,6 @@ import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.dto.UserCollection;
 import org.folio.consortia.domain.entity.TenantEntity;
-import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.TenantRepository;
@@ -71,6 +67,10 @@ class TenantServiceTest {
   private TenantRepository tenantRepository;
   @Mock
   private UserTenantRepository userTenantRepository;
+  @Mock
+  private UserAffiliationService userAffiliationService;
+  @Mock
+  private UserAffiliationAsyncService userAffiliationAsyncService;
   @Mock
   private ConversionService conversionService;
   @Mock
@@ -302,25 +302,6 @@ class TenantServiceTest {
 
     assertThrows(org.folio.consortia.exception.ResourceAlreadyExistException.class, () ->
       tenantService.save(UUID.fromString(CONSORTIUM_ID), null, tenant));
-  }
-
-  @Test
-  void createPrimaryUserAffiliationsAsyncSuccessTest() throws JsonProcessingException {
-    UUID consortiumId = UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002");
-    TenantEntity tenantEntity1 = createTenantEntity("ABC1", "TestName1");
-    tenantEntity1.setConsortiumId(consortiumId);
-    UserTenantEntity userTenantEntity = createUserTenantEntity(UUID.randomUUID());
-    Tenant tenant = createTenant("TestID", "Test");
-
-    var userCollectionString = getMockData("mockdata/user_collection.json");
-    UserCollection userCollection = new ObjectMapper().readValue(userCollectionString, UserCollection.class);
-
-    // stub collection of 2 users
-    when(usersClient.getUserCollection(anyString(), anyInt(), anyInt())).thenReturn(userCollection);
-    when(userTenantRepository.findByUserIdAndTenantId(any(), anyString())).thenReturn(Optional.of(userTenantEntity));
-
-    tenantService.createPrimaryUserAffiliationsAsync(consortiumId, tenantEntity1, tenant, UUID.randomUUID()).join();
-    verify(userTenantService, times(2)).createPrimaryUserTenantAffiliation(any(), any(), anyString(), anyString());
   }
 
   @Test
