@@ -113,9 +113,6 @@ public class TenantServiceImpl implements TenantService {
   }
 
 
-
-
-
   @Override
   public Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto, Boolean forceCreatePrimaryAff) {
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
