@@ -56,7 +56,7 @@ public class SecurityManagerService {
         .username(username)
         .password(password)
         .okapiUrl(okapiUrl)
-        .tenantId(tenantId)
+        .tenant(tenantId)
         .build());
     }
 
