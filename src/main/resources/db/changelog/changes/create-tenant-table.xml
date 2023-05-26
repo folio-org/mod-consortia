@@ -38,7 +38,7 @@
   <changeSet id="MODCON-23@add-metadata-fields" author="singhAdesh">
     <addColumn tableName="tenant">
       <column name="created_by" type="UUID"/>
-      <column name="created_date" type="TIMESTAMP WITHOUT TIME ZONE" defaultValueComputed="NOW()">
+      <column name="created_date" type="timestamp without time zone" defaultValueComputed="now()">
         <constraints nullable="false"/>
       </column>
       <column name="updated_by" type="UUID"/>
