@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * FolioAuditorAware class is been used for populating "createdBy" field automatically while performing any DB operation.
+ * FolioAuditorAware class is being used for populating "createdBy" field automatically while performing any DB operation.
  * getCurrentAuditor() is needed to get current logged in user.
  */
 @Configuration
