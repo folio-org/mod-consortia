@@ -65,19 +65,32 @@ class TenantControllerTest extends BaseTest {
   private static final String TENANT_REQUEST_BODY = "{\"id\":\"diku1234\",\"code\":\"TST\",\"name\":\"diku_tenant_name1234\", \"isCentral\":false}";
   private static final String CONSORTIUM_ID = "7698e46-c3e3-11ed-afa1-0242ac120002";
   private static final String CENTRAL_TENANT_ID = "diku";
-  @MockBean ConsortiumRepository consortiumRepository;
-  @MockBean TenantRepository tenantRepository;
-  @MockBean UserTenantRepository userTenantRepository;
-  @MockBean ConsortiaConfigurationServiceImpl configurationService;
-  @MockBean ConsortiaConfigurationClient configurationClient;
-  @MockBean UserTenantService userTenantService;
-  @MockBean UserService userService;
-  @MockBean FolioExecutionContextHelper contextHelper;
 
-  @Mock FolioModuleMetadata folioModuleMetadata;
-  @Mock FolioExecutionContext folioExecutionContext = new FolioExecutionContext() {};
-  @MockBean PermissionsClient permissionsClient;
-  @SpyBean UsersClient usersClient;
+  @MockBean
+  ConsortiumRepository consortiumRepository;
+  @MockBean
+  TenantRepository tenantRepository;
+  @MockBean
+  UserTenantRepository userTenantRepository;
+  @MockBean
+  ConsortiaConfigurationServiceImpl configurationService;
+  @MockBean
+  ConsortiaConfigurationClient configurationClient;
+  @MockBean
+  UserTenantService userTenantService;
+  @MockBean
+  UserService userService;
+  @MockBean
+  FolioExecutionContextHelper contextHelper;
+  @Mock
+  FolioModuleMetadata folioModuleMetadata;
+  @Mock
+  FolioExecutionContext folioExecutionContext = new FolioExecutionContext() {};
+  @MockBean
+  PermissionsClient permissionsClient;
+  @SpyBean
+  UsersClient usersClient;
+
   /* Success cases */
   @Test
   void getTenants() throws Exception {

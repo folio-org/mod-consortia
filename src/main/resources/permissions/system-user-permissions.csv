@@ -1,5 +1,6 @@
 consortia.consortia-configuration.item.post
 users.collection.get
+users.item.get
 users.item.post
 users.item.put
 perms.users.item.put
@@ -7,3 +8,4 @@ perms.users.item.post
 perms.users.item.delete
 perms.users.assign.immutable
 perms.users.assign.mutable
+perms.users.get

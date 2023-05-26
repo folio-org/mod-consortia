@@ -44,7 +44,7 @@ public class AuthService {
 
     var token = authResponse.getHeaders().get(XOkapiHeaders.TOKEN);
     if (isNotEmpty(token)) {
-      log.info("Logged in as {}.", username);
+      log.info("Logged in as {} in tenant {}", username, tenant);
       userParameters.setOkapiToken(token.get(0));
     } else {
       log.error("Can't get token logging in as {}.", username);
