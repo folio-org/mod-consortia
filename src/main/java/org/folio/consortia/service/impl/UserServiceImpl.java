@@ -3,9 +3,11 @@ package org.folio.consortia.service.impl;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.folio.consortia.client.UserTenantsClient;
 import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.domain.dto.Personal;
 import org.folio.consortia.domain.dto.User;
+import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.exception.ConsortiumClientException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.UserService;
@@ -28,6 +30,7 @@ public class UserServiceImpl implements UserService {
   private static final String USER_ID = "userId";
 
   private final UsersClient usersClient;
+  private final UserTenantsClient userTenantsClient;
   private final FolioExecutionContext folioExecutionContext;
   private final FolioModuleMetadata folioModuleMetadata;
   private static final Integer RANDOM_STRING_COUNT = 5;
@@ -90,4 +93,13 @@ public class UserServiceImpl implements UserService {
     }
   }
 
+  @Override
+  public UserTenant createUserTenant(UserTenant userTenant) {
+    log.info("Creating userTenant with dummy user with id {}.", userTenant.getId());
+//  Dummy user will be used to support cross-tenant requests checking in mod-authtoken,
+//  if user-tenant table contains some record in institutional tenant - it means mod-consortia enabled for
+//  this tenant and will allow cross-tenant request.
+    userTenantsClient.postUserTenants(userTenant);
+    return userTenant;
+  }
 }

@@ -8,7 +8,7 @@ UserTenant:
     userId:
       type: string
       format: uuid
-    username:
+    userName:
       type: string
     tenantId:
       type: string

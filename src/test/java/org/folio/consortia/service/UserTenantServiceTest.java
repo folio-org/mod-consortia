@@ -124,7 +124,7 @@ class UserTenantServiceTest {
 
     // then
     assertEquals(associationId, result.getId());
-    assertEquals("testuser", result.getUsername());
+    assertEquals("testuser", result.getUserName());
   }
 
   @Test
@@ -564,7 +564,7 @@ class UserTenantServiceTest {
     tenant.setTenantName("diku");
     tenant.setUserId(UUID.randomUUID());
     tenant.setId(UUID.randomUUID());
-    tenant.setUsername("Test");
+    tenant.setUserName("Test");
     tenant.setIsPrimary(false);
 
     return tenant;

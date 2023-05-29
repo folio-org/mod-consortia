@@ -80,7 +80,7 @@ public class EntityUtils {
     UserTenant userTenant = new UserTenant();
     userTenant.setId(associationId);
     userTenant.setUserId(UUID.randomUUID());
-    userTenant.setUsername("username");
+    userTenant.setUserName("username");
     userTenant.setTenantId(String.valueOf(UUID.randomUUID()));
     userTenant.setIsPrimary(true);
     return userTenant;

@@ -8,6 +8,7 @@ import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
 import org.folio.consortia.domain.dto.User;
+import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.exception.ResourceAlreadyExistException;
@@ -40,6 +41,7 @@ public class TenantServiceImpl implements TenantService {
   private static final String TENANTS_IDS_NOT_MATCHED_ERROR_MSG = "Request body tenantId and path param tenantId should be identical";
   private static final String TENANT_HAS_ACTIVE_USER_ASSOCIATIONS_ERROR_MSG = "Cannot delete tenant with ID {tenantId} because it has an association with a user. " +
     "Please remove the user association before attempting to delete the tenant.";
+  private static final String DUMMY_USERNAME = "dummy_user";
   private final TenantRepository tenantRepository;
   private final UserTenantRepository userTenantRepository;
   private final ConversionService converter;
@@ -95,10 +97,25 @@ public class TenantServiceImpl implements TenantService {
 
     try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantDto.getId(), folioModuleMetadata, currentTenantContext))) {
       createShadowAdminUserWithPermissions(shadowAdminUser);
+      saveDummyUser(tenantDto.getId());
       configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
     }
     log.info("save:: saved consortia configuration with centralTenantId={} by tenantId={} context", centralTenantId, tenantDto.getId());
     return savedTenant;
+  }
+
+  private void saveDummyUser(String tenantId) {
+    UserTenant userTenant = createUserTenantWithDummyUser(tenantId);
+    userService.createUserTenant(userTenant);
+  }
+
+  private UserTenant createUserTenantWithDummyUser(String tenantId) {
+    UserTenant userTenant = new UserTenant();
+    userTenant.setId(UUID.randomUUID());
+    userTenant.setTenantId(tenantId);
+    userTenant.setUserId(UUID.randomUUID());
+    userTenant.setUserName(DUMMY_USERNAME);
+    return userTenant;
   }
 
   @Override
