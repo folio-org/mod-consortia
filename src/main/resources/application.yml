@@ -51,8 +51,8 @@ folio:
     validation:
       enabled: true
   system:
-    username: mod-consortia-system-user
-    password: ${SYSTEM_USER_PASSWORD:mod-consortia-system-user}
+    username: consortia-system-user
+    password: ${SYSTEM_USER_PASSWORD:consortia-system-user}
 feign:
   client:
     config:

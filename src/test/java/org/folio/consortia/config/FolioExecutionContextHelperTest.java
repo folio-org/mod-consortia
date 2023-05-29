@@ -23,7 +23,7 @@ class FolioExecutionContextHelperTest extends BaseTest {
     {
       "users": [
         {
-          "username": "mod-consortia-system-user",
+          "username": "consortia-system-user",
           "id": "a85c45b7-d427-4122-8532-5570219c5e59",
           "active": true,
           "departments": [],
@@ -50,21 +50,21 @@ class FolioExecutionContextHelperTest extends BaseTest {
 
   @Test
   void shouldGetFolioExecutionContext() {
-    // request to get token for 'mod-consortia-system-user'
+    // request to get token for 'consortia-system-user'
     wireMockServer.stubFor(
       post(urlEqualTo("/authn/login"))
         .willReturn(aResponse()
           .withHeader(XOkapiHeaders.TOKEN, TOKEN)));
 
-    // request to get list of users by 'username' (='mod-consortia-system-user')
+    // request to get list of users by 'username' (='consortia-system-user')
     wireMockServer.stubFor(
-      get(urlEqualTo("/users?query=username%3D%3Dmod-consortia-system-user"))
+      get(urlEqualTo("/users?query=username%3D%3Dconsortia-system-user"))
         .willReturn(aResponse()
           .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
           .withBody(SYSTEM_USER)));
 
-    // 'execution context' should be created according to 'mod-consortia-system-user' headers
-    FolioExecutionContext executionContext = contextHelper.getFolioExecutionContext(TENANT);
+    // 'execution context' should be created according to 'consortia-system-user' headers
+    FolioExecutionContext executionContext = contextHelper.getSystemUserFolioExecutionContext(TENANT);
 
     assertEquals(TENANT, executionContext.getTenantId());
     assertEquals(wireMockServer.baseUrl(), executionContext.getOkapiUrl());
@@ -80,7 +80,7 @@ class FolioExecutionContextHelperTest extends BaseTest {
         .willReturn(aResponse()));
 
     // should get exception: verify exception type and message
-    Exception exception = assertThrows(IllegalStateException.class, () -> contextHelper.getFolioExecutionContext(TENANT));
+    Exception exception = assertThrows(IllegalStateException.class, () -> contextHelper.getSystemUserFolioExecutionContext(TENANT));
     assertEquals(String.format("Cannot create FolioExecutionContext for Tenant: %s because of absent token", TENANT), exception.getMessage());
   }
 }

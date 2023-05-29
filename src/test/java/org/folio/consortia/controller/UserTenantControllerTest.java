@@ -5,7 +5,6 @@ import feign.Request;
 import feign.RequestTemplate;
 import feign.Response;
 import org.folio.consortia.client.UsersClient;
-import org.folio.consortia.config.FolioExecutionContextHelper;
 import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.domain.entity.UserTenantEntity;
@@ -14,7 +13,6 @@ import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.consortia.support.BaseTest;
-import org.folio.spring.FolioExecutionContext;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,9 +39,7 @@ import static org.folio.consortia.utils.EntityUtils.createUserTenant;
 import static org.folio.consortia.utils.EntityUtils.createUserTenantEntity;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -70,11 +66,6 @@ class UserTenantControllerTest extends BaseTest {
   private UserTenantRepository userTenantRepository;
   @SpyBean
   private UsersClient usersClient;
-  @MockBean
-  FolioExecutionContextHelper contextHelper;
-  @Mock
-  FolioExecutionContext folioExecutionContext = new FolioExecutionContext() {};
-
 
   @Test
   void shouldGetUserTenantsByUserId() {
@@ -168,9 +159,9 @@ class UserTenantControllerTest extends BaseTest {
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(userTenantRepository.findByUserIdAndTenantId(any(), any())).thenReturn(Optional.of(userTenantEntity));
     doNothing().when(userTenantRepository).deleteByUserIdAndTenantId(any(), any());
-    doReturn(folioExecutionContext).when(contextHelper).getFolioExecutionContext(anyString());
     doThrow(FeignException.Forbidden.errorStatus("getByUserId", createForbiddenResponse(PERMISSION_EXCEPTION_MSG)))
       .when(usersClient).getUsersByUserId(any());
+
     this.mockMvc.perform(
         delete("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/user-tenants?userId=7698e46-c3e3-11ed-afa1-0242ac120001&tenantId=diku")
           .headers(headers))
@@ -188,7 +179,6 @@ class UserTenantControllerTest extends BaseTest {
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(userTenantRepository.findByUserIdAndTenantId(any(), any())).thenReturn(Optional.of(userTenantEntity));
     doNothing().when(userTenantRepository).deleteByUserIdAndTenantId(any(), any());
-    doReturn(folioExecutionContext).when(contextHelper).getFolioExecutionContext(anyString());
     doThrow(FeignException.errorStatus("getByUserId", createUnknownResponse("network error")))
       .when(usersClient).getUsersByUserId(any());
 

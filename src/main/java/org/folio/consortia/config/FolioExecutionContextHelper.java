@@ -38,7 +38,7 @@ public class FolioExecutionContextHelper {
     securityManagerService.prepareSystemUser(folioExecutionContext.getOkapiUrl(), folioExecutionContext.getTenantId());
   }
 
-  public FolioExecutionContext getFolioExecutionContext(String tenantId) {
+  public FolioExecutionContext getSystemUserFolioExecutionContext(String tenantId) {
     Map<String, Collection<String>> tenantOkapiHeaders = new HashMap<>();
     tenantOkapiHeaders.put(XOkapiHeaders.TENANT, List.of(tenantId));
     tenantOkapiHeaders.put(XOkapiHeaders.URL, List.of(okapiUrl));

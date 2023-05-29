@@ -29,7 +29,7 @@ class SecurityManagerServiceTest extends BaseTest {
       "{\n"
           + "    \"users\": [\n"
           + "        {\n"
-          + "            \"username\": \"mod-consortia-system-user\",\n"
+          + "            \"username\": \"consortia-system-user\",\n"
           + "            \"id\": \"a85c45b7-d427-4122-8532-5570219c5e59\",\n"
           + "            \"active\": true,\n"
           + "            \"departments\": [],\n"
@@ -62,7 +62,7 @@ class SecurityManagerServiceTest extends BaseTest {
   void prepareSystemUser() {
 
     wireMockServer.stubFor(
-        get(urlEqualTo("/users?query=username%3D%3Dmod-consortia-system-user"))
+        get(urlEqualTo("/users?query=username%3D%3Dconsortia-system-user"))
             .willReturn(
                 aResponse()
                     .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
@@ -86,7 +86,7 @@ class SecurityManagerServiceTest extends BaseTest {
     }
 
     wireMockServer.verify(
-        getRequestedFor(urlEqualTo("/users?query=username%3D%3Dmod-consortia-system-user")));
+        getRequestedFor(urlEqualTo("/users?query=username%3D%3Dconsortia-system-user")));
     wireMockServer.verify(
         putRequestedFor(urlEqualTo("/users/a85c45b7-d427-4122-8532-5570219c5e59")));
   }

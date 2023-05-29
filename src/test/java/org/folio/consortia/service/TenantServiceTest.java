@@ -127,7 +127,7 @@ class TenantServiceTest {
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
     doNothing().when(configurationClient).saveConfiguration(createConsortiaConfiguration(CENTRAL_TENANT_ID));
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
-    doReturn(folioExecutionContext).when(contextHelper).getFolioExecutionContext(anyString());
+    doReturn(folioExecutionContext).when(contextHelper).getSystemUserFolioExecutionContext(anyString());
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
     when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
 
@@ -158,7 +158,7 @@ class TenantServiceTest {
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
     doNothing().when(configurationClient).saveConfiguration(createConsortiaConfiguration(CENTRAL_TENANT_ID));
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
-    doReturn(folioExecutionContext).when(contextHelper).getFolioExecutionContext(anyString());
+    doReturn(folioExecutionContext).when(contextHelper).getSystemUserFolioExecutionContext(anyString());
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
     when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
 

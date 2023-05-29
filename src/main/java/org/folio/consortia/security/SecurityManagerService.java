@@ -10,6 +10,7 @@ import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.domain.dto.Personal;
 import org.folio.consortia.domain.dto.SystemUserParameters;
 import org.folio.consortia.domain.dto.User;
+import org.folio.consortia.service.UserService;
 import org.folio.consortia.service.PermissionUserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -29,6 +30,7 @@ public class SecurityManagerService {
   private final UsersClient usersClient;
   private final AuthService authService;
   private final PermissionUserService permissionUserService;
+  private final UserService userService;
 
   @Value("${folio.system.username}")
   private String username;
@@ -37,7 +39,7 @@ public class SecurityManagerService {
   private String password;
 
   public void prepareSystemUser(String okapiUrl, String tenantId) {
-    Optional<User> userOptional = getUser(username);
+    Optional<User> userOptional = userService.getByUsername(username);
 
     User user;
     if (userOptional.isPresent()) {
@@ -65,13 +67,6 @@ public class SecurityManagerService {
     }
   }
 
-  private Optional<User> getUser(String username) {
-    return usersClient.getUsersByQuery("username==" + username)
-      .getUsers()
-      .stream()
-      .findFirst();
-  }
-
   private User createUser(String username) {
     var result = createUserObject(username);
     log.info("Creating {}.", result);
@@ -92,8 +87,7 @@ public class SecurityManagerService {
   private User createUserObject(String username) {
     final var result = new User();
 
-    result.setId(UUID.randomUUID()
-      .toString());
+    result.setId(UUID.randomUUID().toString());
     result.setActive(true);
     result.setUsername(username);
 
@@ -103,15 +97,12 @@ public class SecurityManagerService {
   }
 
   private boolean existingUserUpToDate(User user) {
-    return user.getPersonal() != null && StringUtils.isNotBlank(user.getPersonal()
-      .getLastName());
+    return user.getPersonal() != null && StringUtils.isNotBlank(user.getPersonal().getLastName());
   }
 
-  private User populateMissingUserProperties(User user) {
+  private void populateMissingUserProperties(User user) {
     user.setPersonal(new Personal());
-    user.getPersonal()
-      .setLastName(USER_LAST_NAME);
-    return user;
+    user.getPersonal().setLastName(USER_LAST_NAME);
   }
 
 }

@@ -69,7 +69,7 @@ class UserServiceTest {
   void shouldThrowNotFoundWhilePrepareShadowUser() {
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
     doReturn(folioExecutionContext).when(contextHelper)
-      .getFolioExecutionContext(anyString());
+      .getSystemUserFolioExecutionContext(anyString());
 
     Mockito.when(usersClient.getUsersByUserId(any()))
       .thenReturn(new User());
@@ -80,7 +80,7 @@ class UserServiceTest {
   void shouldPrepareShadowUser() {
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
     doReturn(folioExecutionContext).when(contextHelper)
-      .getFolioExecutionContext(anyString());
+      .getSystemUserFolioExecutionContext(anyString());
 
     Mockito.when(usersClient.getUsersByUserId(any()))
       .thenReturn(createUserEntity(true));

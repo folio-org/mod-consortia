@@ -129,7 +129,7 @@ class TenantControllerTest extends BaseTest {
 
     when(userService.prepareShadowUser(any(), any())).thenReturn(user);
     when(userService.getById(any())).thenReturn(user);
-    doReturn(folioExecutionContext).when(contextHelper).getFolioExecutionContext(anyString());
+    doReturn(folioExecutionContext).when(contextHelper).getSystemUserFolioExecutionContext(anyString());
     doReturn(new User()).when(usersClient).getUsersByUserId(any());
     doReturn(permissionUserCollection).when(permissionsClient).get(anyString());
     doNothing().when(permissionsClient).addPermission(anyString(), any());

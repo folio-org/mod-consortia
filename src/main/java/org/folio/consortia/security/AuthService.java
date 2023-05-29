@@ -6,9 +6,9 @@ import java.util.Optional;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.consortia.client.AuthClient;
-import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.domain.dto.SystemUserParameters;
 import org.folio.consortia.domain.dto.User;
+import org.folio.consortia.service.UserService;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +23,7 @@ import lombok.extern.log4j.Log4j2;
 public class AuthService {
 
   private final AuthClient authClient;
-  private final UsersClient usersClient;
+  private final UserService userService;
 
   @Value("${folio.system.username}")
   private String username;
@@ -55,17 +55,13 @@ public class AuthService {
   }
 
   public String getSystemUserId() {
-    Optional<User> optionalUser = usersClient.getUsersByQuery("username==" + username)
-      .getUsers()
-      .stream()
-      .findFirst();
+    Optional<User> optionalUser = userService.getByUsername(username);
 
     if (optionalUser.isEmpty()) {
       log.error("Can't find user id by username {}.", username);
       return null;
     }
-    return optionalUser.get()
-      .getId();
+    return optionalUser.get().getId();
   }
 
   private boolean isNotEmpty(List<String> token) {
