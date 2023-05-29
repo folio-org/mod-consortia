@@ -68,7 +68,7 @@ public class SecurityManagerService {
 
   private void updateUser(User user) {
     if (existingUserUpToDate(user)) {
-      log.info("{} is up to date.", user);
+      log.info("{} is up to date.", user.getId());
     } else {
       populateMissingUserProperties(user);
       userService.updateUser(user);
