@@ -50,20 +50,20 @@ class FolioExecutionContextHelperTest extends BaseTest {
 
   @Test
   void shouldGetFolioExecutionContext() {
-    // request to get token for 'data-export-system-user'
+    // request to get token for 'mod-consortia-system-user'
     wireMockServer.stubFor(
       post(urlEqualTo("/authn/login"))
         .willReturn(aResponse()
           .withHeader(XOkapiHeaders.TOKEN, TOKEN)));
 
-    // request to get list of users by 'username' (='data-export-system-user')
+    // request to get list of users by 'username' (='mod-consortia-system-user')
     wireMockServer.stubFor(
       get(urlEqualTo("/users?query=username%3D%3Dmod-consortia-system-user"))
         .willReturn(aResponse()
           .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
           .withBody(SYSTEM_USER)));
 
-    // 'execution context' should be created according to 'data-export-system-user' headers
+    // 'execution context' should be created according to 'mod-consortia-system-user' headers
     FolioExecutionContext executionContext = contextHelper.getFolioExecutionContext(TENANT);
 
     assertEquals(TENANT, executionContext.getTenantId());

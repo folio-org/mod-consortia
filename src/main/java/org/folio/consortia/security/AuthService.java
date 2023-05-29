@@ -1,7 +1,8 @@
 package org.folio.consortia.security;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import java.util.List;
+import java.util.Optional;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.consortia.client.AuthClient;
@@ -13,7 +14,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @Service
 @Log4j2
@@ -30,19 +32,19 @@ public class AuthService {
   private String password;
 
   public String getTokenForSystemUser(String tenant, String url) {
-    SystemUserParameters userParameters =
-        SystemUserParameters.builder()
-            .okapiUrl(url)
-            .tenant(tenant)
-            .username(username)
-            .password(password)
-            .build();
+    SystemUserParameters userParameters = SystemUserParameters.builder()
+      .okapiUrl(url)
+      .tenant(tenant)
+      .username(username)
+      .password(password)
+      .build();
 
     log.info("Attempt login with url={} tenant={} username={}.", url, tenant, username);
 
     ResponseEntity<String> authResponse = authClient.getApiKey(userParameters);
 
-    var token = authResponse.getHeaders().get(XOkapiHeaders.TOKEN);
+    var token = authResponse.getHeaders()
+      .get(XOkapiHeaders.TOKEN);
     if (isNotEmpty(token)) {
       log.info("Logged in as {} in tenant {}", username, tenant);
       userParameters.setOkapiToken(token.get(0));
@@ -53,16 +55,20 @@ public class AuthService {
   }
 
   public String getSystemUserId() {
-    Optional<User> optionalUser = usersClient.getUsersByQuery("username==" + username).getUsers().stream().findFirst();
+    Optional<User> optionalUser = usersClient.getUsersByQuery("username==" + username)
+      .getUsers()
+      .stream()
+      .findFirst();
 
     if (optionalUser.isEmpty()) {
       log.error("Can't find user id by username {}.", username);
       return null;
     }
-    return optionalUser.get().getId();
+    return optionalUser.get()
+      .getId();
   }
 
-  private boolean isNotEmpty(java.util.List<String> token) {
+  private boolean isNotEmpty(List<String> token) {
     return CollectionUtils.isNotEmpty(token) && StringUtils.isNotBlank(token.get(0));
   }
 
