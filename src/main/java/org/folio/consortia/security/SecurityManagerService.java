@@ -78,8 +78,7 @@ public class SecurityManagerService {
   private User createUserObject(String username) {
     final var result = new User();
 
-    result.setId(UUID.randomUUID()
-      .toString());
+    result.setId(UUID.randomUUID().toString());
     result.setActive(true);
     result.setUsername(username);
 
@@ -89,14 +88,12 @@ public class SecurityManagerService {
   }
 
   private boolean existingUserUpToDate(User user) {
-    return user.getPersonal() != null && StringUtils.isNotBlank(user.getPersonal()
-      .getLastName());
+    return user.getPersonal() != null && StringUtils.isNotBlank(user.getPersonal().getLastName());
   }
 
   private void populateMissingUserProperties(User user) {
     user.setPersonal(new Personal());
-    user.getPersonal()
-      .setLastName(USER_LAST_NAME);
+    user.getPersonal().setLastName(USER_LAST_NAME);
   }
 
 }

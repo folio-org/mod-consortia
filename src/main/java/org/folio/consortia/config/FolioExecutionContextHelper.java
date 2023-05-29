@@ -1,14 +1,9 @@
 package org.folio.consortia.config;
 
-import static java.util.Objects.nonNull;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 
 import org.apache.commons.lang3.StringUtils;
 import org.folio.consortia.security.AuthService;
@@ -20,6 +15,9 @@ import org.folio.spring.integration.XOkapiHeaders;
 import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @Component
 @Log4j2
@@ -54,7 +52,7 @@ public class FolioExecutionContextHelper {
 
     try (var context = new FolioExecutionContextSetter(new DefaultFolioExecutionContext(folioModuleMetadata, tenantOkapiHeaders))) {
       String systemUserId = authService.getSystemUserId();
-      if (nonNull(systemUserId)) {
+      if (StringUtils.isNotEmpty(systemUserId)) {
         tenantOkapiHeaders.put(XOkapiHeaders.USER_ID, List.of(systemUserId));
       }
     }

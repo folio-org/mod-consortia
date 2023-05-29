@@ -43,8 +43,7 @@ public class AuthService {
 
     ResponseEntity<String> authResponse = authClient.getApiKey(userParameters);
 
-    var token = authResponse.getHeaders()
-      .get(XOkapiHeaders.TOKEN);
+    var token = authResponse.getHeaders().get(XOkapiHeaders.TOKEN);
     if (isNotEmpty(token)) {
       log.info("Logged in as {} in tenant {}", username, tenant);
       userParameters.setOkapiToken(token.get(0));
