@@ -41,6 +41,7 @@ public class UserServiceImpl implements UserService {
   }
 
   public void updateUser(User user) {
+    log.info("Updating User '{}'.", user);
     usersClient.updateUser(user.getId(), user);
   }
 

@@ -4,14 +4,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
-import org.folio.consortia.client.PermissionsClient;
-import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.domain.dto.Personal;
 import org.folio.consortia.domain.dto.SystemUserParameters;
 import org.folio.consortia.domain.dto.User;
-import org.folio.consortia.service.UserService;
 import org.folio.consortia.service.PermissionUserService;
+import org.folio.consortia.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -26,10 +24,8 @@ public class SecurityManagerService {
   private static final String PERMISSIONS_FILE_PATH = "permissions/system-user-permissions.csv";
   private static final String USER_LAST_NAME = "SystemConsortia";
 
-  private final PermissionsClient permissionsClient;
-  private final UsersClient usersClient;
-  private final AuthService authService;
   private final PermissionUserService permissionUserService;
+  private final AuthService authService;
   private final UserService userService;
 
   @Value("${folio.system.username}")
@@ -56,10 +52,7 @@ public class SecurityManagerService {
         .build());
     }
 
-    Optional<PermissionUser> permissionUserOptional = permissionsClient.get("userId==" + user.getId())
-      .getPermissionUsers()
-      .stream()
-      .findFirst();
+    Optional<PermissionUser> permissionUserOptional = permissionUserService.getByUserId(user.getId());
     if (permissionUserOptional.isPresent()) {
       permissionUserService.addPermissions(permissionUserOptional.get(), PERMISSIONS_FILE_PATH);
     } else {
@@ -69,8 +62,7 @@ public class SecurityManagerService {
 
   private User createUser(String username) {
     var result = createUserObject(username);
-    log.info("Creating {}.", result);
-    usersClient.saveUser(result);
+    userService.createUser(result);
     return result;
   }
 
@@ -79,15 +71,15 @@ public class SecurityManagerService {
       log.info("{} is up to date.", user);
     } else {
       populateMissingUserProperties(user);
-      log.info("Updating {}.", user);
-      usersClient.updateUser(user.getId(), user);
+      userService.updateUser(user);
     }
   }
 
   private User createUserObject(String username) {
     final var result = new User();
 
-    result.setId(UUID.randomUUID().toString());
+    result.setId(UUID.randomUUID()
+      .toString());
     result.setActive(true);
     result.setUsername(username);
 
@@ -97,12 +89,14 @@ public class SecurityManagerService {
   }
 
   private boolean existingUserUpToDate(User user) {
-    return user.getPersonal() != null && StringUtils.isNotBlank(user.getPersonal().getLastName());
+    return user.getPersonal() != null && StringUtils.isNotBlank(user.getPersonal()
+      .getLastName());
   }
 
   private void populateMissingUserProperties(User user) {
     user.setPersonal(new Personal());
-    user.getPersonal().setLastName(USER_LAST_NAME);
+    user.getPersonal()
+      .setLastName(USER_LAST_NAME);
   }
 
 }
