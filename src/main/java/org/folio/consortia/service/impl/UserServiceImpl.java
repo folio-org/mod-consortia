@@ -18,6 +18,7 @@ import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
@@ -43,6 +44,7 @@ public class UserServiceImpl implements UserService {
   }
 
   public void updateUser(User user) {
+    log.info("Updating User '{}'.", user.getId());
     usersClient.updateUser(user.getId(), user);
   }
 
@@ -59,6 +61,14 @@ public class UserServiceImpl implements UserService {
     } catch (FeignException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  @Override
+  public Optional<User> getByUsername(String username) {
+    return usersClient.getUsersByQuery("username==" + username)
+      .getUsers()
+      .stream()
+      .findFirst();
   }
 
   @Override
