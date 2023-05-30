@@ -1,6 +1,5 @@
 package org.folio.consortia.client;
 
-import org.folio.consortia.domain.dto.UserCollection;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.dto.UserCollection;
 import org.folio.spring.config.FeignClientConfiguration;
