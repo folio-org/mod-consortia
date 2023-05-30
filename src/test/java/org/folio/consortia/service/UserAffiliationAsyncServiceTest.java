@@ -66,6 +66,6 @@ class UserAffiliationAsyncServiceTest {
     userAffiliationAsyncService.createPrimaryUserAffiliationsAsync(consortiumId, tenantEntity1, tenant)
       .join();
     verify(userTenantService, times(2)).createPrimaryUserTenantAffiliation(any(), any(), anyString(), anyString());
-    verify(userTenantRepository, times(2)).save(any());
+    verify(kafkaService, times(2)).send(any(), anyString(), anyString());
   }
 }
