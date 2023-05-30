@@ -82,7 +82,7 @@ public class UserAffiliationAsyncServiceImpl implements UserAffiliationAsyncServ
     event.setId(UUID.randomUUID());
     event.setUserId(UUID.fromString(user.getId()));
     if (StringUtils.isNotBlank(user.getUsername())) { // for delete event username will be empty
-      event.setUserName(user.getUsername());
+      event.setUsername(user.getUsername());
     }
     event.setTenantId(tenantDto.getId());
     return event;

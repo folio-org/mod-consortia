@@ -95,8 +95,6 @@ class TenantServiceTest {
   @Mock
   private UserTenantsClient userTenantsClient;
   @Mock
-  private UserTenantServiceImpl userTenantService;
-  @Mock
   private PermissionUserService permissionUserService;
   @Mock
   private PermissionUserService permissionService;
