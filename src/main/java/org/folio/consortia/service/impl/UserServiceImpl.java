@@ -109,7 +109,7 @@ public class UserServiceImpl implements UserService {
     /* Dummy user will be used to support cross-tenant requests checking in mod-authtoken,
     if user-tenant table contains some record in institutional tenant - it means mod-consortia enabled for
     this tenant and will allow cross-tenant request. */
-    userTenantsClient.postUserTenants(userTenant);
+    userTenantsClient.postUserTenant(userTenant);
     return userTenant;
   }
 }

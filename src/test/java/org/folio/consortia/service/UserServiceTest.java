@@ -5,7 +5,6 @@ import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.domain.dto.Personal;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.dto.UserTenant;
-import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.impl.UserServiceImpl;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.integration.XOkapiHeaders;
@@ -55,11 +54,11 @@ class UserServiceTest {
     userTenant.setId(UUID.randomUUID());
     userTenant.setTenantId("diku");
     userTenant.setUserId(UUID.randomUUID());
-    userTenant.setUserName("DUMMY_USERNAME");
-    doNothing().when(userTenantsClient).postUserTenants(any());
+    userTenant.setUsername("DUMMY_USERNAME");
+    doNothing().when(userTenantsClient).postUserTenant(any());
     UserTenant result = userService.createUserTenant(userTenant);
     Assertions.assertDoesNotThrow(() -> userService.createUserTenant(userTenant));
-    Assertions.assertEquals(result.getUserName(), userTenant.getUserName());
+    Assertions.assertEquals(result.getUsername(), userTenant.getUsername());
   }
 
   @Test

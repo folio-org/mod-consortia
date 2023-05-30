@@ -14,7 +14,6 @@ import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.impl.TenantServiceImpl;
-import org.folio.consortia.service.impl.UserTenantServiceImpl;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.junit.jupiter.api.Assertions;
@@ -77,12 +76,6 @@ class TenantServiceTest {
   private PermissionsClient permissionsClient;
   @Mock
   private UserTenantsClient userTenantsClient;
-  @Mock
-  private UserTenantServiceImpl userTenantService;
-  @Mock
-  private PermissionUserService permissionUserService;
-  @Mock
-  private PermissionUserService permissionService;
   @Mock
   private UserService userService;
   @Mock
