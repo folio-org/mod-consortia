@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.folio.consortia.client.ConsortiaConfigurationClient;
+import org.folio.consortia.config.FolioExecutionContextHelper;
 import org.folio.consortia.domain.dto.ConsortiaConfiguration;
 import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.domain.dto.Tenant;
@@ -24,8 +25,11 @@ import org.folio.consortia.service.PermissionUserService;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserAffiliationAsyncService;
 import org.folio.consortia.service.UserService;
+import org.folio.consortia.service.ConsortiumService;
+import org.folio.consortia.service.PermissionUserService;
+import org.folio.consortia.service.TenantService;
+import org.folio.consortia.service.UserService;
 import org.folio.spring.FolioExecutionContext;
-import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
@@ -35,6 +39,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.folio.consortia.utils.HelperUtils.checkIdenticalOrThrow;
 
 @Service
 @Log4j2
@@ -50,11 +59,10 @@ public class TenantServiceImpl implements TenantService {
   private final ConversionService converter;
   private final ConsortiumService consortiumService;
   private final FolioExecutionContext folioExecutionContext;
-  private final FolioModuleMetadata folioMetadata;
   private final ConsortiaConfigurationClient configurationClient;
   private final PermissionUserService permissionUserService;
   private final UserService userService;
-  private final FolioModuleMetadata folioModuleMetadata;
+  private final FolioExecutionContextHelper contextHelper;
   private final UserAffiliationAsyncService createPrimaryUserAffiliationsAsync;
 
   @Override
@@ -103,7 +111,7 @@ public class TenantServiceImpl implements TenantService {
     User shadowAdminUser = userService.prepareShadowUser(adminUserId, currentTenantContext.getTenantId());
     userTenantRepository.save(createUserTenantEntity(consortiumId, shadowAdminUser, tenantDto));
 
-    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantDto.getId(), folioModuleMetadata, currentTenantContext))) {
+    try (var context = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(tenantDto.getId()))) {
       createShadowAdminUserWithPermissions(shadowAdminUser);
       createPrimaryUserAffiliationsAsync.createPrimaryUserAffiliationsAsync(consortiumId, savedTenantEntity, tenantDto);
       configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));

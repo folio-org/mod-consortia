@@ -25,6 +25,7 @@ import org.folio.consortia.client.ConsortiaConfigurationClient;
 import org.folio.consortia.client.PermissionsClient;
 import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.config.kafka.KafkaService;
+import org.folio.consortia.config.FolioExecutionContextHelper;
 import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.domain.dto.PermissionUserCollection;
 import org.folio.consortia.domain.dto.Tenant;
@@ -51,6 +52,25 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.folio.consortia.utils.EntityUtils.createConsortiaConfiguration;
+import static org.folio.consortia.utils.EntityUtils.createTenant;
+import static org.folio.consortia.utils.EntityUtils.createTenantEntity;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -78,7 +98,7 @@ class TenantServiceTest {
   @Mock
   private ConsortiumService consortiumService;
   @Mock
-  private FolioExecutionContext folioExecutionContext;
+  private FolioExecutionContext folioExecutionContext = new FolioExecutionContext() {};
   @Mock
   private ConsortiaConfigurationClient configurationClient;
   @Mock
@@ -95,6 +115,8 @@ class TenantServiceTest {
   private PermissionUserService permissionService;
   @Mock
   private UserService userService;
+  @Mock
+  private FolioExecutionContextHelper contextHelper;
 
   @Test
   void shouldGetTenantList() {
@@ -138,11 +160,9 @@ class TenantServiceTest {
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
     doNothing().when(configurationClient).saveConfiguration(createConsortiaConfiguration(CENTRAL_TENANT_ID));
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
+    doReturn(folioExecutionContext).when(contextHelper).getSystemUserFolioExecutionContext(anyString());
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
     when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
-    Map<String, Collection<String>> okapiHeaders = new HashMap<>();
-    okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
-    when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
     var tenant1 = tenantService.save(consortiumId, UUID.randomUUID(), tenant);
     Assertions.assertEquals(tenant, tenant1);
@@ -173,6 +193,7 @@ class TenantServiceTest {
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
     doNothing().when(configurationClient).saveConfiguration(createConsortiaConfiguration(CENTRAL_TENANT_ID));
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
+    doReturn(folioExecutionContext).when(contextHelper).getSystemUserFolioExecutionContext(anyString());
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
     when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
     Map<String, Collection<String>> okapiHeaders = new HashMap<>();

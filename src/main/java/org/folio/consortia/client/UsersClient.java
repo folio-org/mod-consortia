@@ -1,5 +1,6 @@
 package org.folio.consortia.client;
 
+import org.folio.consortia.domain.dto.UserCollection;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.dto.UserCollection;
 import org.folio.spring.config.FeignClientConfiguration;
@@ -18,6 +19,9 @@ public interface UsersClient {
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   UserCollection getUserCollection(@RequestParam String query, @RequestParam int offset, @RequestParam int limit);
+
+  @GetMapping
+  UserCollection getUsersByQuery(@RequestParam("query") String query);
 
   @GetMapping(value = "/{userId}")
   User getUsersByUserId(@PathVariable String userId);
