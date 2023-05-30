@@ -26,6 +26,7 @@ import org.folio.consortia.service.impl.UserAffiliationAsyncServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -48,6 +49,8 @@ class UserAffiliationAsyncServiceTest {
   UserTenantService userTenantService;
   @Mock
   KafkaService kafkaService;
+  @Autowired
+  ObjectMapper objectMapper;
 
   @Test
   void createPrimaryUserAffiliationsAsyncSuccessTest() throws JsonProcessingException {

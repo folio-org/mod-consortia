@@ -16,10 +16,7 @@ import org.folio.consortia.service.UserService;
 import org.folio.consortia.service.UserTenantService;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
@@ -34,15 +31,9 @@ public class UserAffiliationAsyncServiceImpl implements UserAffiliationAsyncServ
   private final KafkaService kafkaService;
   private final UserService userService;
   private final UserTenantRepository userTenantRepository;
-  private static final ObjectMapper OBJECT_MAPPER;
 
-  static {
-    OBJECT_MAPPER = new ObjectMapper()
-      .findAndRegisterModules()
-      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-      .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-      .setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-  }
+  private final ObjectMapper objectMapper = new ObjectMapper();
+
   public CompletableFuture<Void> createPrimaryUserAffiliationsAsync(UUID consortiumId, TenantEntity consortiaTenant,
     Tenant tenantDto) {
     return CompletableFuture.runAsync(() -> {
@@ -73,7 +64,7 @@ public class UserAffiliationAsyncServiceImpl implements UserAffiliationAsyncServ
   @SneakyThrows
   private void sendCreatePrimaryAffiliationEvent(TenantEntity consortiaTenant, Tenant tenantDto, User user) {
     PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(user, tenantDto);
-    String data = OBJECT_MAPPER.writeValueAsString(affiliationEvent);
+    String data = objectMapper.writeValueAsString(affiliationEvent);
     kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_CREATED, consortiaTenant.getConsortiumId().toString(), data);
   }
 
