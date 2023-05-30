@@ -1,8 +1,10 @@
 package org.folio.consortia.service;
 
+import org.folio.consortia.client.UserTenantsClient;
 import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.domain.dto.Personal;
 import org.folio.consortia.domain.dto.User;
+import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.impl.UserServiceImpl;
 import org.folio.spring.FolioExecutionContext;
@@ -23,6 +25,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -34,6 +37,8 @@ class UserServiceTest {
   @Mock
   UsersClient usersClient;
   @Mock
+  UserTenantsClient userTenantsClient;
+  @Mock
   FolioExecutionContext folioExecutionContext;
 
   @Test
@@ -42,6 +47,19 @@ class UserServiceTest {
     Mockito.doNothing().when(usersClient).saveUser(user);
     User createdUser = userService.createUser(user);
     Assertions.assertEquals(user, createdUser);
+  }
+
+  @Test
+  void shouldCreateDummyUserTenant() {
+    UserTenant userTenant = new UserTenant();
+    userTenant.setId(UUID.randomUUID());
+    userTenant.setTenantId("diku");
+    userTenant.setUserId(UUID.randomUUID());
+    userTenant.setUserName("DUMMY_USERNAME");
+    doNothing().when(userTenantsClient).postUserTenants(any());
+    UserTenant result = userService.createUserTenant(userTenant);
+    Assertions.assertDoesNotThrow(() -> userService.createUserTenant(userTenant));
+    Assertions.assertEquals(result.getUserName(), userTenant.getUserName());
   }
 
   @Test

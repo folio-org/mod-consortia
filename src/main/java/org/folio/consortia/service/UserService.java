@@ -1,6 +1,7 @@
 package org.folio.consortia.service;
 
 import org.folio.consortia.domain.dto.User;
+import org.folio.consortia.domain.dto.UserTenant;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -56,4 +57,13 @@ public interface UserService {
    * return user.
    */
   User prepareShadowUser(UUID userId, String tenantId);
+
+  /**
+   * Creates user_tenant.
+   *
+   * @param userTenant user_tenant.
+   *
+   * @return userTenant
+   */
+  UserTenant createUserTenant(UserTenant userTenant);
 }
