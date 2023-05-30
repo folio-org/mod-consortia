@@ -2,7 +2,6 @@ package org.folio.consortia.service;
 
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
-import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.entity.TenantEntity;
 
 import java.util.UUID;
@@ -59,13 +58,4 @@ public interface TenantService {
    * @return central tenant id
    */
   String getCentralTenantId();
-
-  /**
-   * Creates user_tenant.
-   *
-   * @param userTenant user_tenant.
-   *
-   * @return userTenant
-   */
-  UserTenant postUserTenant(UserTenant userTenant);
 }

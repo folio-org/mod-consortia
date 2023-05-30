@@ -101,12 +101,6 @@ public class TenantServiceImpl implements TenantService {
 
     try (var context = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(tenantDto.getId()))) {
       createShadowAdminUserWithPermissions(shadowAdminUser);
-
-      /*
-      Dummy user will be used to support cross-tenant requests checking in mod-authtoken,
-      if user-tenant table contains some record in institutional tenant - it means mod-consortia enabled for
-      this tenant and will allow cross-tenant request.
-      */
       saveDummyUser(tenantDto.getId());
       configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
     }
@@ -138,13 +132,19 @@ public class TenantServiceImpl implements TenantService {
     return converter.convert(savedTenant, Tenant.class);
   }
 
-  @Override
-  public UserTenant postUserTenant(UserTenant userTenant) {
+  private UserTenant postUserTenant(UserTenant userTenant) {
     log.info("Creating userTenant with dummy user with id {}.", userTenant.getId());
     userTenantsClient.postUserTenant(userTenant);
     return userTenant;
   }
 
+  /*
+    Dummy user will be used to support cross-tenant requests checking in mod-authtoken,
+    if user-tenant table contains some record in institutional tenant - it means mod-consortia enabled for
+    this tenant and will allow cross-tenant request.
+
+    @param tenantId tenant id
+  */
   private void saveDummyUser(String tenantId) {
     UserTenant userTenant = createUserTenantWithDummyUser(tenantId);
     postUserTenant(userTenant);

@@ -136,6 +136,8 @@ class TenantServiceTest {
     when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
 
     var tenant1 = tenantService.save(consortiumId, UUID.randomUUID(), tenant);
+    Mockito.verify(userTenantsClient, Mockito.times(1)).postUserTenant(any());
+    Mockito.verify(configurationClient, Mockito.times(1)).saveConfiguration(any());
     Assertions.assertEquals(tenant, tenant1);
   }
 
@@ -168,6 +170,8 @@ class TenantServiceTest {
     when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
 
     var tenant1 = tenantService.save(consortiumId, UUID.randomUUID(), tenant);
+    Mockito.verify(userTenantsClient, Mockito.times(1)).postUserTenant(any());
+    Mockito.verify(configurationClient, Mockito.times(1)).saveConfiguration(any());
     Assertions.assertEquals(tenant, tenant1);
   }
 

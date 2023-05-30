@@ -3,7 +3,6 @@ package org.folio.consortia.service.impl;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.folio.consortia.client.UserTenantsClient;
 import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.domain.dto.Personal;
 import org.folio.consortia.domain.dto.User;
@@ -30,7 +29,6 @@ public class UserServiceImpl implements UserService {
   private static final String USER_ID = "userId";
 
   private final UsersClient usersClient;
-  private final UserTenantsClient userTenantsClient;
   private final FolioExecutionContext folioExecutionContext;
   private final FolioModuleMetadata folioModuleMetadata;
   private static final Integer RANDOM_STRING_COUNT = 5;
