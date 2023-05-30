@@ -3,12 +3,9 @@ package org.folio.consortia.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.consortia.client.ConsortiaConfigurationClient;
+import org.folio.consortia.client.UserTenantsClient;
 import org.folio.consortia.config.FolioExecutionContextHelper;
-import org.folio.consortia.domain.dto.ConsortiaConfiguration;
-import org.folio.consortia.domain.dto.PermissionUser;
-import org.folio.consortia.domain.dto.Tenant;
-import org.folio.consortia.domain.dto.TenantCollection;
-import org.folio.consortia.domain.dto.User;
+import org.folio.consortia.domain.dto.*;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.exception.ResourceAlreadyExistException;
@@ -42,6 +39,8 @@ public class TenantServiceImpl implements TenantService {
   private static final String TENANTS_IDS_NOT_MATCHED_ERROR_MSG = "Request body tenantId and path param tenantId should be identical";
   private static final String TENANT_HAS_ACTIVE_USER_ASSOCIATIONS_ERROR_MSG = "Cannot delete tenant with ID {tenantId} because it has an association with a user. " +
     "Please remove the user association before attempting to delete the tenant.";
+  private static final String DUMMY_USERNAME = "*-dummy_user-*";
+
   private final TenantRepository tenantRepository;
   private final UserTenantRepository userTenantRepository;
   private final ConversionService converter;
@@ -51,6 +50,7 @@ public class TenantServiceImpl implements TenantService {
   private final PermissionUserService permissionUserService;
   private final UserService userService;
   private final FolioExecutionContextHelper contextHelper;
+  private final UserTenantsClient userTenantsClient;
 
   @Override
   public TenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
@@ -96,6 +96,13 @@ public class TenantServiceImpl implements TenantService {
 
     try (var context = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(tenantDto.getId()))) {
       createShadowAdminUserWithPermissions(shadowAdminUser);
+
+      /*
+      Dummy user will be used to support cross-tenant requests checking in mod-authtoken,
+      if user-tenant table contains some record in institutional tenant - it means mod-consortia enabled for
+      this tenant and will allow cross-tenant request.
+      */
+      saveDummyUser(tenantDto.getId());
       configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
     }
     log.info("save:: saved consortia configuration with centralTenantId={} by tenantId={} context", centralTenantId, tenantDto.getId());
@@ -124,6 +131,27 @@ public class TenantServiceImpl implements TenantService {
     TenantEntity savedTenant = tenantRepository.save(entity);
     log.info("saveTenant: Tenant '{}' successfully saved", savedTenant.getId());
     return converter.convert(savedTenant, Tenant.class);
+  }
+
+  @Override
+  public UserTenant postUserTenant(UserTenant userTenant) {
+    log.info("Creating userTenant with dummy user with id {}.", userTenant.getId());
+    userTenantsClient.postUserTenant(userTenant);
+    return userTenant;
+  }
+
+  private void saveDummyUser(String tenantId) {
+    UserTenant userTenant = createUserTenantWithDummyUser(tenantId);
+    postUserTenant(userTenant);
+  }
+
+  private UserTenant createUserTenantWithDummyUser(String tenantId) {
+    UserTenant userTenant = new UserTenant();
+    userTenant.setId(UUID.randomUUID());
+    userTenant.setTenantId(tenantId);
+    userTenant.setUserId(UUID.randomUUID());
+    userTenant.setUsername(DUMMY_USERNAME);
+    return userTenant;
   }
 
   private void checkTenantNotExistsAndConsortiumExistsOrThrow(UUID consortiumId, String tenantId) {
