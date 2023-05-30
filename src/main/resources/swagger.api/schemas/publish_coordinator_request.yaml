@@ -1,0 +1,21 @@
+PublishCoordinator:
+  type: object
+  title: PublishCoordinatorBody
+  properties:
+    url:
+      description: URL for publishing requests for consortia tenants
+      type: string
+    method:
+      description: HTTP method
+      type: string
+    tenants:
+      description: Set of tenants to be requested
+      type: array
+      uniqueItems: true
+      items:
+        type: string
+    payload:
+      description: Http request body
+      type: object
+  additionalProperties: false
+

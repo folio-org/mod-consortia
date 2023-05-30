@@ -1,0 +1,73 @@
+openapi: 3.0.0
+info:
+  title: Publish coordinator API
+  description: "Publish coordinator API"
+  version: 0.0.1
+paths:
+  /publish-coordinator:
+    post:
+      summary: Send post requests to the tenants
+      operationId: publishRequests
+      responses:
+        '201':
+          $ref: '#/components/responses/PublishCoordinator'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        $ref: '#/components/requestBodies/PublishCoordinator'
+
+components:
+  requestBodies:
+    PublishCoordinator:
+      description: Publish coordinator request
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "schemas/publish_coordinator_request.yaml#/PublishCoordinator"
+  responses:
+    PublishCoordinator:
+      description: Returns a tenant object
+      content:
+        application/json:
+          schema:
+            $ref: "schemas/publish_coordinator_request.yaml#/PublishCoordinator"
+    Conflict:
+      description: Validation errors
+      content:
+        application/json:
+          schema:
+            $ref: "schemas/common.yaml#/Errors"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "schemas/common.yaml#/Errors"
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: "schemas/common.yaml#/Errors"
+    Unauthorized:
+      description: Not authorized to perform requested action
+      content:
+        text/plain:
+          example: unable to perform action -- unauthorized
+    UnprocessableEntity:
+      description: Validation errors
+      content:
+        application/json:
+          schema:
+            $ref: 'schemas/common.yaml#/Errors'
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "schemas/common.yaml#/Error"
