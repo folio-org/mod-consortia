@@ -63,7 +63,7 @@ class UserAffiliationAsyncServiceTest {
     when(usersClient.getUserCollection(anyString(), anyInt(), anyInt())).thenReturn(userCollection);
     when(userTenantRepository.findByUserIdAndTenantId(any(), anyString())).thenReturn(Optional.of(userTenantEntity));
 
-    userAffiliationAsyncService.createPrimaryUserAffiliationsAsync(consortiumId, tenantEntity1, tenant, UUID.randomUUID())
+    userAffiliationAsyncService.createPrimaryUserAffiliationsAsync(consortiumId, tenantEntity1, tenant)
       .join();
     verify(userTenantService, times(2)).createPrimaryUserTenantAffiliation(any(), any(), anyString(), anyString());
   }

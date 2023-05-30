@@ -105,7 +105,7 @@ public class TenantServiceImpl implements TenantService {
 
     try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantDto.getId(), folioModuleMetadata, currentTenantContext))) {
       createShadowAdminUserWithPermissions(shadowAdminUser);
-      createPrimaryUserAffiliationsAsync.createPrimaryUserAffiliationsAsync(consortiumId, savedTenantEntity, tenantDto, currentTenantContext.getUserId());
+      createPrimaryUserAffiliationsAsync.createPrimaryUserAffiliationsAsync(consortiumId, savedTenantEntity, tenantDto);
       configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
     }
     log.info("save:: saved consortia configuration with centralTenantId={} by tenantId={} context", centralTenantId, tenantDto.getId());
@@ -123,7 +123,7 @@ public class TenantServiceImpl implements TenantService {
 
     if (forceCreatePrimaryAff.booleanValue()) {
       try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantDto.getId(), folioModuleMetadata, currentTenantContext))) {
-        createPrimaryUserAffiliationsAsync.createPrimaryUserAffiliationsAsync(consortiumId, tenantEntity, tenantDto, currentTenantContext.getUserId());
+        createPrimaryUserAffiliationsAsync.createPrimaryUserAffiliationsAsync(consortiumId, tenantEntity, tenantDto);
       }
     }
     return savedTenant;

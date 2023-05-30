@@ -1,6 +1,5 @@
 package org.folio.consortia.service.impl;
 
-import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
@@ -8,16 +7,22 @@ import java.util.stream.IntStream;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.config.kafka.KafkaService;
+import org.folio.consortia.domain.dto.PrimaryAffiliationEvent;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.User;
-import org.folio.consortia.domain.dto.UserEvent;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.UserAffiliationAsyncService;
 import org.folio.consortia.service.UserTenantService;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 
 @Service
@@ -29,9 +34,17 @@ public class UserAffiliationAsyncServiceImpl implements UserAffiliationAsyncServ
   private final KafkaService kafkaService;
   private final UsersClient usersClient;
   private final UserTenantRepository userTenantRepository;
+  private static final ObjectMapper OBJECT_MAPPER;
 
+  static {
+    OBJECT_MAPPER = new ObjectMapper()
+      .findAndRegisterModules()
+      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+      .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+      .setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+  }
   public CompletableFuture<Void> createPrimaryUserAffiliationsAsync(UUID consortiumId, TenantEntity consortiaTenant,
-    Tenant tenantDto, UUID contextUserId) {
+    Tenant tenantDto) {
     return CompletableFuture.runAsync(() -> {
         log.info("Start creating user primary affiliation for tenant {}", tenantDto.getId());
         var users = usersClient.getUserCollection(StringUtils.EMPTY, 0, Integer.MAX_VALUE);
@@ -46,7 +59,7 @@ public class UserAffiliationAsyncServiceImpl implements UserAffiliationAsyncServ
               log.info("Primary affiliation already exists for tenant/user: {}/{}", tenantDto.getId(), user.getUsername());
             } else {
               userTenantService.createPrimaryUserTenantAffiliation(consortiumId, consortiaTenant, user.getId(), user.getUsername());
-              sendCreatePrimaryAffiliationEvent(consortiaTenant, tenantDto, contextUserId, user);
+              sendCreatePrimaryAffiliationEvent(consortiaTenant, tenantDto, user);
             }
           });
       })
@@ -57,14 +70,21 @@ public class UserAffiliationAsyncServiceImpl implements UserAffiliationAsyncServ
       });
   }
 
-  private void sendCreatePrimaryAffiliationEvent(TenantEntity consortiaTenant, Tenant tenantDto, UUID contextUserId, User user) {
-    var ue = new UserEvent().tenantId(tenantDto.getId())
-      .userDto(user)
-      .action(UserEvent.ActionEnum.CREATE)
-      .actionDate(new Date())
-      .eventDate(new Date())
-      .performedBy(contextUserId);
+  @SneakyThrows
+  private void sendCreatePrimaryAffiliationEvent(TenantEntity consortiaTenant, Tenant tenantDto, User user) {
+    PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(user, tenantDto);
+    String data = OBJECT_MAPPER.writeValueAsString(affiliationEvent);
+    kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_CREATED, consortiaTenant.getConsortiumId().toString(), data);
+  }
 
-    kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_CREATED, consortiaTenant.getConsortiumId().toString(), ue.toString());
+  private PrimaryAffiliationEvent createPrimaryAffiliationEvent(User user, Tenant tenantDto) {
+    PrimaryAffiliationEvent event = new PrimaryAffiliationEvent();
+    event.setId(UUID.randomUUID());
+    event.setUserId(UUID.fromString(user.getId()));
+    if (StringUtils.isNotBlank(user.getUsername())) { // for delete event username will be empty
+      event.setUserName(user.getUsername());
+    }
+    event.setTenantId(tenantDto.getId());
+    return event;
   }
 }
