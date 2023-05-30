@@ -11,12 +11,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.domain.dto.Tenant;
+import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.dto.UserCollection;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
@@ -40,7 +41,7 @@ class UserAffiliationAsyncServiceTest {
   @InjectMocks
   UserAffiliationAsyncServiceImpl userAffiliationAsyncService;
   @Mock
-  UsersClient usersClient;
+  UserService userService;
   @Mock
   UserTenantRepository userTenantRepository;
   @Mock
@@ -57,10 +58,10 @@ class UserAffiliationAsyncServiceTest {
     Tenant tenant = createTenant("TestID", "Test");
 
     var userCollectionString = getMockData("mockdata/user_collection.json");
-    UserCollection userCollection = new ObjectMapper().readValue(userCollectionString, UserCollection.class);
+    List<User> userCollection = new ObjectMapper().readValue(userCollectionString, UserCollection.class).getUsers();
 
     // stub collection of 2 users
-    when(usersClient.getUserCollection(anyString(), anyInt(), anyInt())).thenReturn(userCollection);
+    when(userService.getUsersByQuery(anyString(), anyInt(), anyInt())).thenReturn(userCollection);
     when(userTenantRepository.findByUserIdAndTenantId(any(), anyString())).thenReturn(Optional.of(userTenantEntity));
 
     userAffiliationAsyncService.createPrimaryUserAffiliationsAsync(consortiumId, tenantEntity1, tenant)

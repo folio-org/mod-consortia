@@ -5,7 +5,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.domain.dto.PrimaryAffiliationEvent;
 import org.folio.consortia.domain.dto.Tenant;
@@ -13,6 +12,7 @@ import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.UserAffiliationAsyncService;
+import org.folio.consortia.service.UserService;
 import org.folio.consortia.service.UserTenantService;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +32,7 @@ public class UserAffiliationAsyncServiceImpl implements UserAffiliationAsyncServ
 
   private final UserTenantService userTenantService;
   private final KafkaService kafkaService;
-  private final UsersClient usersClient;
+  private final UserService userService;
   private final UserTenantRepository userTenantRepository;
   private static final ObjectMapper OBJECT_MAPPER;
 
@@ -47,12 +47,12 @@ public class UserAffiliationAsyncServiceImpl implements UserAffiliationAsyncServ
     Tenant tenantDto) {
     return CompletableFuture.runAsync(() -> {
         log.info("Start creating user primary affiliation for tenant {}", tenantDto.getId());
-        var users = usersClient.getUserCollection(StringUtils.EMPTY, 0, Integer.MAX_VALUE);
-        log.info("{} tenant users found", users.getUsers().size());
-        IntStream.range(0, users.getUsers().size())
+        var users = userService.getUsersByQuery(StringUtils.EMPTY, 0, Integer.MAX_VALUE);
+        log.info("{} tenant users found", users.size());
+        IntStream.range(0, users.size())
           .forEach(idx -> {
-            var user = users.getUsers().get(idx);
-            log.info("Processing users: {} of {}", idx + 1, users.getUsers().size());
+            var user = users.get(idx);
+            log.info("Processing users: {} of {}", idx + 1, users.size());
             var consortiaUserTenant = userTenantRepository.findByUserIdAndTenantId(UUID.fromString(user.getId()), tenantDto.getId())
               .orElse(null);
             if (consortiaUserTenant != null && consortiaUserTenant.getIsPrimary()) {
