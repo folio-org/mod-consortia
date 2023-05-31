@@ -3,14 +3,18 @@ info:
   title: Publish coordinator API
   description: "Publish coordinator API"
   version: 0.0.1
+
+servers:
+  - url: /consortia/{consortiumId}/
+
 paths:
-  /publish-coordinator:
+  /publications:
     post:
       summary: Send post requests to the tenants
       operationId: publishRequests
       responses:
         '201':
-          $ref: '#/components/responses/PublishCoordinator'
+          $ref: '#/components/responses/Publication'
         '400':
           $ref: '#/components/responses/BadRequest'
         '409':
@@ -18,24 +22,24 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
       requestBody:
-        $ref: '#/components/requestBodies/PublishCoordinator'
+        $ref: '#/components/requestBodies/Publication'
 
 components:
   requestBodies:
-    PublishCoordinator:
+    Publication:
       description: Publish coordinator request
       required: true
       content:
         application/json:
           schema:
-            $ref: "schemas/publish_coordinator_request.yaml#/PublishCoordinator"
+            $ref: "schemas/publication.yaml#/Publication"
   responses:
-    PublishCoordinator:
-      description: Returns a tenant object
+    Publication:
+      description: Returns a publish coordinator object
       content:
         application/json:
           schema:
-            $ref: "schemas/publish_coordinator_request.yaml#/PublishCoordinator"
+            $ref: "schemas/publication.yaml#/Publication"
     Conflict:
       description: Validation errors
       content:

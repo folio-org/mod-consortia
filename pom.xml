@@ -41,7 +41,7 @@
     <user_tenants.yaml.file>${project.basedir}/src/main/resources/swagger.api/user_tenants.yaml</user_tenants.yaml.file>
     <user_events.yaml.file>${project.basedir}/src/main/resources/swagger.api/kafka_message_schemas.yaml</user_events.yaml.file>
     <consortia_configuration.yaml.file>${project.basedir}/src/main/resources/swagger.api/consortia_configuration.yaml</consortia_configuration.yaml.file>
-    <publish_coordinator.yaml.file>${project.basedir}/src/main/resources/swagger.api/publish_coordinator.yaml</publish_coordinator.yaml.file>
+    <publish_coordinator.yaml.file>${project.basedir}/src/main/resources/swagger.api/publications.yaml</publish_coordinator.yaml.file>
     <!-- runtime dependencies -->
     <folio-spring-base.version>6.2.0-SNAPSHOT</folio-spring-base.version>
     <openapi-generator.version>6.2.1</openapi-generator.version>

@@ -1,6 +1,6 @@
-PublishCoordinator:
+Publication:
   type: object
-  title: PublishCoordinatorBody
+  title: Publication
   properties:
     url:
       description: URL for publishing requests for consortia tenants
@@ -18,4 +18,3 @@ PublishCoordinator:
       description: Http request body
       type: object
   additionalProperties: false
-
