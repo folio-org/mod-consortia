@@ -154,6 +154,8 @@ class TenantServiceTest {
 
     var tenant1 = tenantService.save(consortiumId, UUID.randomUUID(), tenant);
 
+    verify(userService).prepareShadowUser(any(), any());
+    verify(userTenantRepository).save(any());
     verify(configurationClient).saveConfiguration(any());
     verify(userAffiliationAsyncService).createPrimaryUserAffiliationsAsync(any(), any(), any());
     verify(userTenantsClient).postUserTenant(any());
@@ -200,6 +202,8 @@ class TenantServiceTest {
     verify(configurationClient).saveConfiguration(any());
     verify(userAffiliationAsyncService).createPrimaryUserAffiliationsAsync(any(), any(), any());
 
+    verify(userService, never()).prepareShadowUser(any(), any());
+    verify(userTenantRepository, never()).save(any());
     verify(userTenantsClient, never()).postUserTenant(any());
     verify(userService, never()).createUser(any());
     verify(permissionUserService, never()).createWithPermissionsFromFile(any(), any());

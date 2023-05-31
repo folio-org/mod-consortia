@@ -91,23 +91,24 @@ public class TenantServiceImpl implements TenantService {
     log.debug("save:: Trying to save a tenant by consortiumId '{}', tenant object with id '{}' and isCentral={}", consortiumId,
         tenantDto.getId(), tenantDto.getIsCentral());
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
-    String centralTenantId;
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
 
+    String centralTenantId;
+    User shadowAdminUser = null;
     if (tenantDto.getIsCentral()) {
       checkCentralTenantExistsOrThrow();
       centralTenantId = tenantDto.getId();
     } else {
       centralTenantId = getCentralTenantId();
+      shadowAdminUser = userService.prepareShadowUser(adminUserId, currentTenantContext.getTenantId());
+      userTenantRepository.save(createUserTenantEntity(consortiumId, shadowAdminUser, tenantDto));
     }
 
     checkTenantNotExistsAndConsortiumExistsOrThrow(consortiumId, tenantDto.getId());
     TenantEntity savedTenantEntity = saveTenantEntity(consortiumId, tenantDto);
     var savedTenant = converter.convert(savedTenantEntity, Tenant.class);
 
-    User shadowAdminUser = userService.prepareShadowUser(adminUserId, currentTenantContext.getTenantId());
-    userTenantRepository.save(createUserTenantEntity(consortiumId, shadowAdminUser, tenantDto));
-
+    // switch to context of the desired tenant
     try (var context = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(tenantDto.getId()))) {
       configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
       createPrimaryUserAffiliationsAsync.createPrimaryUserAffiliationsAsync(consortiumId, savedTenantEntity, tenantDto);
