@@ -92,7 +92,7 @@ public class TenantServiceImpl implements TenantService {
         tenantDto.getId(), tenantDto.getIsCentral());
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
 
-    // validation consortium and tenant existence
+    // validation part
     checkTenantNotExistsAndConsortiumExistsOrThrow(consortiumId, tenantDto.getId());
     if (tenantDto.getIsCentral()) {
       checkCentralTenantExistsOrThrow();
