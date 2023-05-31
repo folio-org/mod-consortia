@@ -119,7 +119,7 @@ public class TenantServiceImpl implements TenantService {
       createPrimaryUserAffiliationsAsync.createPrimaryUserAffiliationsAsync(consortiumId, savedTenantEntity, tenantDto);
       if (!tenantDto.getIsCentral()) {
         createUserTenantWithDummyUser(tenantDto.getId());
-        createShadowAdminUserWithPermissions(shadowAdminUser);
+        createShadowAdminUserWithPermissions(shadowAdminUser); //NOSONAR
       }
     }
     log.info("save:: saved consortia configuration with centralTenantId={} by tenantId={} context", centralTenantId, tenantDto.getId());
