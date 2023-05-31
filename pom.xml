@@ -43,7 +43,7 @@
     <consortia_configuration.yaml.file>${project.basedir}/src/main/resources/swagger.api/consortia_configuration.yaml</consortia_configuration.yaml.file>
     <publish_coordinator.yaml.file>${project.basedir}/src/main/resources/swagger.api/publications.yaml</publish_coordinator.yaml.file>
     <!-- runtime dependencies -->
-    <folio-spring-base.version>6.2.0-SNAPSHOT</folio-spring-base.version>
+    <folio-spring-base.version>7.0.0</folio-spring-base.version>
     <openapi-generator.version>6.2.1</openapi-generator.version>
     <mapstruct.version>1.5.3.Final</mapstruct.version>
 
