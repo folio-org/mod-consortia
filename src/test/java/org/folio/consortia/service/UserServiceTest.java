@@ -3,7 +3,6 @@ package org.folio.consortia.service;
 import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.domain.dto.Personal;
 import org.folio.consortia.domain.dto.User;
-import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.impl.UserServiceImpl;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.integration.XOkapiHeaders;
@@ -66,7 +65,7 @@ class UserServiceTest {
     okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
     Mockito.when(usersClient.getUsersByUserId(any())).thenReturn(new User());
-    Assertions.assertThrows(ResourceNotFoundException.class, () -> userService.prepareShadowUser(UUID.randomUUID(), ""));
+    Assertions.assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class, () -> userService.prepareShadowUser(UUID.randomUUID(), ""));
   }
 
   @Test
