@@ -38,7 +38,7 @@ public class UserAffiliationAsyncServiceImpl implements UserAffiliationAsyncServ
     Tenant tenantDto) {
     return CompletableFuture.runAsync(() -> {
         log.info("Start creating user primary affiliation for tenant {}", tenantDto.getId());
-        var users = userService.getUsersByQuery(StringUtils.EMPTY, 0, Integer.MAX_VALUE);
+        var users = userService.getUsersByQuery("cql.allRecords=1", 0, Integer.MAX_VALUE);
         log.info("{} tenant users found", users.size());
         IntStream.range(0, users.size())
           .forEach(idx -> {
