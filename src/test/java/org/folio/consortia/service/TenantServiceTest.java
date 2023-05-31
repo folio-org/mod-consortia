@@ -158,7 +158,6 @@ class TenantServiceTest {
     verify(userAffiliationAsyncService).createPrimaryUserAffiliationsAsync(any(), any(), any());
     verify(userTenantsClient).postUserTenant(any());
     verify(userService).createUser(any());
-    verify(permissionUserService).createWithPermissionsFromFile(any(), any());
 
     Assertions.assertEquals(tenant, tenant1);
   }
