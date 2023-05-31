@@ -48,7 +48,7 @@ public class TenantServiceImpl implements TenantService {
   private static final String TENANTS_IDS_NOT_MATCHED_ERROR_MSG = "Request body tenantId and path param tenantId should be identical";
   private static final String TENANT_HAS_ACTIVE_USER_ASSOCIATIONS_ERROR_MSG = "Cannot delete tenant with ID {tenantId} because it has an association with a user. "
       + "Please remove the user association before attempting to delete the tenant.";
-  private static final String DUMMY_USERNAME = "*-dummy_user-*";
+  private static final String DUMMY_USERNAME = "dummy_user";
   private final TenantRepository tenantRepository;
   private final UserTenantRepository userTenantRepository;
   private final ConversionService converter;
@@ -110,9 +110,11 @@ public class TenantServiceImpl implements TenantService {
 
     try (var context = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(tenantDto.getId()))) {
       configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
-      createUserTenantWithDummyUser(tenantDto.getId());
-      createShadowAdminUserWithPermissions(shadowAdminUser);
       createPrimaryUserAffiliationsAsync.createPrimaryUserAffiliationsAsync(consortiumId, savedTenantEntity, tenantDto);
+      if (!tenantDto.getIsCentral()) {
+        createUserTenantWithDummyUser(tenantDto.getId());
+        createShadowAdminUserWithPermissions(shadowAdminUser);
+      }
     }
     log.info("save:: saved consortia configuration with centralTenantId={} by tenantId={} context", centralTenantId, tenantDto.getId());
     return savedTenant;
