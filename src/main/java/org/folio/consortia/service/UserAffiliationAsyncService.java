@@ -14,6 +14,6 @@ public interface UserAffiliationAsyncService {
    * @param consortiaTenant - consortia tenant record
    * @param tenantDto - tenant DTO
    */
-  CompletableFuture<Void> createPrimaryUserAffiliationsAsync(UUID consortiumId, TenantEntity consortiaTenant, Tenant tenantDto);
+  void createPrimaryUserAffiliationsAsync(UUID consortiumId, TenantEntity consortiaTenant, Tenant tenantDto);
 
 }

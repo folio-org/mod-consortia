@@ -1,7 +1,7 @@
 package org.folio.consortia.service.impl;
 
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -33,10 +33,12 @@ public class UserAffiliationAsyncServiceImpl implements UserAffiliationAsyncServ
   private final UserTenantRepository userTenantRepository;
 
   private final ObjectMapper objectMapper = new ObjectMapper();
+  private final Executor asyncTaskExecutor;
 
-  public CompletableFuture<Void> createPrimaryUserAffiliationsAsync(UUID consortiumId, TenantEntity consortiaTenant,
-    Tenant tenantDto) {
-    return CompletableFuture.runAsync(() -> {
+
+  public void createPrimaryUserAffiliationsAsync(UUID consortiumId, TenantEntity consortiaTenant, Tenant tenantDto) {
+    asyncTaskExecutor.execute(() -> {
+      try {
         log.info("Start creating user primary affiliation for tenant {}", tenantDto.getId());
         var users = userService.getUsersByQuery("cql.allRecords=1", 0, Integer.MAX_VALUE);
         log.info("{} tenant users found", users.size());
@@ -53,12 +55,11 @@ public class UserAffiliationAsyncServiceImpl implements UserAffiliationAsyncServ
               sendCreatePrimaryAffiliationEvent(consortiaTenant, tenantDto, user);
             }
           });
-      })
-      .thenAccept(v -> log.info("Successfully created primary affiliations for tenant {}", tenantDto.getId()))
-      .exceptionally(t -> {
-        log.error("Failed to create primary affiliations for new tenant", t);
-        return null;
-      });
+        log.info("Successfully created primary affiliations for tenant {}", tenantDto.getId());
+      } catch (Exception e) {
+        log.error("Failed to create primary affiliations for tenant {}", tenantDto.getId(), e);
+      }
+    });
   }
 
   @SneakyThrows

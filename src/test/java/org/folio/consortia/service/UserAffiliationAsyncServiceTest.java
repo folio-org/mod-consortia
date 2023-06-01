@@ -24,20 +24,18 @@ import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.impl.UserAffiliationAsyncServiceImpl;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest
-@EnableAutoConfiguration(exclude = BatchAutoConfiguration.class)
-@EntityScan(basePackageClasses = TenantEntity.class)
+@ExtendWith(SpringExtension.class)
 class UserAffiliationAsyncServiceTest {
   @InjectMocks
   UserAffiliationAsyncServiceImpl userAffiliationAsyncService;
@@ -53,7 +51,7 @@ class UserAffiliationAsyncServiceTest {
   ObjectMapper objectMapper;
 
   @Test
-  void createPrimaryUserAffiliationsAsyncSuccessTest() throws JsonProcessingException {
+  void createPrimaryUserAffiliationsAsyncSuccessTest() throws JsonProcessingException, InterruptedException {
     UUID consortiumId = UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002");
     TenantEntity tenantEntity1 = createTenantEntity("ABC1", "TestName1");
     tenantEntity1.setConsortiumId(consortiumId);
@@ -67,8 +65,8 @@ class UserAffiliationAsyncServiceTest {
     when(userService.getUsersByQuery(anyString(), anyInt(), anyInt())).thenReturn(userCollection);
     when(userTenantRepository.findByUserIdAndTenantId(any(), anyString())).thenReturn(Optional.of(userTenantEntity));
 
-    userAffiliationAsyncService.createPrimaryUserAffiliationsAsync(consortiumId, tenantEntity1, tenant)
-      .join();
+    userAffiliationAsyncService.createPrimaryUserAffiliationsAsync(consortiumId, tenantEntity1, tenant);
+
     verify(userTenantService, times(2)).createPrimaryUserTenantAffiliation(any(), any(), anyString(), anyString());
     verify(kafkaService, times(2)).send(any(), anyString(), anyString());
   }
