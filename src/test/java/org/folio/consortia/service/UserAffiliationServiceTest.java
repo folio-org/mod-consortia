@@ -49,6 +49,7 @@ class UserAffiliationServiceTest {
   ConsortiumService consortiumService;
   @Mock
   KafkaService kafkaService;
+  @Mock
   FolioExecutionContext folioExecutionContext;
   AutoCloseable mockitoMocks;
 
@@ -72,6 +73,7 @@ class UserAffiliationServiceTest {
 
     when(tenantService.getByTenantId(anyString())).thenReturn(te);
     doNothing().when(consortiumService).checkConsortiumExistsOrThrow(any());
+    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
 
     Map<String, Collection<String>> map = new HashMap<>();
     map.put(TENANT, List.of(TENANT));

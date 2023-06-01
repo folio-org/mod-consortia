@@ -103,6 +103,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
     userTenant.setUsername(userEvent.getUserDto().getUsername());
     return userTenant;
   }
+
   private PrimaryAffiliationEvent createPrimaryAffiliationEvent(UserEvent userEvent) {
     PrimaryAffiliationEvent event = new PrimaryAffiliationEvent();
     event.setId(userEvent.getId());
