@@ -1,14 +1,17 @@
 package org.folio.consortia.service.impl;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.domain.dto.PrimaryAffiliationEvent;
 import org.folio.consortia.domain.dto.UserEvent;
+import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserAffiliationService;
 import org.folio.consortia.service.UserTenantService;
+import org.folio.spring.FolioExecutionContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,12 +29,14 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   private final UserTenantService userTenantService;
   private final TenantService tenantService;
   private final KafkaService kafkaService;
+  private final FolioExecutionContext folioExecutionContext;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override
   @SneakyThrows
   @Transactional
   public void createPrimaryUserAffiliation(String eventPayload) {
+    FolioExecutionContext currentContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     try {
       var userEvent = objectMapper.readValue(eventPayload, UserEvent.class);
       log.info("Received event for creating primary affiliation for user: {} and tenant: {}", userEvent.getUserDto().getId(), userEvent.getTenantId());
@@ -42,13 +47,16 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
         return;
       }
 
-      boolean isPrimaryAffiliationExists = userTenantService
-        .checkUserIfHasPrimaryAffiliationByUserId(consortiaTenant.getConsortiumId(), userEvent.getUserDto().getId());
+      boolean isPrimaryAffiliationExists =
+        userTenantService.checkUserIfHasPrimaryAffiliationByUserId(consortiaTenant.getConsortiumId(), userEvent.getUserDto().getId());
       if (isPrimaryAffiliationExists) {
         log.warn("Primary affiliation already exists for tenant/user: {}/{}", userEvent.getTenantId(), userEvent.getUserDto().getUsername());
         return;
       } else {
         userTenantService.createPrimaryUserTenantAffiliation(consortiaTenant.getConsortiumId(), consortiaTenant, userEvent.getUserDto().getId(), userEvent.getUserDto().getUsername());
+        if (!Objects.equals(currentContext.getTenantId(), consortiaTenant.getId())) {
+          userTenantService.save(consortiaTenant.getConsortiumId(), createUserTenant(folioExecutionContext.getTenantId(), userEvent));
+        }
       }
 
       PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(userEvent);
@@ -88,6 +96,13 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
     }
   }
 
+  private UserTenant createUserTenant(String tenantId,  UserEvent userEvent) {
+    UserTenant userTenant = new UserTenant();
+    userTenant.setTenantId(tenantId);
+    userTenant.setUserId(UUID.fromString(userEvent.getUserDto().getId()));
+    userTenant.setUsername(userEvent.getUserDto().getUsername());
+    return userTenant;
+  }
   private PrimaryAffiliationEvent createPrimaryAffiliationEvent(UserEvent userEvent) {
     PrimaryAffiliationEvent event = new PrimaryAffiliationEvent();
     event.setId(userEvent.getId());
