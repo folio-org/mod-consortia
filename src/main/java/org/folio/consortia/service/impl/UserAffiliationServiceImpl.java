@@ -36,7 +36,6 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   @SneakyThrows
   @Transactional
   public void createPrimaryUserAffiliation(String eventPayload) {
-    FolioExecutionContext currentContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     try {
       var userEvent = objectMapper.readValue(eventPayload, UserEvent.class);
       log.info("Received event for creating primary affiliation for user: {} and tenant: {}", userEvent.getUserDto().getId(), userEvent.getTenantId());
@@ -54,7 +53,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
         return;
       } else {
         userTenantService.createPrimaryUserTenantAffiliation(consortiaTenant.getConsortiumId(), consortiaTenant, userEvent.getUserDto().getId(), userEvent.getUserDto().getUsername());
-        if (!Objects.equals(currentContext.getTenantId(), consortiaTenant.getId())) {
+        if (!Objects.equals(folioExecutionContext.getTenantId(), consortiaTenant.getId())) {
           userTenantService.save(consortiaTenant.getConsortiumId(), createUserTenant(folioExecutionContext.getTenantId(), userEvent));
         }
       }
