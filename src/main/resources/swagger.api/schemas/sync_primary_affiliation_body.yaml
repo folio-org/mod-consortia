@@ -1,0 +1,30 @@
+SyncPrimaryAffiliationBody:
+  description: "Primary affiliation event"
+  type: object
+  properties:
+    tenantId:
+      description: "The name of the user's tenant"
+      type: string
+    users:
+      description: users
+      type: array
+      items:
+        "$ref": "sync_primary_affiliation_body.yaml#/SyncUser"
+  additionalProperties: false
+  required:
+    - tenantId
+
+SyncUser:
+  description: "Users item"
+  type: object
+  properties:
+    id:
+      description: "The name of the user's tenant"
+      type: string
+      format: uuid
+    username:
+      description: "The name of the user's tenant"
+      type: string
+  additionalProperties: false
+
+

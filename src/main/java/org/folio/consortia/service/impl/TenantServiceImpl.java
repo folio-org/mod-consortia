@@ -116,7 +116,8 @@ public class TenantServiceImpl implements TenantService {
     // switch to context of the desired tenant and apply all necessary setup
     try (var context = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(tenantDto.getId()))) {
       configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
-      createPrimaryUserAffiliationsAsync.createPrimaryUserAffiliationsAsync(consortiumId, savedTenantEntity, tenantDto);
+      // TODO: retrieve users list and POST sync-primary-affiliations endpoint
+      //createPrimaryUserAffiliationsAsync.createPrimaryUserAffiliationsAsync(consortiumId, savedTenantEntity, tenantDto);
       if (!tenantDto.getIsCentral()) {
         createUserTenantWithDummyUser(tenantDto.getId());
         createShadowAdminUserWithPermissions(shadowAdminUser); //NOSONAR
@@ -137,7 +138,8 @@ public class TenantServiceImpl implements TenantService {
 
     if (forceCreatePrimaryAff.booleanValue()) {
       try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantDto.getId(), folioModuleMetadata, currentTenantContext))) {
-        createPrimaryUserAffiliationsAsync.createPrimaryUserAffiliationsAsync(consortiumId, tenantEntity, tenantDto);
+        // TODO: retrieve users list and POST sync-primary-affiliations endpoint
+        //createPrimaryUserAffiliationsAsync.createPrimaryUserAffiliationsAsync(consortiumId, savedTenantEntity, tenantDto);
       }
     }
     return savedTenant;

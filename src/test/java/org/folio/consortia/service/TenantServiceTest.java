@@ -75,8 +75,6 @@ class TenantServiceTest {
   @Mock
   private UserAffiliationService userAffiliationService;
   @Mock
-  private UserAffiliationAsyncService userAffiliationAsyncService;
-  @Mock
   private ConversionService conversionService;
   @Mock
   private ConsortiumRepository consortiumRepository;
@@ -157,7 +155,6 @@ class TenantServiceTest {
     verify(userService).prepareShadowUser(any(), any());
     verify(userTenantRepository).save(any());
     verify(configurationClient).saveConfiguration(any());
-    verify(userAffiliationAsyncService).createPrimaryUserAffiliationsAsync(any(), any(), any());
     verify(userTenantsClient).postUserTenant(any());
     verify(userService).createUser(any());
 
@@ -200,7 +197,6 @@ class TenantServiceTest {
     var tenant1 = tenantService.save(consortiumId, UUID.randomUUID(), tenant);
 
     verify(configurationClient).saveConfiguration(any());
-    verify(userAffiliationAsyncService).createPrimaryUserAffiliationsAsync(any(), any(), any());
 
     verify(userService, never()).prepareShadowUser(any(), any());
     verify(userTenantRepository, never()).save(any());

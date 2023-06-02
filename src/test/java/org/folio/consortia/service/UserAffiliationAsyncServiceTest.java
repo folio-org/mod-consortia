@@ -65,8 +65,7 @@ class UserAffiliationAsyncServiceTest {
     when(userService.getUsersByQuery(anyString(), anyInt(), anyInt())).thenReturn(userCollection);
     when(userTenantRepository.findByUserIdAndTenantId(any(), anyString())).thenReturn(Optional.of(userTenantEntity));
 
-    userAffiliationAsyncService.createPrimaryUserAffiliationsAsync(consortiumId, tenantEntity1, tenant);
-
+    // TODO: check sync-primary-affiliation endpoint invoked
     verify(userTenantService, times(2)).createPrimaryUserTenantAffiliation(any(), any(), anyString(), anyString());
     verify(kafkaService, times(2)).send(any(), anyString(), anyString());
   }

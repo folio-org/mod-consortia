@@ -5,10 +5,13 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 import java.util.UUID;
 
+import org.folio.consortia.domain.dto.SyncPrimaryAffiliationBody;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
 import org.folio.consortia.rest.resource.TenantsApi;
 import org.folio.consortia.service.TenantService;
+import org.folio.consortia.service.UserAffiliationAsyncService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class TenantController implements TenantsApi {
 
   private final TenantService service;
+  private final UserAffiliationAsyncService userAffiliationAsyncService;
 
   @Override
   public ResponseEntity<TenantCollection> getTenants(UUID consortiumId, Integer offset, Integer limit) {
@@ -42,5 +46,11 @@ public class TenantController implements TenantsApi {
   public ResponseEntity<Void> deleteTenantById(UUID consortiumId, String tenantId) {
     service.delete(consortiumId, tenantId);
     return ResponseEntity.status(NO_CONTENT).build();
+  }
+
+  public ResponseEntity<Void> syncPrimaryAffiliations(UUID consortiumId, String tenantId,
+      SyncPrimaryAffiliationBody syncPrimaryAffiliationBody) {
+    userAffiliationAsyncService.createPrimaryUserAffiliationsAsync(consortiumId, syncPrimaryAffiliationBody);
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 }

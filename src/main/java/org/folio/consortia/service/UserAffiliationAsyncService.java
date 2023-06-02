@@ -1,19 +1,17 @@
 package org.folio.consortia.service;
 
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
-import org.folio.consortia.domain.dto.Tenant;
-import org.folio.consortia.domain.entity.TenantEntity;
+import org.folio.consortia.domain.dto.SyncPrimaryAffiliationBody;
 
 public interface UserAffiliationAsyncService {
 
   /**
    * Create primary affiliation for user
-   * @param consortiumId - consortium unique identifier
-   * @param consortiaTenant - consortia tenant record
-   * @param tenantDto - tenant DTO
+   *
+   * @param consortiumId               - consortium unique identifier
+   * @param syncPrimaryAffiliationBody - consortia tenant record
    */
-  void createPrimaryUserAffiliationsAsync(UUID consortiumId, TenantEntity consortiaTenant, Tenant tenantDto);
+  void createPrimaryUserAffiliationsAsync(UUID consortiumId, SyncPrimaryAffiliationBody syncPrimaryAffiliationBody);
 
 }
