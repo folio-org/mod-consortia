@@ -86,7 +86,6 @@ public class TenantServiceImpl implements TenantService {
   }
 
   @Override
-  @Transactional
   public Tenant save(UUID consortiumId, UUID adminUserId, Tenant tenantDto) {
     log.info("save:: Trying to save a tenant by consortiumId '{}', tenant object with id '{}' and isCentral={}", consortiumId,
         tenantDto.getId(), tenantDto.getIsCentral());

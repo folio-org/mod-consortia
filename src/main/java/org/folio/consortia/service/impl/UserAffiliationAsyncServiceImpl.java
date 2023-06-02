@@ -14,6 +14,7 @@ import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.repository.UserTenantRepository;
+import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.service.UserAffiliationAsyncService;
 import org.folio.consortia.service.UserService;
 import org.folio.consortia.service.UserTenantService;
@@ -40,6 +41,7 @@ public class UserAffiliationAsyncServiceImpl implements UserAffiliationAsyncServ
   private final KafkaService kafkaService;
   private final UserService userService;
   private final UserTenantRepository userTenantRepository;
+  private final TenantRepository tenantRepository;
 
   private final ObjectMapper objectMapper = new ObjectMapper();
   private final Executor asyncTaskExecutor;
@@ -50,11 +52,14 @@ public class UserAffiliationAsyncServiceImpl implements UserAffiliationAsyncServ
       FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
 
       try {
-        log.info("Start creating user primary affiliation for tenant {}", consortiaTenant.getId());
+        log.info("Start creating user primary affiliation for tenant {} in central {}", consortiaTenant.getId(), centralTenantId);
         var users = userService.getUsersByQuery("cql.allRecords=1", 0, Integer.MAX_VALUE);
         log.info("{} tenant users found", users.size());
 
         try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentTenantContext))) {
+          var tenantsPage = tenantRepository.findByConsortiumId(consortiumId, PageRequest.of(0, 10));
+          log.info("{} tenants in consortium", tenantsPage.getTotalElements());
+
           IntStream.range(0, users.size())
             .forEach(idx -> {
               log.info("Processing users: {} of {}", idx + 1, users.size());
