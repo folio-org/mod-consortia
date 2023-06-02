@@ -56,25 +56,23 @@ public class UserAffiliationAsyncServiceImpl implements UserAffiliationAsyncServ
         var users = userService.getUsersByQuery("cql.allRecords=1", 0, Integer.MAX_VALUE);
         log.info("{} tenant users found", users.size());
 
-        try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentTenantContext))) {
-          var tenantsPage = tenantRepository.findByConsortiumId(consortiumId, PageRequest.of(0, 10));
-          log.info("{} tenants in consortium", tenantsPage.getTotalElements());
+        var tenantsPage = tenantRepository.findByConsortiumId(consortiumId, PageRequest.of(0, 10));
+        log.info("{} tenants in consortium", tenantsPage.getTotalElements());
 
-          IntStream.range(0, users.size())
-            .forEach(idx -> {
-              log.info("Processing users: {} of {}", idx + 1, users.size());
+        IntStream.range(0, users.size())
+          .forEach(idx -> {
+            log.info("Processing users: {} of {}", idx + 1, users.size());
 
-              var user = users.get(idx);
-              var userTenantPage = userTenantRepository.findByUserId(UUID.fromString(user.getId()), PageRequest.of(0, 1));
+            var user = users.get(idx);
+            var userTenantPage = userTenantRepository.findByUserId(UUID.fromString(user.getId()), PageRequest.of(0, 1));
 
-              if (!userTenantPage.getContent().isEmpty()) {
-                log.info("User ({}) is already affiliated", user.getUsername());
-              } else {
-                userTenantService.createPrimaryUserTenantAffiliation(consortiumId, consortiaTenant, user.getId(), user.getUsername());
-                sendCreatePrimaryAffiliationEvent(consortiaTenant, user);
-              }
-            });
-        }
+            if (!userTenantPage.getContent().isEmpty()) {
+              log.info("User ({}) is already affiliated", user.getUsername());
+            } else {
+              userTenantService.createPrimaryUserTenantAffiliation(consortiumId, consortiaTenant, user.getId(), user.getUsername());
+              sendCreatePrimaryAffiliationEvent(consortiaTenant, user);
+            }
+          });
 
         log.info("Successfully created primary affiliations for tenant {}", consortiaTenant.getId());
       } catch (Exception e) {
