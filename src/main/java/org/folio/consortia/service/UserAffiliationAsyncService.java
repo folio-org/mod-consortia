@@ -11,9 +11,9 @@ public interface UserAffiliationAsyncService {
   /**
    * Create primary affiliation for user
    * @param consortiumId - consortium unique identifier
+   * @param centralTenantId - central tenant identifier
    * @param consortiaTenant - consortia tenant record
-   * @param tenantDto - tenant DTO
    */
-  void createPrimaryUserAffiliationsAsync(UUID consortiumId, TenantEntity consortiaTenant, Tenant tenantDto);
+  void createPrimaryUserAffiliationsAsync(UUID consortiumId, String centralTenantId, TenantEntity consortiaTenant);
 
 }

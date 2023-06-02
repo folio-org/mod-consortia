@@ -56,7 +56,6 @@ class UserAffiliationAsyncServiceTest {
     TenantEntity tenantEntity1 = createTenantEntity("ABC1", "TestName1");
     tenantEntity1.setConsortiumId(consortiumId);
     UserTenantEntity userTenantEntity = createUserTenantEntity(UUID.randomUUID());
-    Tenant tenant = createTenant("TestID", "Test");
 
     var userCollectionString = getMockData("mockdata/user_collection.json");
     List<User> userCollection = new ObjectMapper().readValue(userCollectionString, UserCollection.class).getUsers();
@@ -65,7 +64,7 @@ class UserAffiliationAsyncServiceTest {
     when(userService.getUsersByQuery(anyString(), anyInt(), anyInt())).thenReturn(userCollection);
     when(userTenantRepository.findByUserIdAndTenantId(any(), anyString())).thenReturn(Optional.of(userTenantEntity));
 
-    userAffiliationAsyncService.createPrimaryUserAffiliationsAsync(consortiumId, tenantEntity1, tenant);
+    userAffiliationAsyncService.createPrimaryUserAffiliationsAsync(consortiumId, "centralTenant", tenantEntity1);
 
     verify(userTenantService, times(2)).createPrimaryUserTenantAffiliation(any(), any(), anyString(), anyString());
     verify(kafkaService, times(2)).send(any(), anyString(), anyString());
