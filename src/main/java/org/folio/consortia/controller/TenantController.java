@@ -9,8 +9,9 @@ import org.folio.consortia.domain.dto.SyncPrimaryAffiliationBody;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
 import org.folio.consortia.rest.resource.TenantsApi;
+import org.folio.consortia.service.SyncPrimaryAffiliationService;
 import org.folio.consortia.service.TenantService;
-import org.folio.consortia.service.UserAffiliationAsyncService;
+import org.folio.consortia.service.PrimaryAffiliationAsyncService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -25,8 +26,8 @@ import lombok.RequiredArgsConstructor;
 public class TenantController implements TenantsApi {
 
   private final TenantService service;
-  private final UserAffiliationAsyncService userAffiliationAsyncService;
-
+  private final PrimaryAffiliationAsyncService primaryAffiliationAsyncService;
+  private final SyncPrimaryAffiliationService syncPrimaryAffiliationService;
   @Override
   public ResponseEntity<TenantCollection> getTenants(UUID consortiumId, Integer offset, Integer limit) {
     return ResponseEntity.ok(service.get(consortiumId, offset, limit));
@@ -50,7 +51,13 @@ public class TenantController implements TenantsApi {
 
   public ResponseEntity<Void> syncPrimaryAffiliations(UUID consortiumId, String tenantId,
       SyncPrimaryAffiliationBody syncPrimaryAffiliationBody) {
-    userAffiliationAsyncService.createPrimaryUserAffiliationsAsync(consortiumId, syncPrimaryAffiliationBody);
+    syncPrimaryAffiliationService.syncPrimaryAffiliations(consortiumId, tenantId);
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+  }
+
+  public ResponseEntity<Void> primaryAffiliation(UUID consortiumId, String tenantId,
+      SyncPrimaryAffiliationBody syncPrimaryAffiliationBody) {
+    primaryAffiliationAsyncService.createPrimaryUserAffiliations(consortiumId, syncPrimaryAffiliationBody);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 }

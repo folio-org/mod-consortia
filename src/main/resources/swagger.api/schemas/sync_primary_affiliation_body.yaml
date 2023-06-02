@@ -21,7 +21,6 @@ SyncUser:
     id:
       description: "The name of the user's tenant"
       type: string
-      format: uuid
     username:
       description: "The name of the user's tenant"
       type: string

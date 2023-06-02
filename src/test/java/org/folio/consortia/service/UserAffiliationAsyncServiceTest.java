@@ -7,7 +7,6 @@ import static org.folio.consortia.utils.InputOutputTestUtils.getMockData;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -22,7 +21,7 @@ import org.folio.consortia.domain.dto.UserCollection;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.repository.UserTenantRepository;
-import org.folio.consortia.service.impl.UserAffiliationAsyncServiceImpl;
+import org.folio.consortia.service.impl.PrimaryAffiliationAsyncServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -38,7 +37,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @ExtendWith(SpringExtension.class)
 class UserAffiliationAsyncServiceTest {
   @InjectMocks
-  UserAffiliationAsyncServiceImpl userAffiliationAsyncService;
+  PrimaryAffiliationAsyncServiceImpl userAffiliationAsyncService;
   @Mock
   UserService userService;
   @Mock

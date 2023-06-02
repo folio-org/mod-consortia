@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.folio.consortia.client.ConsortiaConfigurationClient;
+import org.folio.consortia.client.SyncPrimaryAffiliationClient;
 import org.folio.consortia.client.UserTenantsClient;
 import org.folio.consortia.config.FolioExecutionContextHelper;
 import org.folio.consortia.domain.dto.ConsortiaConfiguration;
@@ -59,6 +60,7 @@ public class TenantServiceImpl implements TenantService {
   private final UserService userService;
   private final FolioExecutionContextHelper contextHelper;
   private final UserTenantsClient userTenantsClient;
+  private final SyncPrimaryAffiliationClient syncPrimaryAffiliationClient;
 
   @Override
   public TenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
@@ -114,12 +116,11 @@ public class TenantServiceImpl implements TenantService {
     // switch to context of the desired tenant and apply all necessary setup
     try (var context = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(tenantDto.getId()))) {
       configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
-      // TODO: retrieve users list and POST sync-primary-affiliations endpoint
-      //createPrimaryUserAffiliationsAsync.createPrimaryUserAffiliationsAsync(consortiumId, savedTenantEntity, tenantDto);
       if (!tenantDto.getIsCentral()) {
         createUserTenantWithDummyUser(tenantDto.getId());
         createShadowAdminUserWithPermissions(shadowAdminUser); //NOSONAR
       }
+      syncPrimaryAffiliationClient.syncPrimaryAffiliations(consortiumId.toString(), tenantDto.getId());
     }
     log.info("save:: saved consortia configuration with centralTenantId={} by tenantId={} context", centralTenantId, tenantDto.getId());
     return savedTenant;
@@ -134,10 +135,9 @@ public class TenantServiceImpl implements TenantService {
     var tenantEntity = saveTenantEntity(consortiumId, tenantDto);
     var savedTenant = converter.convert(tenantEntity, Tenant.class);
 
-    if (forceCreatePrimaryAff.booleanValue()) {
+    if (forceCreatePrimaryAff) { //NOSONAR
       try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantDto.getId(), folioModuleMetadata, currentTenantContext))) {
-        // TODO: retrieve users list and POST sync-primary-affiliations endpoint
-        //createPrimaryUserAffiliationsAsync.createPrimaryUserAffiliationsAsync(consortiumId, savedTenantEntity, tenantDto);
+        syncPrimaryAffiliationClient.syncPrimaryAffiliations(consortiumId.toString(), tenantDto.getId());
       }
     }
     return savedTenant;

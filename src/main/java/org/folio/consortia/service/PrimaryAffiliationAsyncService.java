@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import org.folio.consortia.domain.dto.SyncPrimaryAffiliationBody;
 
-public interface UserAffiliationAsyncService {
+public interface PrimaryAffiliationAsyncService {
 
   /**
    * Create primary affiliation for user
@@ -12,6 +12,6 @@ public interface UserAffiliationAsyncService {
    * @param consortiumId               - consortium unique identifier
    * @param syncPrimaryAffiliationBody - consortia tenant record
    */
-  void createPrimaryUserAffiliationsAsync(UUID consortiumId, SyncPrimaryAffiliationBody syncPrimaryAffiliationBody);
+  void createPrimaryUserAffiliations(UUID consortiumId, SyncPrimaryAffiliationBody syncPrimaryAffiliationBody);
 
 }
