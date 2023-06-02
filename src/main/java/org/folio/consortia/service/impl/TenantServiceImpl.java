@@ -25,7 +25,6 @@ import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.PermissionUserService;
 import org.folio.consortia.service.TenantService;
-import org.folio.consortia.service.UserAffiliationAsyncService;
 import org.folio.consortia.service.UserService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
@@ -59,7 +58,6 @@ public class TenantServiceImpl implements TenantService {
   private final PermissionUserService permissionUserService;
   private final UserService userService;
   private final FolioExecutionContextHelper contextHelper;
-  private final UserAffiliationAsyncService createPrimaryUserAffiliationsAsync;
   private final UserTenantsClient userTenantsClient;
 
   @Override
