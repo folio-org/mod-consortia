@@ -1,5 +1,8 @@
 package org.folio.consortia.service.impl;
 
+import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -10,6 +13,9 @@ import org.folio.consortia.domain.dto.SyncUser;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.service.SyncPrimaryAffiliationService;
 import org.folio.consortia.service.UserService;
+import org.folio.spring.FolioExecutionContext;
+import org.folio.spring.FolioModuleMetadata;
+import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -22,18 +28,22 @@ import lombok.extern.log4j.Log4j2;
 public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliationService {
   private final UserService userService;
   private final SyncPrimaryAffiliationClient syncPrimaryAffiliationClient;
-
+  private final FolioExecutionContext folioExecutionContext;
+  private final FolioModuleMetadata folioModuleMetadata;
   @Override
   @Async
   public void syncPrimaryAffiliations(UUID consortiumId, String tenantId) {
     log.info("Start creating user primary affiliation for tenant {}", tenantId);
-
-    var users = userService.getUsersByQuery("cql.allRecords=1", 0, Integer.MAX_VALUE);
+    List<User> users = new ArrayList<>();
+    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioModuleMetadata, (FolioExecutionContext) folioExecutionContext.getInstance()))) {
+      users = userService.getUsersByQuery("cql.allRecords=1", 0, Integer.MAX_VALUE);
+    } catch (Exception e) {
+      log.error("syncPrimaryAffiliations:: failed to retrieve users list");
+    }
     if (CollectionUtils.isNotEmpty(users)) {
       SyncPrimaryAffiliationBody spab = buildSyncPrimaryAffiliationBody(tenantId, users);
       syncPrimaryAffiliationClient.primaryAffiliation(spab, consortiumId.toString(), tenantId);
     }
-
   }
 
   private SyncPrimaryAffiliationBody buildSyncPrimaryAffiliationBody(String tenantId, List<User> users) {

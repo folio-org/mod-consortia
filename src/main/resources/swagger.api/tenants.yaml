@@ -85,8 +85,6 @@ paths:
       parameters:
         - $ref: "#/components/parameters/consortiumId"
         - $ref: "#/components/parameters/tenantId"
-      requestBody:
-        $ref: "#/components/requestBodies/SyncPrimaryAffiliationsRequest"
       responses:
         "201":
           $ref: "#/components/responses/NoContent"
@@ -137,7 +135,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: "schemas/sync_primary_affiliation_body.yaml#/SyncPrimaryAffiliationBody"
+            $ref: "schemas/primaryAffiliationBody.yaml#/SyncPrimaryAffiliationBody"
   responses:
     Tenant:
       description: Returns a tenant object

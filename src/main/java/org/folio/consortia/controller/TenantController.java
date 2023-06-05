@@ -49,8 +49,7 @@ public class TenantController implements TenantsApi {
     return ResponseEntity.status(NO_CONTENT).build();
   }
 
-  public ResponseEntity<Void> syncPrimaryAffiliations(UUID consortiumId, String tenantId,
-      SyncPrimaryAffiliationBody syncPrimaryAffiliationBody) {
+  public ResponseEntity<Void> syncPrimaryAffiliations(UUID consortiumId, String tenantId) {
     syncPrimaryAffiliationService.syncPrimaryAffiliations(consortiumId, tenantId);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }

@@ -9,7 +9,7 @@ SyncPrimaryAffiliationBody:
       description: users
       type: array
       items:
-        "$ref": "sync_primary_affiliation_body.yaml#/SyncUser"
+        "$ref": "primaryAffiliationBody.yaml#/SyncUser"
   additionalProperties: false
   required:
     - tenantId
