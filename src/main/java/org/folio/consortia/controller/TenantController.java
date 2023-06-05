@@ -49,11 +49,13 @@ public class TenantController implements TenantsApi {
     return ResponseEntity.status(NO_CONTENT).build();
   }
 
+  @Override
   public ResponseEntity<Void> syncPrimaryAffiliations(UUID consortiumId, String tenantId) {
     syncPrimaryAffiliationService.syncPrimaryAffiliations(consortiumId, tenantId);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
+  @Override
   public ResponseEntity<Void> primaryAffiliation(UUID consortiumId, String tenantId,
       SyncPrimaryAffiliationBody syncPrimaryAffiliationBody) {
     primaryAffiliationAsyncService.createPrimaryUserAffiliations(consortiumId, syncPrimaryAffiliationBody);

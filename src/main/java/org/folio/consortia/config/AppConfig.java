@@ -1,15 +1,14 @@
 package org.folio.consortia.config;
 
+import java.util.concurrent.Executor;
+
 import org.folio.consortia.domain.converter.ConsortiumConverter;
 import org.folio.consortia.domain.converter.TenantConverter;
 import org.folio.consortia.domain.converter.UserTenantConverter;
-import org.folio.consortia.utils.TokenUtils;
 import org.folio.spring.scope.FolioExecutionScopeExecutionContextManager;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -19,8 +18,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-
-import java.util.concurrent.Executor;
 
 @Configuration
 @EnableAsync
