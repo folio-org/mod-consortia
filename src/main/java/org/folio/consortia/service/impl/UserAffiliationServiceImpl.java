@@ -41,13 +41,11 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   @SneakyThrows
   @Transactional
   public void createPrimaryUserAffiliation(String eventPayload) {
-    FolioExecutionContext requestContext = (FolioExecutionContext) folioExecutionContext.getInstance();
-    String currentTenantId = folioExecutionContext.getTenantId();
     try {
       var userEvent = objectMapper.readValue(eventPayload, UserEvent.class);
       log.info("Received event for creating primary affiliation for user: {} and tenant: {}", userEvent.getUserDto().getId(), userEvent.getTenantId());
-
-      var consortiaTenant = tenantService.getByTenantId(userEvent.getTenantId());
+      String requestedTenantId = userEvent.getTenantId();
+      var consortiaTenant = tenantService.getByTenantId(requestedTenantId);
       if (consortiaTenant == null) {
         log.warn("Tenant {} not exists in consortia", userEvent.getTenantId());
         return;
@@ -58,16 +56,17 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
         log.warn("Primary affiliation already exists for tenant/user: {}/{}", userEvent.getTenantId(), userEvent.getUserDto().getUsername());
         return;
       } else {
+        String centralTenantId = folioExecutionContext.getTenantId();
         userTenantService.createPrimaryUserTenantAffiliation(consortiaTenant.getConsortiumId(), consortiaTenant, userEvent.getUserDto().getId(), userEvent.getUserDto().getUsername());
-        if (!Objects.equals(currentTenantId, consortiaTenant.getId())) {
-          userTenantService.save(consortiaTenant.getConsortiumId(), createUserTenant(folioExecutionContext.getTenantId(), userEvent));
+        if (!Objects.equals(centralTenantId, consortiaTenant.getId())) {
+          userTenantService.save(consortiaTenant.getConsortiumId(), createUserTenant(centralTenantId, userEvent));
         }
       }
 
       PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(userEvent);
       String data = objectMapper.writeValueAsString(affiliationEvent);
 
-      try (var context = new FolioExecutionContextSetter(prepareContextForTenant(requestContext.getTenantId(), folioModuleMetadata, requestContext))) {
+      try (var context = new FolioExecutionContextSetter(prepareContextForTenant(requestedTenantId, folioModuleMetadata, folioExecutionContext))) {
         kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_CREATED, consortiaTenant.getConsortiumId().toString(), data);
       }
       log.info("Primary affiliation has been set for the user: {}", userEvent.getUserDto().getId());
