@@ -99,8 +99,7 @@ public class TenantServiceImpl implements TenantService {
     }
 
     // save tenant to db
-    TenantEntity savedTenantEntity = saveTenantEntity(consortiumId, tenantDto);
-    var savedTenant = converter.convert(savedTenantEntity, Tenant.class);
+    Tenant savedTenant = saveTenant(consortiumId, tenantDto);
 
     // save admin user tenant association for non-central tenant
     String centralTenantId;
@@ -128,17 +127,14 @@ public class TenantServiceImpl implements TenantService {
 
 
   @Override
-  public Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto, Boolean forceCreatePrimaryAff) {
+  public Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto) {
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     checkTenantAndConsortiumExistsOrThrow(consortiumId, tenantId);
     checkIdenticalOrThrow(tenantId, tenantDto.getId(), TENANTS_IDS_NOT_MATCHED_ERROR_MSG);
-    var tenantEntity = saveTenantEntity(consortiumId, tenantDto);
-    var savedTenant = converter.convert(tenantEntity, Tenant.class);
+    Tenant savedTenant = saveTenant(consortiumId, tenantDto);
 
-    if (forceCreatePrimaryAff) { //NOSONAR
-      try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantDto.getId(), folioModuleMetadata, currentTenantContext))) {
-        syncPrimaryAffiliationClient.syncPrimaryAffiliations(consortiumId.toString(), tenantDto.getId());
-      }
+    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantDto.getId(), folioModuleMetadata, currentTenantContext))) {
+      syncPrimaryAffiliationClient.syncPrimaryAffiliations(consortiumId.toString(), tenantDto.getId());
     }
     return savedTenant;
   }
@@ -152,12 +148,12 @@ public class TenantServiceImpl implements TenantService {
     tenantRepository.deleteById(tenantId);
   }
 
-  private TenantEntity saveTenantEntity(UUID consortiumId, Tenant tenantDto) {
+  private Tenant saveTenant(UUID consortiumId, Tenant tenantDto) {
     log.debug("saveTenant:: Trying to save tenant with consoritumId={} and tenant with id={}", consortiumId, tenantDto);
     TenantEntity entity = toEntity(consortiumId, tenantDto);
     TenantEntity savedTenant = tenantRepository.save(entity);
     log.info("saveTenant: Tenant '{}' successfully saved", savedTenant.getId());
-    return savedTenant;
+    return converter.convert(savedTenant, Tenant.class);
   }
 
   /*

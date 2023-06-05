@@ -28,11 +28,13 @@ import java.util.UUID;
 
 import org.folio.consortia.client.ConsortiaConfigurationClient;
 import org.folio.consortia.client.PermissionsClient;
+import org.folio.consortia.client.SyncPrimaryAffiliationClient;
 import org.folio.consortia.client.UserTenantsClient;
 import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.config.FolioExecutionContextHelper;
 import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.domain.dto.PermissionUserCollection;
+import org.folio.consortia.domain.dto.SyncPrimaryAffiliationBody;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.repository.ConsortiumRepository;
@@ -91,6 +93,9 @@ class TenantControllerTest extends BaseTest {
   PermissionsClient permissionsClient;
   @MockBean
   UserTenantsClient userTenantsClient;
+  @MockBean
+  SyncPrimaryAffiliationClient syncPrimaryAffiliationClient;
+
   @SpyBean
   UsersClient usersClient;
 
@@ -117,13 +122,19 @@ class TenantControllerTest extends BaseTest {
   @ValueSource(strings = {TENANT_REQUEST_BODY})
   void shouldSaveTenant(String contentString) throws Exception {
     var headers = defaultHeaders();
+    String userId = UUID.randomUUID().toString();
     TenantEntity centralTenant = createTenantEntity(CENTRAL_TENANT_ID, CENTRAL_TENANT_ID, "AAA", true);
     PermissionUser permissionUser = new PermissionUser();
+    permissionUser.setUserId(userId);
     permissionUser.setPermissions(List.of("test.permission"));
     PermissionUserCollection permissionUserCollection = new PermissionUserCollection();
     permissionUserCollection.setPermissionUsers(List.of(permissionUser));
     User user = new User();
-    user.setId(UUID.randomUUID().toString());
+    user.setId(userId);
+
+    var tenantEntity = new TenantEntity();
+    tenantEntity.setConsortiumId(centralTenant.getConsortiumId());
+    tenantEntity.setId("diku1234");
 
     wireMockServer.stubFor(
       WireMock.post(urlEqualTo("https://perms/users//permissions?indexField=userId"))
@@ -139,8 +150,9 @@ class TenantControllerTest extends BaseTest {
     doNothing().when(permissionsClient).addPermission(anyString(), any());
     when(consortiumRepository.existsById(any())).thenReturn(true);
     when(tenantRepository.existsById(any())).thenReturn(false);
-    when(tenantRepository.save(any(TenantEntity.class))).thenReturn(new TenantEntity());
+    when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity);
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
+    doNothing().when(syncPrimaryAffiliationClient).syncPrimaryAffiliations(anyString(), anyString());//.thenReturn(new SyncPrimaryAffiliationBody());
     doNothing().when(configurationClient).saveConfiguration(createConsortiaConfiguration(CENTRAL_TENANT_ID));
 
     this.mockMvc.perform(

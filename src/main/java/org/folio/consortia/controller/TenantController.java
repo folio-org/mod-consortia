@@ -9,9 +9,9 @@ import org.folio.consortia.domain.dto.SyncPrimaryAffiliationBody;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
 import org.folio.consortia.rest.resource.TenantsApi;
+import org.folio.consortia.service.PrimaryAffiliationAsyncService;
 import org.folio.consortia.service.SyncPrimaryAffiliationService;
 import org.folio.consortia.service.TenantService;
-import org.folio.consortia.service.PrimaryAffiliationAsyncService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -39,8 +39,8 @@ public class TenantController implements TenantsApi {
   }
 
   @Override
-  public ResponseEntity<Tenant> updateTenant(UUID consortiumId, String tenantId, @Validated Tenant tenant, Boolean forceCreatePrimaryAff) {
-    return ResponseEntity.ok(service.update(consortiumId, tenantId, tenant, forceCreatePrimaryAff));
+  public ResponseEntity<Tenant> updateTenant(UUID consortiumId, String tenantId, @Validated Tenant tenant) {
+    return ResponseEntity.ok(service.update(consortiumId, tenantId, tenant));
   }
 
   @Override

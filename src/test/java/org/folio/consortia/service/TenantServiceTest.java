@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import org.folio.consortia.client.ConsortiaConfigurationClient;
 import org.folio.consortia.client.PermissionsClient;
+import org.folio.consortia.client.SyncPrimaryAffiliationClient;
 import org.folio.consortia.client.UserTenantsClient;
 import org.folio.consortia.client.UsersClient;
 import org.folio.consortia.config.FolioExecutionContextHelper;
@@ -42,6 +43,7 @@ import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.impl.TenantServiceImpl;
 import org.folio.spring.FolioExecutionContext;
+import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -100,6 +102,11 @@ class TenantServiceTest {
   private PermissionUserService permissionService;
   @Mock
   private UserService userService;
+  @Mock
+  private SyncPrimaryAffiliationClient syncPrimaryAffiliationClient;
+  @Mock
+  FolioModuleMetadata folioModuleMetadata;
+
   @Mock
   private FolioExecutionContextHelper contextHelper;
 
@@ -214,12 +221,17 @@ class TenantServiceTest {
     TenantEntity tenantEntity1 = createTenantEntity("TestID", "TestName1");
     Tenant tenant = createTenant("TestID", "TestName2");
 
+    Map<String, Collection<String>> okapiHeaders = new HashMap<>();
+    okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
+    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
+    when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
+
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(tenantRepository.existsById(any())).thenReturn(true);
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
 
-    var tenant1 = tenantService.update(UUID.fromString(CONSORTIUM_ID), tenant.getId(), tenant, false);
+    var tenant1 = tenantService.update(UUID.fromString(CONSORTIUM_ID), tenant.getId(), tenant);
     Assertions.assertEquals(tenant.getId(), tenant1.getId());
     Assertions.assertEquals("TestName2", tenant1.getName());
   }
@@ -279,7 +291,7 @@ class TenantServiceTest {
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
 
     assertThrows(java.lang.IllegalArgumentException.class, () ->
-      tenantService.update(UUID.fromString(CONSORTIUM_ID), tenant.getId() + "1234", tenant, false));
+      tenantService.update(UUID.fromString(CONSORTIUM_ID), tenant.getId() + "1234", tenant));
   }
 
   @Test
@@ -292,7 +304,7 @@ class TenantServiceTest {
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
 
     assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class, () ->
-      tenantService.update(UUID.fromString(CONSORTIUM_ID), tenant.getId() + "1234", tenant, false));
+      tenantService.update(UUID.fromString(CONSORTIUM_ID), tenant.getId() + "1234", tenant));
   }
 
   @Test

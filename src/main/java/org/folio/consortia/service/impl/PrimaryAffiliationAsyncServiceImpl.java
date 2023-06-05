@@ -1,5 +1,7 @@
 package org.folio.consortia.service.impl;
 
+import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
+
 import java.util.UUID;
 import java.util.stream.IntStream;
 
@@ -9,9 +11,12 @@ import org.folio.consortia.domain.dto.SyncPrimaryAffiliationBody;
 import org.folio.consortia.domain.dto.SyncUser;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.repository.UserTenantRepository;
-import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.PrimaryAffiliationAsyncService;
+import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserTenantService;
+import org.folio.spring.FolioExecutionContext;
+import org.folio.spring.FolioModuleMetadata;
+import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -32,6 +37,8 @@ public class PrimaryAffiliationAsyncServiceImpl implements PrimaryAffiliationAsy
   private final KafkaService kafkaService;
   private final UserTenantRepository userTenantRepository;
   private final ConversionService converter;
+  private final FolioExecutionContext folioExecutionContext;
+  private final FolioModuleMetadata folioModuleMetadata;
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -41,7 +48,9 @@ public class PrimaryAffiliationAsyncServiceImpl implements PrimaryAffiliationAsy
     log.info("Start creating user primary affiliation for tenant {}", syncPrimaryAffiliationBody.getTenantId());
     var tenantId = syncPrimaryAffiliationBody.getTenantId();
     var userList = syncPrimaryAffiliationBody.getUsers();
-    try {
+
+    var centralTenantId = tenantService.getCentralTenantId();
+    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, (FolioExecutionContext) folioExecutionContext.getInstance()))) {
       var tenantEntity = tenantService.getByTenantId(tenantId);
       IntStream.range(0, userList.size())
         .sequential()
@@ -50,7 +59,7 @@ public class PrimaryAffiliationAsyncServiceImpl implements PrimaryAffiliationAsy
           log.info("Processing users: {} of {}", idx + 1, userList.size());
           var consortiaUserTenant = userTenantRepository.findByUserIdAndTenantId(UUID.fromString(user.getId()), tenantId)
             .orElse(null);
-          if (consortiaUserTenant != null && consortiaUserTenant.getIsPrimary()) {
+          if (consortiaUserTenant != null) {
             log.info("Primary affiliation already exists for tenant/user: {}/{}", tenantId, user.getUsername());
           } else {
             userTenantService.createPrimaryUserTenantAffiliation(consortiumId, tenantEntity, user.getId(), user.getUsername());
