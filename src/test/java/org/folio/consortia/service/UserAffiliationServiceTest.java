@@ -70,15 +70,17 @@ class UserAffiliationServiceTest {
   @Test
   void primaryAffiliationAddedSuccessfullyTest() {
     var te = createTenantEntity();
+    te.setId(TENANT);
 
     when(tenantService.getByTenantId(anyString())).thenReturn(te);
     doNothing().when(consortiumService).checkConsortiumExistsOrThrow(any());
     when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
-
     Map<String, Collection<String>> map = new HashMap<>();
     map.put(TENANT, List.of(TENANT));
     map.put(TOKEN, List.of(TOKEN));
     map.put(XOkapiHeaders.USER_ID, List.of(UUID.randomUUID().toString()));
+    when(folioExecutionContext.getOkapiHeaders()).thenReturn(map);
+
     folioExecutionContext = new DefaultFolioExecutionContext(folioModuleMetadata, map);
     try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
       userAffiliationService.createPrimaryUserAffiliation(userCreatedEventSample);
