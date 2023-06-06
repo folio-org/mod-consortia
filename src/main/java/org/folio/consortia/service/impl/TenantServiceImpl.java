@@ -131,12 +131,7 @@ public class TenantServiceImpl implements TenantService {
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     checkTenantAndConsortiumExistsOrThrow(consortiumId, tenantId);
     checkIdenticalOrThrow(tenantId, tenantDto.getId(), TENANTS_IDS_NOT_MATCHED_ERROR_MSG);
-    Tenant savedTenant = saveTenant(consortiumId, tenantDto);
-
-    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantDto.getId(), folioModuleMetadata, currentTenantContext))) {
-      syncPrimaryAffiliationClient.syncPrimaryAffiliations(consortiumId.toString(), tenantDto.getId());
-    }
-    return savedTenant;
+    return saveTenant(consortiumId, tenantDto);
   }
 
   @Override
