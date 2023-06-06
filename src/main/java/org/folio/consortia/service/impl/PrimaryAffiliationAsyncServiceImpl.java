@@ -18,18 +18,17 @@ import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 
 @Service
 @Log4j2
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class PrimaryAffiliationAsyncServiceImpl implements PrimaryAffiliationAsyncService {
 
   private final UserTenantService userTenantService;
@@ -43,32 +42,34 @@ public class PrimaryAffiliationAsyncServiceImpl implements PrimaryAffiliationAsy
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override
-  @Async(value = "asyncTaskExecutor")
   public void createPrimaryUserAffiliations(UUID consortiumId, SyncPrimaryAffiliationBody syncPrimaryAffiliationBody) {
+    FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     log.info("Start creating user primary affiliation for tenant {}", syncPrimaryAffiliationBody.getTenantId());
-      var tenantId = syncPrimaryAffiliationBody.getTenantId();
-      var userList = syncPrimaryAffiliationBody.getUsers();
-      var centralTenantId = tenantService.getCentralTenantId();
-      try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, (FolioExecutionContext) folioExecutionContext.getInstance()))) {
-        var tenantEntity = tenantService.getByTenantId(tenantId);
-        IntStream.range(0, userList.size())
-          .sequential()
-          .forEach(idx -> {
-            var user = userList.get(idx);
-            log.info("Processing users: {} of {}", idx + 1, userList.size());
-            var consortiaUserTenant = userTenantRepository.findByUserIdAndTenantId(UUID.fromString(user.getId()), tenantId)
-              .orElse(null);
-            if (consortiaUserTenant != null) {
-              log.info("Primary affiliation already exists for tenant/user: {}/{}", tenantId, user.getUsername());
-            } else {
-              userTenantService.createPrimaryUserTenantAffiliation(consortiumId, tenantEntity, user.getId(), user.getUsername());
-              sendCreatePrimaryAffiliationEvent(tenantEntity, user);
-            }
-          });
-        log.info("Successfully created primary affiliations for tenant {}", tenantId);
-      } catch (Exception e) {
-        log.error("Failed to create primary affiliations for tenant {}", tenantId, e);
-      }
+    var tenantId = syncPrimaryAffiliationBody.getTenantId();
+    var userList = syncPrimaryAffiliationBody.getUsers();
+    var centralTenantId = tenantService.getCentralTenantId();
+    TenantEntity tenantEntity = tenantService.getByTenantId(tenantId);
+
+    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentTenantContext))) {
+      IntStream.range(0, userList.size())
+        .sequential()
+        .forEach(idx -> {
+          var user = userList.get(idx);
+          log.info("Processing users: {} of {}", idx + 1, userList.size());
+
+          var consortiaUserTenant = userTenantRepository.findByUserIdAndTenantId(UUID.fromString(user.getId()), tenantId)
+            .orElse(null);
+          if (consortiaUserTenant != null) {
+            log.info("Primary affiliation already exists for tenant/user: {}/{}", tenantId, user.getUsername());
+          } else {
+            userTenantService.createPrimaryUserTenantAffiliation(consortiumId, tenantEntity, user.getId(), user.getUsername());
+            sendCreatePrimaryAffiliationEvent(tenantEntity, user);
+          }
+        });
+      log.info("Successfully created primary affiliations for tenant {}", tenantId);
+    } catch (Exception e) {
+      log.error("Failed to create primary affiliations for tenant {}", tenantId, e);
+    }
   }
 
   @SneakyThrows

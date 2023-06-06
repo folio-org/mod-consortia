@@ -90,8 +90,6 @@ class TenantControllerTest extends BaseTest {
   ConsortiaConfigurationServiceImpl configurationService;
   @MockBean
   ConsortiaConfigurationClient configurationClient;
- // @MockBean
- // TenantService tenantService;
   @MockBean
   KafkaService kafkaService;
   @MockBean

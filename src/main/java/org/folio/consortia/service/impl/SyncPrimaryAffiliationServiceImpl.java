@@ -14,12 +14,12 @@ import org.folio.consortia.service.UserService;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 @Service
 @Log4j2
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliationService {
   private final UserService userService;
   private final SyncPrimaryAffiliationClient syncPrimaryAffiliationClient;
