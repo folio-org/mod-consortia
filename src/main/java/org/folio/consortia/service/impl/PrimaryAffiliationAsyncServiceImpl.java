@@ -18,6 +18,7 @@ import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,12 +37,13 @@ public class PrimaryAffiliationAsyncServiceImpl implements PrimaryAffiliationAsy
   private final KafkaService kafkaService;
   private final UserTenantRepository userTenantRepository;
   private final ConversionService converter;
-  private final FolioExecutionContext folioExecutionContext;
   private final FolioModuleMetadata folioModuleMetadata;
+  private final FolioExecutionContext folioExecutionContext;
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override
+  @Async("asyncTaskExecutor")
   public void createPrimaryUserAffiliations(UUID consortiumId, SyncPrimaryAffiliationBody syncPrimaryAffiliationBody) {
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     log.info("Start creating user primary affiliation for tenant {}", syncPrimaryAffiliationBody.getTenantId());
