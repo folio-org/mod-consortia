@@ -25,7 +25,7 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
   private final SyncPrimaryAffiliationClient syncPrimaryAffiliationClient;
 
   @Override
-  @Async
+  @Async("asyncTaskExecutor")
   public void syncPrimaryAffiliations(UUID consortiumId, String tenantId) {
     log.info("Start creating user primary affiliation for tenant {}", tenantId);
     List<User> users = new ArrayList<>();

@@ -1,7 +1,5 @@
 package org.folio.consortia.config;
 
-import java.util.concurrent.Executor;
-
 import org.folio.consortia.domain.converter.ConsortiumConverter;
 import org.folio.consortia.domain.converter.TenantConverter;
 import org.folio.consortia.domain.converter.UserTenantConverter;
@@ -9,6 +7,7 @@ import org.folio.spring.scope.FolioExecutionScopeExecutionContextManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -31,7 +30,7 @@ public class AppConfig implements WebMvcConfigurer {
   }
   @Primary
   @Bean("asyncTaskExecutor")
-  public Executor asyncTaskExecutor() {
+  public TaskExecutor asyncTaskExecutor() {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
     executor.setCorePoolSize(Runtime.getRuntime().availableProcessors());
     executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors());
@@ -42,7 +41,6 @@ public class AppConfig implements WebMvcConfigurer {
     return executor;
   }
 
-  @Primary
   @Bean
   public ObjectMapper objectMapper() {
     final ObjectMapper objectMapper = new ObjectMapper();
