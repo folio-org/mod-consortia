@@ -78,7 +78,7 @@ class TenantControllerTest extends BaseTest {
   private static final String CONSORTIUM_ID = "7698e46-c3e3-11ed-afa1-0242ac120002";
   private static final String CENTRAL_TENANT_ID = "diku";
   public static final String SYNC_PRIMARY_AFFILIATIONS_URL = "/consortia/%s/tenants/%s/sync-primary-affiliations";
-  public static final String PRIMARY_AFFILIATIONS_URL = "/consortia/%s/tenants/%s/primary-affiliation";
+  public static final String PRIMARY_AFFILIATIONS_URL = "/consortia/%s/tenants/%s/create-primary-affiliations";
 
   @MockBean
   ConsortiumRepository consortiumRepository;
@@ -382,9 +382,6 @@ class TenantControllerTest extends BaseTest {
     this.mockMvc
       .perform(post(String.format(SYNC_PRIMARY_AFFILIATIONS_URL, consortiumId, tenantId)).headers(headers))
       .andExpectAll(status().isNoContent());
-
-    //verify(syncPrimaryAffiliationClient, timeout(3000)).primaryAffiliation(any(), anyString(),anyString());
-    //verify(syncPrimaryAffiliationClient, times(1)).primaryAffiliation(any(), anyString(),anyString());
   }
 
   @Test
@@ -414,8 +411,5 @@ class TenantControllerTest extends BaseTest {
     this.mockMvc.perform(post(String.format(PRIMARY_AFFILIATIONS_URL, consortiumId, tenantId)).headers(headers)
       .content(spabString))
       .andExpectAll(status().isNoContent());
-
-    //verify(kafkaService, times(1)).primaryAffiliation(any(), anyString(),anyString());
-
   }
 }

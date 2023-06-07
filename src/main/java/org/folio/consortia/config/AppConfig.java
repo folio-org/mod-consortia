@@ -41,6 +41,7 @@ public class AppConfig implements WebMvcConfigurer {
     return executor;
   }
 
+  @Primary
   @Bean
   public ObjectMapper objectMapper() {
     final ObjectMapper objectMapper = new ObjectMapper();

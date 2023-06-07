@@ -86,7 +86,7 @@
             "perms.users.assign.mutable",
             "users.collection.get",
             "consortia.sync-primary-affiliations.item.post",
-            "consortia.primary-affiliation.item.post"
+            "consortia.create-primary-affiliations.item.post"
           ]
         },
         {
@@ -129,16 +129,16 @@
           ],
           "modulePermissions": [
             "users.collection.get",
-            "consortia.primary-affiliation.item.post"
+            "consortia.create-primary-affiliations.item.post"
           ]
         },
         {
           "methods": [
             "POST"
           ],
-          "pathPattern": "/consortia/{consortiumId}/tenants/{tenantId}/primary-affiliation",
+          "pathPattern": "/consortia/{consortiumId}/tenants/{tenantId}/create-primary-affiliations",
           "permissionsRequired": [
-            "consortia.primary-affiliation.item.post"
+            "consortia.create-primary-affiliations.item.post"
           ],
           "modulePermissions": []
         },
@@ -255,7 +255,7 @@
         "consortia.user-tenants.item.delete",
         "consortia.consortia-configuration.item.post",
         "consortia.sync-primary-affiliations.item.post",
-        "consortia.primary-affiliation.item.post"
+        "consortia.create-primary-affiliations.item.post"
       ]
     },
     {
@@ -284,7 +284,7 @@
       "description": "Synchronize consortia primary affiliations"
     },
     {
-      "permissionName": "consortia.primary-affiliation.item.post",
+      "permissionName": "consortia.create-primary-affiliations.item.post",
       "displayName": "create consortia primary affiliation",
       "description": "create consortia primary affiliation"
     },

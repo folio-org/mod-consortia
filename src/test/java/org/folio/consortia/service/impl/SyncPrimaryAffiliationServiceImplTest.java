@@ -6,6 +6,7 @@ import static org.folio.consortia.utils.InputOutputTestUtils.getMockData;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -49,9 +50,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @SpringBootTest
 @EnableAutoConfiguration(exclude = BatchAutoConfiguration.class)
 @EntityScan(basePackageClasses = UserTenantEntity.class)
-class PrimaryAffiliationAsyncServiceImplTest {
+class SyncPrimaryAffiliationServiceImplTest {
   @InjectMocks
-  PrimaryAffiliationAsyncServiceImpl primaryAffiliationAsyncService;
+  SyncPrimaryAffiliationServiceImpl syncPrimaryAffiliationService;
   @Mock
   private UserTenantService userTenantService;
   @Mock
@@ -105,7 +106,7 @@ class PrimaryAffiliationAsyncServiceImplTest {
     okapiHeaders.put(XOkapiHeaders.TENANT, List.of(tenantId));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
-    primaryAffiliationAsyncService.createPrimaryUserAffiliations(consortiumId, spab);
+    syncPrimaryAffiliationService.createPrimaryUserAffiliations(consortiumId, spab);
 
     verify(kafkaService, timeout(2000)).send(any(), anyString(), anyString());
   }

@@ -13,8 +13,8 @@ public interface SyncPrimaryAffiliationClient {
   @PostMapping(value = "/{consortiumId}/tenants/{tenantId}/sync-primary-affiliations")
   void syncPrimaryAffiliations(@PathVariable("consortiumId") String consortiumId, @PathVariable("tenantId") String tenantId);
 
-  @PostMapping(value = "/{consortiumId}/tenants/{tenantId}/primary-affiliation", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  SyncPrimaryAffiliationBody primaryAffiliation(@RequestBody SyncPrimaryAffiliationBody syncPrimaryAffiliationBody,
-      @PathVariable("consortiumId") String consortiumId, @PathVariable("tenantId") String tenantId);
+  @PostMapping(value = "/{consortiumId}/tenants/{tenantId}/create-primary-affiliations", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  SyncPrimaryAffiliationBody savePrimaryAffiliations(@RequestBody SyncPrimaryAffiliationBody syncPrimaryAffiliationBody,
+                                                     @PathVariable("consortiumId") String consortiumId, @PathVariable("tenantId") String tenantId);
 
 }

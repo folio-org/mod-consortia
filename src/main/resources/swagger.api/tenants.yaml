@@ -97,9 +97,9 @@ paths:
           $ref: "#/components/responses/Conflict"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /tenants/{tenantId}/primary-affiliation:
+  /tenants/{tenantId}/create-primary-affiliations:
     post:
-      summary: Sync Primary Affiliations
+      summary: Create Primary Affiliations
       operationId: primaryAffiliation
       parameters:
         - $ref: "#/components/parameters/consortiumId"
