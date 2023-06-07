@@ -100,7 +100,7 @@ paths:
   /tenants/{tenantId}/create-primary-affiliations:
     post:
       summary: Create Primary Affiliations
-      operationId: createPrimaryAffiliation
+      operationId: createPrimaryAffiliations
       parameters:
         - $ref: "#/components/parameters/consortiumId"
         - $ref: "#/components/parameters/tenantId"
