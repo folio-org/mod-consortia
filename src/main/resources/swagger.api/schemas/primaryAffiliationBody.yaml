@@ -1,9 +1,9 @@
 SyncPrimaryAffiliationBody:
-  description: "Primary affiliation event"
+  description: "Primary affiliation DTO"
   type: object
   properties:
     tenantId:
-      description: "The name of the user's tenant"
+      description: "Unique tenant id"
       type: string
     users:
       description: users
@@ -19,10 +19,10 @@ SyncUser:
   type: object
   properties:
     id:
-      description: "The name of the user's tenant"
+      description: "User id"
       type: string
     username:
-      description: "The name of the user's tenant"
+      description: "The name of the user"
       type: string
   additionalProperties: false
 

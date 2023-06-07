@@ -54,7 +54,7 @@ public class TenantController implements TenantsApi {
   }
 
   @Override
-  public ResponseEntity<Void> primaryAffiliation(UUID consortiumId, String tenantId,
+  public ResponseEntity<Void> createPrimaryAffiliation(UUID consortiumId, String tenantId,
       SyncPrimaryAffiliationBody syncPrimaryAffiliationBody) {
     syncPrimaryAffiliationService.createPrimaryUserAffiliations(consortiumId, syncPrimaryAffiliationBody);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
