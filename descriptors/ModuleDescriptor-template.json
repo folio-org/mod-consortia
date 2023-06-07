@@ -84,7 +84,9 @@
             "perms.users.item.post",
             "perms.users.assign.immutable",
             "perms.users.assign.mutable",
-            "users.collection.get"
+            "users.collection.get",
+            "consortia.sync-primary-affiliations.item.post",
+            "consortia.primary-affiliation.item.post"
           ]
         },
         {
