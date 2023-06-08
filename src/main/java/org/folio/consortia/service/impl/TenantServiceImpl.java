@@ -1,7 +1,6 @@
 package org.folio.consortia.service.impl;
 
 import static org.folio.consortia.utils.HelperUtils.checkIdenticalOrThrow;
-import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -128,7 +127,6 @@ public class TenantServiceImpl implements TenantService {
 
   @Override
   public Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto) {
-    FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     checkTenantAndConsortiumExistsOrThrow(consortiumId, tenantId);
     checkIdenticalOrThrow(tenantId, tenantDto.getId(), TENANTS_IDS_NOT_MATCHED_ERROR_MSG);
     return saveTenant(consortiumId, tenantDto);

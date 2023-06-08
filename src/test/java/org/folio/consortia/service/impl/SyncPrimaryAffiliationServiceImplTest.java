@@ -30,6 +30,7 @@ import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
+import org.folio.consortia.service.ConsortiaConfigurationService;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserService;
 import org.folio.consortia.service.UserTenantService;
@@ -46,6 +47,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.data.domain.PageImpl;
 
 @SpringBootTest
 @EnableAutoConfiguration(exclude = BatchAutoConfiguration.class)
@@ -65,6 +67,8 @@ class SyncPrimaryAffiliationServiceImplTest {
   private FolioModuleMetadata folioModuleMetadata;
   @Mock
   private FolioExecutionContext folioExecutionContext;
+  @Mock
+  private ConsortiaConfigurationService consortiaConfigurationService;
 
   @Mock
   UserService userService;
@@ -94,11 +98,12 @@ class SyncPrimaryAffiliationServiceImplTest {
       .tenantId(tenantId);
 
     // stub collection of 2 users
-    when(tenantService.getCentralTenantId()).thenReturn(tenant.getId());
     when(tenantService.getByTenantId(anyString())).thenReturn(tenantEntity1);
+    when(userTenantRepository.findByUserId(any(), any())).thenReturn(new PageImpl<>(Collections.emptyList()));
     when(tenantRepository.findById(anyString())).thenReturn(Optional.of(tenantEntity1));
     when(userService.getUsersByQuery(anyString(), anyInt(), anyInt())).thenReturn(userCollection);
     when(userTenantService.createPrimaryUserTenantAffiliation(any(), any(), anyString(), anyString())).thenReturn(new UserTenant());
+    when(consortiaConfigurationService.getCentralTenantId(anyString())).thenReturn(tenantId);
 
     when(folioExecutionContext.getTenantId()).thenReturn(tenantId);
     when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
