@@ -1,7 +1,5 @@
 package org.folio.consortia.service.impl;
 
-import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
-
 import java.util.Objects;
 import java.util.UUID;
 
@@ -15,7 +13,6 @@ import org.folio.consortia.service.UserAffiliationService;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
-import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
