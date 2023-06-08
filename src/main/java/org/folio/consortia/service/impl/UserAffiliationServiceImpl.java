@@ -12,7 +12,6 @@ import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserAffiliationService;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.spring.FolioExecutionContext;
-import org.folio.spring.FolioModuleMetadata;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +30,6 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   private final TenantService tenantService;
   private final KafkaService kafkaService;
   private final FolioExecutionContext folioExecutionContext;
-  private final FolioModuleMetadata folioModuleMetadata;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override

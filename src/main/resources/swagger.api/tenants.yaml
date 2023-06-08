@@ -150,7 +150,6 @@ components:
       name: adminUserId
       schema:
         $ref: "schemas/common.yaml#/uuid"
-      required: true
       description: The ID of adminUser
     tenantId:
       in: path
