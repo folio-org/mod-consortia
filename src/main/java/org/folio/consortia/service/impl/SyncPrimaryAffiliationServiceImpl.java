@@ -84,9 +84,9 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
     var tenantId = syncPrimaryAffiliationBody.getTenantId();
     var userList = syncPrimaryAffiliationBody.getUsers();
     var centralTenantId = consortiaConfigurationService.getCentralTenantId(tenantId);
-    TenantEntity tenantEntity = tenantService.getByTenantId(tenantId);
 
     try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentTenantContext))) {
+      TenantEntity tenantEntity = tenantService.getByTenantId(tenantId);
       IntStream.range(0, userList.size())
         .sequential()
         .forEach(idx -> {
