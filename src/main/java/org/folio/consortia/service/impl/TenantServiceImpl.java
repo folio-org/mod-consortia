@@ -6,7 +6,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.codehaus.plexus.util.StringUtils;
 import org.folio.consortia.client.ConsortiaConfigurationClient;
 import org.folio.consortia.client.SyncPrimaryAffiliationClient;
 import org.folio.consortia.client.UserTenantsClient;
@@ -188,9 +187,9 @@ public class TenantServiceImpl implements TenantService {
   }
 
   private void checkAdminUserIdPresentOrThrow(UUID adminUserId) {
-    if (Objects.isNull(adminUserId) || StringUtils.isBlank(adminUserId.toString())) {
-      log.warn("User id is null");
-      throw new IllegalArgumentException("Required request parameter 'adminUserId' for method parameter type UUID is not present,");
+    if (Objects.isNull(adminUserId)) {
+      log.warn("checkAdminUserIdPresentOrThrow:: adminUserId is not present");
+      throw new IllegalArgumentException("Required request parameter 'adminUserId' for method parameter type UUID is not present");
     }
   }
 

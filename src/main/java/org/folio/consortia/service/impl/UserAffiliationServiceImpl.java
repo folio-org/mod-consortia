@@ -55,7 +55,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
         String centralTenantId = folioExecutionContext.getTenantId();
         userTenantService.createPrimaryUserTenantAffiliation(consortiaTenant.getConsortiumId(), consortiaTenant, userEvent.getUserDto().getId(), userEvent.getUserDto().getUsername());
         if (!Objects.equals(centralTenantId, consortiaTenant.getId())) {
-          userTenantService.save(consortiaTenant.getConsortiumId(), createUserTenant(centralTenantId, userEvent));
+          userTenantService.save(consortiaTenant.getConsortiumId(), createUserTenant(centralTenantId, userEvent), false);
         }
       }
 
@@ -97,8 +97,8 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   }
 
   private UUID getUserId(UserEvent userEvent) {
-    if (userEvent.getUserDto().getId() == null) {
-      throw new IllegalArgumentException("User id is null");
+    if (StringUtils.isBlank(userEvent.getUserDto().getId())) {
+      throw new IllegalArgumentException("User id is empty");
     }
     return UUID.fromString(userEvent.getUserDto().getId());
   }

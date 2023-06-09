@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.folio.consortia.config.FolioExecutionContextHelper;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
@@ -56,6 +57,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   private final UserService userService;
   private final FolioModuleMetadata folioModuleMetadata;
   private final PermissionUserService permissionUserService;
+  private final FolioExecutionContextHelper contextHelper;
 
   @Override
   public UserTenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
@@ -70,8 +72,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   @Override
   public UserTenant getById(UUID consortiumId, UUID id) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    UserTenantEntity userTenantEntity = userTenantRepository.findById(id)
-      .orElseThrow(() -> new ResourceNotFoundException("id", String.valueOf(id)));
+    UserTenantEntity userTenantEntity = userTenantRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("id", String.valueOf(id)));
     return converter.convert(userTenantEntity, UserTenant.class);
   }
 
@@ -105,7 +106,7 @@ public class UserTenantServiceImpl implements UserTenantService {
 
   @Override
   @Transactional
-  public UserTenant save(UUID consortiumId, UserTenant userTenantDto) {
+  public UserTenant save(UUID consortiumId, UserTenant userTenantDto, boolean isSystemUserContextRequired) {
     log.debug("Going to save user with id: {} into tenant: {}", userTenantDto.getUserId(), userTenantDto.getTenantId());
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     String currentTenantId = folioExecutionContext.getTenantId();
@@ -118,14 +119,16 @@ public class UserTenantServiceImpl implements UserTenantService {
     }
 
     User shadowUser = userService.prepareShadowUser(userTenantDto.getUserId(), userTenant.get().getTenant().getId());
-    createOrUpdateShadowUser(userTenantDto.getUserId(), shadowUser, userTenantDto, currentTenantContext);
+    if (isSystemUserContextRequired) {
+      createOrUpdateShadowUserWithSystemUserContext(userTenantDto.getUserId(), shadowUser, userTenantDto);
+    } else {
+      createOrUpdateShadowUser(userTenantDto.getUserId(), shadowUser, userTenantDto, currentTenantContext);
+    }
 
     try (var context = new FolioExecutionContextSetter(prepareContextForTenant(currentTenantId, folioModuleMetadata, currentTenantContext))) {
       UserTenantEntity userTenantEntity = toEntity(userTenantDto, consortiumId, shadowUser);
       userTenantRepository.save(userTenantEntity);
-      log.info("User affiliation added and user created or activated for user id: {} in the tenant: {}",
-        userTenantDto.getUserId(), userTenantDto.getTenantId());
-
+      log.info("User affiliation added and user created or activated for user id: {} in the tenant: {}", userTenantDto.getUserId(), userTenantDto.getTenantId());
       return converter.convert(userTenantEntity, UserTenant.class);
     }
   }
@@ -158,8 +161,7 @@ public class UserTenantServiceImpl implements UserTenantService {
       .orElseThrow(() -> new ResourceNotFoundException(USER_ID + ", " + TENANT_ID, userId + ", " + tenantId));
 
     if (Boolean.TRUE.equals(userTenantEntity.getIsPrimary())) {
-      log.warn("Primary affiliation could not be deleted from API for user id: {} in the tenant: {}",
-        userId.toString(), userTenantEntity.getTenant().getId());
+      log.warn("Primary affiliation could not be deleted from API for user id: {} in the tenant: {}", userId.toString(), userTenantEntity.getTenant().getId());
       throw new PrimaryAffiliationException(String.valueOf(userId), tenantId);
     }
 
@@ -175,8 +177,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   @Override
   public boolean checkUserIfHasPrimaryAffiliationByUserId(UUID consortiumId, String userId) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    Optional<UserTenantEntity> optionalUserTenant = userTenantRepository
-      .findByUserIdAndIsPrimary(UUID.fromString(userId), IS_PRIMARY_TRUE);
+    Optional<UserTenantEntity> optionalUserTenant = userTenantRepository.findByUserIdAndIsPrimary(UUID.fromString(userId), IS_PRIMARY_TRUE);
     return optionalUserTenant.isPresent();
   }
 
@@ -194,6 +195,18 @@ public class UserTenantServiceImpl implements UserTenantService {
   private void createOrUpdateShadowUser(UUID userId, User shadowUser, UserTenant userTenantDto, FolioExecutionContext folioExecutionContext) {
     log.info("Going to create or update shadow user with id: {} in the desired tenant: {}", userId.toString(), userTenantDto.getTenantId());
     try (var context = new FolioExecutionContextSetter(prepareContextForTenant(userTenantDto.getTenantId(), folioModuleMetadata, folioExecutionContext))) {
+      User user = userService.getById(userId);
+      if (Objects.nonNull(user.getActive())) {
+        activateUser(user);
+      } else {
+        createActiveUserWithPermissions(shadowUser);
+      }
+    }
+  }
+
+  private void createOrUpdateShadowUserWithSystemUserContext(UUID userId, User shadowUser, UserTenant userTenantDto) {
+    try (var context = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(userTenantDto.getTenantId()))) {
+      log.info("Going to create or update shadow user with id: {} in the desired tenant: {}", userId.toString(), userTenantDto.getTenantId());
       User user = userService.getById(userId);
       if (Objects.nonNull(user.getActive())) {
         activateUser(user);
