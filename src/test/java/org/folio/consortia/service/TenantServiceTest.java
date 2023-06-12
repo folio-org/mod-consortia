@@ -291,7 +291,7 @@ class TenantServiceTest {
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
 
     assertThrows(java.lang.IllegalArgumentException.class, () ->
-      tenantService.update(UUID.fromString(CONSORTIUM_ID), tenant.getId() + "1234", tenant));
+      tenantService.save(UUID.fromString(CONSORTIUM_ID), UUID.fromString(""), tenant));
   }
 
   @Test
