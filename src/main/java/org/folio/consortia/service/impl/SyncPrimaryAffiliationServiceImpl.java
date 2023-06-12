@@ -91,26 +91,28 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
 
     try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentTenantContext))) {
       TenantEntity tenantEntity = tenantService.getByTenantId(tenantId);
-      IntStream.range(0, userList.size()).sequential().forEach(idx -> {
-        var user = userList.get(idx);
-        log.info("Processing users: {} of {}", idx + 1, userList.size());
+      IntStream.range(0, userList.size())
+        .sequential()
+        .forEach(idx -> {
+          var user = userList.get(idx);
+          log.info("Processing users: {} of {}", idx + 1, userList.size());
 
-        // context changes in every iteration and folioExecutionContext become an empty, so we should set saved context again.
-        try (var context2 = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentTenantContext))) {
-          Page<UserTenantEntity> userTenantPage = userTenantRepository.findByUserId(UUID.fromString(user.getId()), PageRequest.of(0, 1));
-          if (userTenantPage.getTotalElements() > 0) {
-            log.info("Primary affiliation already exists for tenant/user: {}/{}", tenantId, user.getUsername());
-          } else {
-            userTenantService.createPrimaryUserTenantAffiliation(consortiumId, tenantEntity, user.getId(), user.getUsername());
-            if (ObjectUtils.notEqual(centralTenantId, tenantEntity.getId())) {
-              userTenantService.save(consortiumId, createUserTenant(centralTenantId, user), true);
-            }
-            // context changes in userTenantService.save(), so we should set saved context again.
-            try (var context3 = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentTenantContext))) {
-              sendCreatePrimaryAffiliationEvent(tenantEntity, user);
+          // context changes in every iteration and folioExecutionContext become an empty, so we should set saved context again.
+          try (var context2 = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentTenantContext))) {
+            Page<UserTenantEntity> userTenantPage = userTenantRepository.findByUserId(UUID.fromString(user.getId()), PageRequest.of(0, 1));
+            if (userTenantPage.getTotalElements() > 0) {
+              log.info("Primary affiliation already exists for tenant/user: {}/{}", tenantId, user.getUsername());
+            } else {
+              userTenantService.createPrimaryUserTenantAffiliation(consortiumId, tenantEntity, user.getId(), user.getUsername());
+              if (ObjectUtils.notEqual(centralTenantId, tenantEntity.getId())) {
+                userTenantService.save(consortiumId, createUserTenant(centralTenantId, user), true);
+              }
+              // context changes in userTenantService.save(), so we should set saved context again.
+              try (var context3 = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentTenantContext))) {
+                sendCreatePrimaryAffiliationEvent(tenantEntity, user);
+              }
             }
           }
-        }
 
       });
       log.info("Successfully created primary affiliations for tenant {}", tenantId);
