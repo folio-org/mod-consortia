@@ -1,8 +1,8 @@
 package org.folio.consortia.service.impl;
 
-import java.util.Objects;
 import java.util.UUID;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.domain.dto.PrimaryAffiliationEvent;
@@ -54,7 +54,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       } else {
         String centralTenantId = folioExecutionContext.getTenantId();
         userTenantService.createPrimaryUserTenantAffiliation(consortiaTenant.getConsortiumId(), consortiaTenant, userEvent.getUserDto().getId(), userEvent.getUserDto().getUsername());
-        if (!Objects.equals(centralTenantId, consortiaTenant.getId())) {
+        if (ObjectUtils.notEqual(centralTenantId, consortiaTenant.getId())) {
           userTenantService.save(consortiaTenant.getConsortiumId(), createUserTenant(centralTenantId, userEvent), false);
         }
       }
