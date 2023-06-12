@@ -209,13 +209,13 @@ public class UserTenantServiceImpl implements UserTenantService {
 
   private void createOrUpdateShadowUserWithRequestedContext(UUID userId, User shadowUser, UserTenant userTenantDto,
     FolioExecutionContext folioExecutionContext) {
-    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(userTenantDto.getTenantId(), folioModuleMetadata, folioExecutionContext))) {
+    try (var ignored = new FolioExecutionContextSetter(prepareContextForTenant(userTenantDto.getTenantId(), folioModuleMetadata, folioExecutionContext))) {
       createOrUpdateShadowUser(userId, shadowUser, userTenantDto);
     }
   }
 
   private void createOrUpdateShadowUserWithSystemUserContext(UUID userId, User shadowUser, UserTenant userTenantDto) {
-    try (var context = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(userTenantDto.getTenantId()))) {
+    try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(userTenantDto.getTenantId()))) {
       createOrUpdateShadowUser(userId, shadowUser, userTenantDto);
     }
   }
