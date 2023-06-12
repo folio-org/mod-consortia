@@ -198,7 +198,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   }
 
   private void createOrUpdateShadowUser(UUID userId, User shadowUser, UserTenant userTenantDto) {
-    log.info("createOrUpdateShadowUser:: Going to create or update shadow user with id: {}in the desired tenant: {}", userId.toString(), userTenantDto.getTenantId());
+    log.info("createOrUpdateShadowUser:: Going to create or update shadow user with id: {} in the desired tenant: {}", userId.toString(), userTenantDto.getTenantId());
     User user = userService.getById(userId);
     if (Objects.nonNull(user.getActive())) {
       activateUser(user);
