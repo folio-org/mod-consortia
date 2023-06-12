@@ -40,14 +40,14 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       var userEvent = objectMapper.readValue(eventPayload, UserEvent.class);
       log.info("Received event for creating primary affiliation for user: {} and tenant: {}", userEvent.getUserDto().getId(), userEvent.getTenantId());
 
-      String requestedTenantId = userEvent.getTenantId();
-      var consortiaTenant = tenantService.getByTenantId(requestedTenantId);
+      var consortiaTenant = tenantService.getByTenantId(userEvent.getTenantId());
       if (consortiaTenant == null) {
         log.warn("Tenant {} not exists in consortia", userEvent.getTenantId());
         return;
       }
 
-      boolean isPrimaryAffiliationExists = userTenantService.checkUserIfHasPrimaryAffiliationByUserId(consortiaTenant.getConsortiumId(), userEvent.getUserDto().getId());
+      boolean isPrimaryAffiliationExists = userTenantService
+        .checkUserIfHasPrimaryAffiliationByUserId(consortiaTenant.getConsortiumId(), userEvent.getUserDto().getId());
       if (isPrimaryAffiliationExists) {
         log.warn("Primary affiliation already exists for tenant/user: {}/{}", userEvent.getTenantId(), userEvent.getUserDto().getUsername());
         return;
