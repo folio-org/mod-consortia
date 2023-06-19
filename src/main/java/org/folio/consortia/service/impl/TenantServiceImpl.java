@@ -125,7 +125,6 @@ public class TenantServiceImpl implements TenantService {
     return savedTenant;
   }
 
-
   @Override
   public Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto) {
     checkTenantAndConsortiumExistsOrThrow(consortiumId, tenantId);
@@ -145,6 +144,7 @@ public class TenantServiceImpl implements TenantService {
   private Tenant saveTenant(UUID consortiumId, Tenant tenantDto) {
     log.debug("saveTenant:: Trying to save tenant with consoritumId={} and tenant with id={}", consortiumId, tenantDto);
     TenantEntity entity = toEntity(consortiumId, tenantDto);
+    entity.validate();
     TenantEntity savedTenant = tenantRepository.save(entity);
     log.info("saveTenant: Tenant '{}' successfully saved", savedTenant.getId());
     return converter.convert(savedTenant, Tenant.class);
