@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/consortia/{consortiumId}")
 @RequiredArgsConstructor
-public class PublishCoordinatorController implements org.folio.consortia.rest.resource.PublicationsApi {
+public class PublicationController implements org.folio.consortia.rest.resource.PublicationsApi {
 
   private final PublicationService publishCoordinatorService;
 

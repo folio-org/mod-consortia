@@ -1,0 +1,12 @@
+{
+  "url": "/organizations-storage/organizations",
+  "method": "POST",
+  "tenants": [
+    "central"
+  ],
+  "payload": {
+    "name": "ORG-NAME",
+    "status": "Active",
+    "code": "ORG-CODE"
+  }
+}

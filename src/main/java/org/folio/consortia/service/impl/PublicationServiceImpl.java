@@ -98,7 +98,10 @@ public class PublicationServiceImpl implements PublicationService {
       throw new PublicationException("Tenant list is empty");
     }
     tenantService.checkTenantsAndConsortiumExistsOrThrow(consortiumId, List.copyOf(publication.getTenants()));
-    userTenantService.checkUserIfHasPrimaryAffiliationByUserId(consortiumId, context.getUserId().toString());
+    var userAffiliated = userTenantService.checkUserIfHasPrimaryAffiliationByUserId(consortiumId, context.getUserId().toString());
+    if (!userAffiliated) {
+      throw new PublicationException("User doesn't have primary affiliation");
+    }
   }
 
   private PublicationResponse buildPublicationResponse(String publicationId) {
