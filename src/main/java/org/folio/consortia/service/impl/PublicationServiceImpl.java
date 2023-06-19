@@ -11,6 +11,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.folio.consortia.domain.dto.PublicationRequest;
 import org.folio.consortia.domain.dto.PublicationResponse;
 import org.folio.consortia.exception.PublicationException;
+import org.folio.consortia.service.HttpRequestService;
 import org.folio.consortia.service.PublicationService;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserTenantService;
@@ -31,7 +32,7 @@ public class PublicationServiceImpl implements PublicationService {
   private final UserTenantService userTenantService;
   private final FolioExecutionContext folioExecutionContext;
   private final FolioModuleMetadata folioModuleMetadata;
-  private final HttpRequestServiceImpl httpRequestService;
+  private final HttpRequestService httpRequestService;
   private final TaskExecutor asyncTaskExecutor;
 
   @Override
@@ -61,11 +62,11 @@ public class PublicationServiceImpl implements PublicationService {
       try {
         var response = httpRequestService.postRequest(publication.getUrl(), publication.getPayload());
         if (response.getStatusCode().is2xxSuccessful()) {
-          log.info("publishRequest:: successfully called {}", publication.getUrl());
+          log.info("executeAsyncTask:: successfully called {}", publication.getUrl());
           future.complete(response.getBody());
         }
       } catch (Exception t) {
-        log.error("Error making request on tenant {}", tenantId, t);
+        log.error("executeAsyncTask:: Error making request on tenant {}", tenantId, t);
         future.completeExceptionally(t);
       }
     });
@@ -82,8 +83,7 @@ public class PublicationServiceImpl implements PublicationService {
   }
 
   private void updatePublicationsStatus(List<CompletableFuture<Object>> futures, PublicationResponse savedPublication) {
-    var isCompletedWithExceptions = futures.stream()
-      .anyMatch(CompletableFuture::isCompletedExceptionally);
+    var isCompletedWithExceptions = futures.stream().anyMatch(CompletableFuture::isCompletedExceptionally);
     var updateStatus = isCompletedWithExceptions ? PublicationResponse.StatusEnum.ERROR : PublicationResponse.StatusEnum.SUCCESS;
 
     savedPublication.setStatus(updateStatus);
@@ -105,7 +105,8 @@ public class PublicationServiceImpl implements PublicationService {
   }
 
   private PublicationResponse buildPublicationResponse(String publicationId) {
-    return new PublicationResponse().id(publicationId)
+    return new PublicationResponse()
+      .id(publicationId)
       .status(PublicationResponse.StatusEnum.IN_PROGRESS);
   }
 

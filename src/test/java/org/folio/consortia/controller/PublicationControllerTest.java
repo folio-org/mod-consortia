@@ -2,23 +2,25 @@ package org.folio.consortia.controller;
 
 import static org.folio.consortia.utils.InputOutputTestUtils.getMockData;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.List;
 import java.util.UUID;
 
-import org.folio.consortia.client.UserTenantsClient;
 import org.folio.consortia.domain.dto.PublicationRequest;
+import org.folio.consortia.service.HttpRequestService;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.consortia.support.BaseTest;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 public class PublicationControllerTest extends BaseTest {
   public static final String PRIMARY_AFFILIATIONS_URL = "/consortia/%s/publications";
@@ -26,6 +28,8 @@ public class PublicationControllerTest extends BaseTest {
   TenantService tenantService;
   @MockBean
   UserTenantService userTenantService;
+  @MockBean
+  HttpRequestService httpRequestService;
 
   @Test
   void publicationSuccessful() throws Exception {
@@ -49,14 +53,16 @@ public class PublicationControllerTest extends BaseTest {
     var consortiumId = UUID.randomUUID();
     var publicationString = getMockData("mockdata/publication_request.json");
 
+
+    var respEntity = new ResponseEntity<>((Object)publicationString, HttpStatusCode.valueOf(400));
+
     doNothing().when(tenantService).checkTenantsAndConsortiumExistsOrThrow(any(UUID.class), any());
     when(userTenantService.checkUserIfHasPrimaryAffiliationByUserId(any(UUID.class), any())).thenReturn(true);
+    when(httpRequestService.postRequest(anyString(), any())).thenReturn(respEntity);
 
     this.mockMvc.perform(post(String.format(PRIMARY_AFFILIATIONS_URL, consortiumId)).headers(headers)
         .content(publicationString))
       .andExpectAll(status().is2xxSuccessful());
-
-    //check for async errors
   }
   @Test
   void publicationPreValidationError() throws Exception {

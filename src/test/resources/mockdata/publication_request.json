@@ -2,7 +2,8 @@
   "url": "/organizations-storage/organizations",
   "method": "POST",
   "tenants": [
-    "central"
+    "central",
+    "secondary"
   ],
   "payload": {
     "name": "ORG-NAME",

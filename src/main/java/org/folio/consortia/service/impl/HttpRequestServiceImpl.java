@@ -20,9 +20,10 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 @Log4j2
 public class HttpRequestServiceImpl implements HttpRequestService {
-  private final RestTemplate restTemplate = new RestTemplate();
+  private final RestTemplate restTemplate;
   private final FolioExecutionContext folioExecutionContext;
 
+  @Override
   public ResponseEntity<Object> postRequest(String url, Object payload) {
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     var headers = convertHeadersToMultiMap(folioExecutionContext.getAllHeaders());
