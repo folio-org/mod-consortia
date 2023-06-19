@@ -286,7 +286,7 @@ class TenantControllerTest extends BaseTest {
         .headers(headers)
         .contentType(MediaType.APPLICATION_JSON)
         .content(contentString))
-      .andExpect(status().isUnprocessableEntity())
+      .andExpect(status().isBadRequest())
       .andExpect(jsonPath("$.errors.size()", is(2)))
       .andExpect(jsonPath("$.errors[0].code", is("ValidationError")))
       .andExpect(jsonPath("$.errors[0].type", is("-1")))
