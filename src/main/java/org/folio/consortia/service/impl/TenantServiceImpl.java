@@ -2,6 +2,8 @@ package org.folio.consortia.service.impl;
 
 import static org.folio.consortia.utils.HelperUtils.checkIdenticalOrThrow;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -128,14 +130,14 @@ public class TenantServiceImpl implements TenantService {
 
   @Override
   public Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto) {
-    checkTenantAndConsortiumExistsOrThrow(consortiumId, tenantId);
+    checkTenantsAndConsortiumExistsOrThrow(consortiumId, Collections.singletonList(tenantId));
     checkIdenticalOrThrow(tenantId, tenantDto.getId(), TENANTS_IDS_NOT_MATCHED_ERROR_MSG);
     return saveTenant(consortiumId, tenantDto);
   }
 
   @Override
   public void delete(UUID consortiumId, String tenantId) {
-    checkTenantAndConsortiumExistsOrThrow(consortiumId, tenantId);
+    checkTenantsAndConsortiumExistsOrThrow(consortiumId, Collections.singletonList(tenantId));
     if (userTenantRepository.existsByTenantId(tenantId)) {
       throw new IllegalArgumentException(TENANT_HAS_ACTIVE_USER_ASSOCIATIONS_ERROR_MSG);
     }
@@ -175,12 +177,14 @@ public class TenantServiceImpl implements TenantService {
       throw new ResourceAlreadyExistException("id", tenantId);
     }
   }
-
-  private void checkTenantAndConsortiumExistsOrThrow(UUID consortiumId, String tenantId) {
+  @Override
+  public void checkTenantsAndConsortiumExistsOrThrow(UUID consortiumId, List<String> tenantIds) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    if (!tenantRepository.existsById(tenantId)) {
-      throw new ResourceNotFoundException("id", tenantId);
-    }
+    tenantIds.forEach(tenantId -> {
+      if (!tenantRepository.existsById(tenantId)) {
+        throw new ResourceNotFoundException("id", tenantId);
+      }
+    });
   }
 
   private void checkCentralTenantExistsOrThrow() {

@@ -1,6 +1,6 @@
-Publication:
+PublicationRequest:
   type: object
-  title: Publication
+  title: Publication request
   properties:
     url:
       description: URL for publishing requests for consortia tenants
@@ -17,4 +17,17 @@ Publication:
     payload:
       description: Http request body
       type: object
+  additionalProperties: false
+
+PublicationResponse:
+  type: object
+  title: Publication response
+  properties:
+    id:
+      description: id of publication record
+      type: string
+    status:
+      description: HTTP method
+      type: string
+      enum: [ "IN_PROGRESS", "ERROR", "SUCCESS" ]
   additionalProperties: false

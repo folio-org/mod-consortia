@@ -1,22 +1,25 @@
 package org.folio.consortia.controller;
 
-import org.folio.consortia.domain.dto.Publication;
-import org.folio.consortia.service.PublishCoordinatorService;
-import org.springframework.http.HttpStatus;
+import java.util.UUID;
+
+import org.folio.consortia.domain.dto.PublicationRequest;
+import org.folio.consortia.domain.dto.PublicationResponse;
+import org.folio.consortia.service.PublicationService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
+@RequestMapping("/consortia/{consortiumId}")
 @RequiredArgsConstructor
 public class PublishCoordinatorController implements org.folio.consortia.rest.resource.PublicationsApi {
 
-  private final PublishCoordinatorService publishCoordinatorService;
+  private final PublicationService publishCoordinatorService;
 
   @Override
-  public ResponseEntity<Publication> publishRequests(Publication publishCoordinator) {
-    return ResponseEntity.status(HttpStatus.CREATED)
-      .body(publishCoordinatorService.publishRequest(publishCoordinator).join());
+  public ResponseEntity<PublicationResponse> publishRequests(UUID consortiumId, PublicationRequest publicationRequest) {
+    return ResponseEntity.ok(publishCoordinatorService.publishRequest(consortiumId, publicationRequest));
   }
 }

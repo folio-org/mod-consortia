@@ -1,11 +1,8 @@
 package org.folio.consortia.config;
 
-import java.util.concurrent.Executor;
-
 import org.folio.consortia.domain.converter.ConsortiumConverter;
 import org.folio.consortia.domain.converter.TenantConverter;
 import org.folio.consortia.domain.converter.UserTenantConverter;
-import org.springframework.context.annotation.Bean;
 import org.folio.spring.scope.FolioExecutionScopeExecutionContextManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

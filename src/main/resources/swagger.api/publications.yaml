@@ -12,6 +12,8 @@ paths:
     post:
       summary: Send post requests to the tenants
       operationId: publishRequests
+      parameters:
+        - $ref: "#/components/parameters/consortiumId"
       responses:
         '201':
           $ref: '#/components/responses/Publication'
@@ -32,14 +34,14 @@ components:
       content:
         application/json:
           schema:
-            $ref: "schemas/publication.yaml#/Publication"
+            $ref: "schemas/publication_schema.yaml#/PublicationRequest"
   responses:
     Publication:
       description: Returns a publish coordinator object
       content:
         application/json:
           schema:
-            $ref: "schemas/publication.yaml#/Publication"
+            $ref: "schemas/publication_schema.yaml#/PublicationResponse"
     Conflict:
       description: Validation errors
       content:
@@ -75,3 +77,11 @@ components:
         application/json:
           schema:
             $ref: "schemas/common.yaml#/Error"
+  parameters:
+    consortiumId:
+      in: path
+      name: consortiumId
+      schema:
+        $ref: "schemas/common.yaml#/uuid"
+      required: true
+      description: The ID of consortium
