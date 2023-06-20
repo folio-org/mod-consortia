@@ -2,7 +2,6 @@ package org.folio.consortia.domain.entity;
 
 import java.util.Objects;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 import org.folio.consortia.domain.entity.base.AuditableEntity;
 
@@ -23,33 +22,19 @@ import lombok.ToString;
 public class TenantEntity extends AuditableEntity {
   @Id
   private String id;
-
   private String code;
-
   private String name;
   private UUID consortiumId;
   private Boolean isCentral;
 
-  public void validate() {
-    if (getName().isBlank()) {
-      throw new IllegalArgumentException("'name' validation failed. Invalid Name: Empty name");
-    }
-    if (getName().length() < 2 || getName().length() > 150) {
-      throw new IllegalArgumentException("'name' validation failed. Invalid Name: Must be of 2 - 150 characters");
-    }
-    if (getCode().length() != 3) {
-      throw new IllegalArgumentException("'code' validation failed. Invalid Code length: Must be of 3 alphanumeric characters");
-    }
-    if (!Pattern.matches("^[A-Za-z0-9]*$", getCode())) {
-      throw new IllegalArgumentException("'code' validation failed. The code must be alphanumeric.");
-    }
-  }
-
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof TenantEntity that)) return false;
-    return Objects.equals(id, that.id) && Objects.equals(code, that.code) && Objects.equals(name, that.name) && Objects.equals(consortiumId, that.consortiumId) && Objects.equals(isCentral, that.isCentral);
+    if (this == o)
+      return true;
+    if (!(o instanceof TenantEntity that))
+      return false;
+    return Objects.equals(id, that.id) && Objects.equals(code, that.code) && Objects.equals(name, that.name)
+      && Objects.equals(consortiumId, that.consortiumId) && Objects.equals(isCentral, that.isCentral);
   }
 
   @Override
