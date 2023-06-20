@@ -93,6 +93,7 @@ public class TenantServiceImpl implements TenantService {
 
     // validation part
     checkTenantNotExistsAndConsortiumExistsOrThrow(consortiumId, tenantDto.getId());
+    checkUniquenessCodeAndName(tenantDto);
     if (tenantDto.getIsCentral()) {
       checkCentralTenantExistsOrThrow();
     }
@@ -124,7 +125,6 @@ public class TenantServiceImpl implements TenantService {
     log.info("save:: saved consortia configuration with centralTenantId={} by tenantId={} context", centralTenantId, tenantDto.getId());
     return savedTenant;
   }
-
 
   @Override
   public Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto) {
@@ -173,6 +173,15 @@ public class TenantServiceImpl implements TenantService {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     if (tenantRepository.existsById(tenantId)) {
       throw new ResourceAlreadyExistException("id", tenantId);
+    }
+  }
+
+  private void checkUniquenessCodeAndName(Tenant tenant) {
+    if (tenantRepository.existsByName(tenant.getName())) {
+      throw new ResourceAlreadyExistException("name", tenant.getName());
+    }
+    if (tenantRepository.existsByCode(tenant.getCode())) {
+      throw new ResourceAlreadyExistException("code", tenant.getCode());
     }
   }
 

@@ -81,6 +81,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   @SneakyThrows
   @Transactional
   public void deletePrimaryUserAffiliation(String eventPayload) {
+    FolioExecutionContext currentContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     try {
       var userEvent = objectMapper.readValue(eventPayload, UserEvent.class);
       log.info("Received event for deleting primary affiliation for user: {} and tenant: {}", userEvent.getUserDto().getId(), userEvent.getTenantId());
@@ -97,7 +98,10 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(userEvent);
       String data = objectMapper.writeValueAsString(affiliationEvent);
 
-      kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_DELETED, consortiaTenant.getConsortiumId().toString(), data);
+      String centralTenantId = folioExecutionContext.getTenantId();
+      try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentContext))) {
+        kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_DELETED, consortiaTenant.getConsortiumId().toString(), data);
+      }
       log.info("Primary affiliation has been deleted for the user: {}", userEvent.getUserDto().getId());
     } catch (Exception e) {
       log.error("Exception occurred while deleting primary affiliation", e);
