@@ -1,5 +1,7 @@
 package org.folio.consortia.service.impl;
 
+import static org.folio.consortia.exception.PublicationException.PRIMARY_AFFILIATION_NOT_EXISTS;
+import static org.folio.consortia.exception.PublicationException.TENANT_LIST_EMPTY;
 import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
 
 import java.util.ArrayList;
@@ -62,11 +64,11 @@ public class PublicationServiceImpl implements PublicationService {
       try {
         var response = httpRequestService.postRequest(publication.getUrl(), publication.getPayload());
         if (response.getStatusCode().is2xxSuccessful()) {
-          log.info("executeAsyncTask:: successfully called {}", publication.getUrl());
+          log.info("executeAsyncTask:: successfully called {} on tenant {}", publication.getUrl(), tenantId);
           future.complete(response.getBody());
         }
       } catch (Exception t) {
-        log.error("executeAsyncTask:: Error making request on tenant {}", tenantId, t);
+        log.error("executeAsyncTask:: error making {} '{}' request on tenant {}", publication.getMethod(), publication.getUrl(), tenantId, t);
         future.completeExceptionally(t);
       }
     });
@@ -90,17 +92,17 @@ public class PublicationServiceImpl implements PublicationService {
 
     // TODO: update publication record in database
 
-    log.info("Updated publication record {} with status", savedPublication.getStatus());
+    log.info("Updated publication record {} with status {}", savedPublication.getId(), savedPublication.getStatus());
   }
 
   private void validatePublicationRequest(UUID consortiumId, PublicationRequest publication, FolioExecutionContext context) {
     if (CollectionUtils.isEmpty(publication.getTenants())) {
-      throw new PublicationException("Tenant list is empty");
+      throw new PublicationException(TENANT_LIST_EMPTY);
     }
     tenantService.checkTenantsAndConsortiumExistsOrThrow(consortiumId, List.copyOf(publication.getTenants()));
     var userAffiliated = userTenantService.checkUserIfHasPrimaryAffiliationByUserId(consortiumId, context.getUserId().toString());
     if (!userAffiliated) {
-      throw new PublicationException("User doesn't have primary affiliation");
+      throw new PublicationException(PRIMARY_AFFILIATION_NOT_EXISTS);
     }
   }
 

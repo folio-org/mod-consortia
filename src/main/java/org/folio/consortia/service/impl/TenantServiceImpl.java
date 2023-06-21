@@ -2,12 +2,12 @@ package org.folio.consortia.service.impl;
 
 import static org.folio.consortia.utils.HelperUtils.checkIdenticalOrThrow;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.folio.consortia.client.ConsortiaConfigurationClient;
 import org.folio.consortia.client.SyncPrimaryAffiliationClient;
 import org.folio.consortia.client.UserTenantsClient;
@@ -130,14 +130,14 @@ public class TenantServiceImpl implements TenantService {
 
   @Override
   public Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto) {
-    checkTenantsAndConsortiumExistsOrThrow(consortiumId, Collections.singletonList(tenantId));
+    checkTenantAndConsortiumExistsOrThrow(consortiumId, tenantId);
     checkIdenticalOrThrow(tenantId, tenantDto.getId(), TENANTS_IDS_NOT_MATCHED_ERROR_MSG);
     return saveTenant(consortiumId, tenantDto);
   }
 
   @Override
   public void delete(UUID consortiumId, String tenantId) {
-    checkTenantsAndConsortiumExistsOrThrow(consortiumId, Collections.singletonList(tenantId));
+    checkTenantAndConsortiumExistsOrThrow(consortiumId, tenantId);
     if (userTenantRepository.existsByTenantId(tenantId)) {
       throw new IllegalArgumentException(TENANT_HAS_ACTIVE_USER_ASSOCIATIONS_ERROR_MSG);
     }
@@ -177,14 +177,26 @@ public class TenantServiceImpl implements TenantService {
       throw new ResourceAlreadyExistException("id", tenantId);
     }
   }
+
+  private void checkTenantAndConsortiumExistsOrThrow(UUID consortiumId, String tenantId) {
+    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
+    if (!tenantRepository.existsById(tenantId)) {
+      throw new ResourceNotFoundException("id", tenantId);
+    }
+  }
+
   @Override
   public void checkTenantsAndConsortiumExistsOrThrow(UUID consortiumId, List<String> tenantIds) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    tenantIds.forEach(tenantId -> {
-      if (!tenantRepository.existsById(tenantId)) {
-        throw new ResourceNotFoundException("id", tenantId);
-      }
-    });
+    var tenantEntities = tenantRepository.findAllById(tenantIds);
+
+    if (tenantEntities.size() != tenantIds.size()) {
+      var foundTenantIds = tenantEntities.stream()
+        .map(TenantEntity::getId)
+        .toList();
+      String absentTenants = String.join(", ", CollectionUtils.subtract(tenantIds, foundTenantIds));
+      throw new ResourceNotFoundException("ids", absentTenants);
+    }
   }
 
   private void checkCentralTenantExistsOrThrow() {

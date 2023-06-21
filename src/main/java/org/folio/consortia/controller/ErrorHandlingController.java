@@ -6,9 +6,9 @@ import static org.folio.consortia.utils.ErrorHelper.createInternalError;
 import static org.folio.consortia.utils.ErrorHelper.createPermissionError;
 import static org.folio.consortia.utils.ErrorHelper.ErrorCode.BAD_GATEWAY;
 import static org.folio.consortia.utils.ErrorHelper.ErrorCode.DUPLICATE_ERROR;
-import static org.folio.consortia.utils.ErrorHelper.ErrorCode.HAS_PRIMARY_AFFILIATION_ERROR;
 import static org.folio.consortia.utils.ErrorHelper.ErrorCode.NOT_FOUND_ERROR;
 import static org.folio.consortia.utils.ErrorHelper.ErrorCode.PERMISSION_REQUIRED;
+import static org.folio.consortia.utils.ErrorHelper.ErrorCode.PUBLICATION_ERROR;
 import static org.folio.consortia.utils.ErrorHelper.ErrorCode.UNAUTHORIZED;
 import static org.folio.consortia.utils.ErrorHelper.ErrorCode.VALIDATION_ERROR;
 
@@ -95,8 +95,8 @@ public class ErrorHandlingController {
   }
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ExceptionHandler(PublicationException.class)
-  public Errors handlePublicationException(Exception e) {
-    return createExternalError(e.getMessage(), HAS_PRIMARY_AFFILIATION_ERROR);
+  public Errors handlePublicationException(PublicationException e) {
+    return createInternalError(e.getMessage(), PUBLICATION_ERROR);
   }
 
   @ResponseStatus(HttpStatus.FORBIDDEN)
