@@ -1,0 +1,90 @@
+openapi: 3.0.0
+info:
+  title: Sharing instance integration API
+  description: "Sharing instance integration API"
+  version: 0.0.1
+servers:
+  - url: /consortia/{consortiumId}/
+paths:
+  /sharing/instances:
+    post:
+      summary: Save Sharing instance action
+      operationId: saveSharingInstanceAction
+      parameters:
+        - $ref: "#/components/parameters/consortiumId"
+      requestBody:
+        $ref: "#/components/requestBodies/SharingInstanceActionBody"
+      responses:
+        "201":
+          $ref: "#/components/responses/SharingInstanceAction"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+components:
+  requestBodies:
+    SharingInstanceActionBody:
+      description: Sharing Instance Action object
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "schemas/sharingInstanceAction.yaml#/SharingInstanceAction"
+  responses:
+    SharingInstanceAction:
+      description: Returns a sharing instance object object
+      content:
+        application/json:
+          schema:
+            $ref: "schemas/sharingInstanceAction.yaml#/SharingInstanceAction"
+    NoContent:
+      description: No content
+    Conflict:
+      description: Validation errors
+      content:
+        application/json:
+          schema:
+            $ref: "schemas/common.yaml#/Errors"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "schemas/common.yaml#/Errors"
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: "schemas/common.yaml#/Errors"
+    Unauthorized:
+      description: Not authorized to perform requested action
+      content:
+        text/plain:
+          example: unable to perform action -- unauthorized
+    UnprocessableEntity:
+      description: Validation errors
+      content:
+        application/json:
+          schema:
+            $ref: 'schemas/common.yaml#/Errors'
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "schemas/common.yaml#/Error"
+  parameters:
+    consortiumId:
+      in: path
+      name: consortiumId
+      schema:
+        $ref: "schemas/common.yaml#/uuid"
+      required: true
+      description: The ID of consortium

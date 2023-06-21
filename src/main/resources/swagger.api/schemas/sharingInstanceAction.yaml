@@ -1,0 +1,20 @@
+SharingInstanceAction:
+  type: object
+  properties:
+    id:
+      type: uuid
+    instanceIdentifier:
+      type: uuid
+    sourceTenantId:
+      type: string
+    targetTenantId:
+      type: string
+    status:
+      type: string
+    error:
+      type: string
+    additionalProperties: false
+  required:
+    - instanceIdentifier
+    - sourceTenantId
+    - targetTenantId
