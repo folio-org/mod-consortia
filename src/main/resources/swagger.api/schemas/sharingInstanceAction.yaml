@@ -2,9 +2,11 @@ SharingInstanceAction:
   type: object
   properties:
     id:
-      type: uuid
+      type: string
+      format: uuid
     instanceIdentifier:
-      type: uuid
+      type: string
+      format: uuid
     sourceTenantId:
       type: string
     targetTenantId:
@@ -13,7 +15,7 @@ SharingInstanceAction:
       type: string
     error:
       type: string
-    additionalProperties: false
+  additionalProperties: false
   required:
     - instanceIdentifier
     - sourceTenantId

@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.folio.consortia.domain.dto.SharingInstanceAction;
 import org.folio.consortia.domain.entity.SharingInstanceActionEntity;
 import org.folio.consortia.repository.SharingInstanceActionRepository;
+import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.SharingInstanceService;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
@@ -19,10 +20,13 @@ import lombok.extern.log4j.Log4j2;
 public class SharingInstanceServiceImpl implements SharingInstanceService {
 
   private final SharingInstanceActionRepository sharingInstanceActionRepository;
+  private final ConsortiumService consortiumService;
   private final ConversionService converter;
+
   @Override
   @Transactional
   public SharingInstanceAction save(UUID consortiumId, SharingInstanceAction sharedInstanceAction) {
+    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     SharingInstanceActionEntity savedSharedInstanceAction = sharingInstanceActionRepository.save(toEntity(sharedInstanceAction));
     return converter.convert(savedSharedInstanceAction, SharingInstanceAction.class);
   }
