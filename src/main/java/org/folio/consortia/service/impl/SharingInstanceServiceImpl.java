@@ -25,10 +25,10 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
 
   @Override
   @Transactional
-  public SharingInstance save(UUID consortiumId, SharingInstance sharedInstanceAction) {
+  public SharingInstance save(UUID consortiumId, SharingInstance sharingInstance) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    SharingInstanceEntity savedSharedInstanceAction = sharingInstanceRepository.save(toEntity(sharedInstanceAction));
-    return converter.convert(savedSharedInstanceAction, SharingInstance.class);
+    SharingInstanceEntity savedSharingInstance = sharingInstanceRepository.save(toEntity(sharingInstance));
+    return converter.convert(savedSharingInstance, SharingInstance.class);
   }
 
   private SharingInstanceEntity toEntity(SharingInstance dto) {

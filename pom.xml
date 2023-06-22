@@ -443,7 +443,7 @@
             </configuration>
           </execution>
           <execution>
-            <id>shared instance</id>
+            <id>sharing instance</id>
             <goals>
               <goal>generate</goal>
             </goals>
