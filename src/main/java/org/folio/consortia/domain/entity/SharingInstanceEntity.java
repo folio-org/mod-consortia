@@ -1,5 +1,6 @@
 package org.folio.consortia.domain.entity;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import org.folio.consortia.domain.entity.base.AuditableEntity;
@@ -36,5 +37,22 @@ public class SharingInstanceEntity extends AuditableEntity {
     IN_PROGRESS,
     COMPLETE,
     ERROR
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof SharingInstanceEntity that)) return false;
+    return Objects.equals(id, that.id)
+      && Objects.equals(instanceId, that.instanceId)
+      && Objects.equals(sourceTenantId, that.sourceTenantId)
+      && Objects.equals(targetTenantId, that.targetTenantId)
+      && status == that.status
+      && Objects.equals(error, that.error);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, instanceId, sourceTenantId, targetTenantId, status, error);
   }
 }

@@ -36,6 +36,26 @@ Metadata:
   required:
     - createdDate
 
+MiniMetadata:
+  type: object
+  title: Metadata
+  description: Metadata about creation and changes to records
+  properties:
+    createdDate:
+      type: string
+      description: Date and time when the record was created
+    createdBy:
+      $ref: '#/uuid'
+      description: ID of the user who created the record
+    updatedDate:
+      type: string
+      description: Date and time when the record was last updated
+    updatedBy:
+      $ref: '#/uuid'
+      description: ID of the user who last updated the record
+  required:
+    - createdDate
+
 userInfo:
   type: object
   description: User Display Information

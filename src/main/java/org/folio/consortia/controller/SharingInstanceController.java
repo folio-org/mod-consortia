@@ -8,18 +8,23 @@ import org.folio.consortia.domain.dto.SharingInstance;
 import org.folio.consortia.rest.resource.SharingApi;
 import org.folio.consortia.service.SharingInstanceService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
-@Controller
+@RestController
+@RequestMapping("/consortia/{consortiumId}")
+@Log4j2
 @RequiredArgsConstructor
 public class SharingInstanceController implements  SharingApi{
 
   private final SharingInstanceService sharingInstanceService;
 
   @Override
-  public ResponseEntity<SharingInstance> saveSharingInstance(UUID consortiumId, SharingInstance sharingInstance) {
+  public ResponseEntity<SharingInstance> saveSharingInstance(UUID consortiumId, @Validated SharingInstance sharingInstance) {
     return ResponseEntity.status(CREATED).body(sharingInstanceService.save(consortiumId, sharingInstance));
   }
 }

@@ -1,5 +1,8 @@
 package org.folio.consortia.domain.converter;
 
+import java.util.Objects;
+
+import org.folio.consortia.domain.dto.MiniMetadata;
 import org.folio.consortia.domain.dto.SharingInstance;
 import org.folio.consortia.domain.entity.SharingInstanceEntity;
 import org.springframework.core.convert.converter.Converter;
@@ -10,13 +13,24 @@ public class SharingInstanceConverter implements Converter<SharingInstanceEntity
 
   @Override
   public SharingInstance convert(SharingInstanceEntity source) {
-    SharingInstance sharingInstanceAction = new SharingInstance();
-    sharingInstanceAction.setId(source.getId());
-    sharingInstanceAction.setInstanceIdentifier(source.getId());
-    sharingInstanceAction.setSourceTenantId(source.getSourceTenantId());
-    sharingInstanceAction.setTargetTenantId(source.getTargetTenantId());
-    sharingInstanceAction.setStatus(String.valueOf(source.getStatus()));
-    sharingInstanceAction.setError(source.getError());
-    return sharingInstanceAction;
+    SharingInstance sharingInstance = new SharingInstance();
+    sharingInstance.setId(source.getId());
+    sharingInstance.setInstanceIdentifier(source.getId());
+    sharingInstance.setSourceTenantId(source.getSourceTenantId());
+    sharingInstance.setTargetTenantId(source.getTargetTenantId());
+    sharingInstance.setStatus(String.valueOf(source.getStatus()));
+    sharingInstance.setError(source.getError());
+    MiniMetadata metadata = new MiniMetadata();
+    metadata.setCreatedBy(source.getCreatedBy());
+    // in order to prevent writing "null" as a string
+    if (Objects.nonNull(source.getCreatedDate())) {
+      metadata.setCreatedDate(String.valueOf(source.getCreatedDate()));
+    }
+    if (Objects.nonNull(source.getUpdatedDate())) {
+      metadata.setUpdatedDate(String.valueOf(source.getUpdatedDate()));
+    }
+    metadata.setUpdatedBy(source.getUpdatedBy());
+    sharingInstance.setMetadata(metadata);
+    return sharingInstance;
   }
 }

@@ -213,7 +213,7 @@
             "POST"
           ],
           "pathPattern": "/consortia/{consortiumId}/sharing/instances",
-          "permissionRequired": [
+          "permissionsRequired": [
             "consortia.sharing-instances.item.post"
           ],
           "modulePermissions": []
