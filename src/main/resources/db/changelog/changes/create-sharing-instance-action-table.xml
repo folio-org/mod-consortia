@@ -8,16 +8,16 @@
 
     <createTable tableName="sharing_instance_action">
       <column name="id" type="uuid">
-        <constraints primaryKey="true" primaryKeyName="pk_id"/>
+        <constraints primaryKey="true" primaryKeyName="pk_sharing_instance_action_id"/>
       </column>
       <column name="instance_id" type="uuid">
-        <constraints unique="true" uniqueConstraintName="instance_id_source_tenant_id_target_tenant_id_uq" nullable="false"/>
+        <constraints unique="true" uniqueConstraintName="uq_instance_id_source_tenant_id_target_tenant_id" nullable="false"/>
       </column>
       <column name="source_tenant_id" type="text">
-        <constraints unique="true" uniqueConstraintName="instance_id_source_tenant_id_target_tenant_id_uq" nullable="false"/>
+        <constraints unique="true" uniqueConstraintName="uq_instance_id_source_tenant_id_target_tenant_id" nullable="false"/>
       </column>
       <column name="target_tenant_id" type="text">
-        <constraints unique="true" uniqueConstraintName="instance_id_source_tenant_id_target_tenant_id_uq" nullable="false"/>
+        <constraints unique="true" uniqueConstraintName="uq_instance_id_source_tenant_id_target_tenant_id" nullable="false"/>
       </column>
       <column name="status" type="text">
         <constraints unique="false" nullable="false"/>
@@ -33,7 +33,7 @@
       <column name="updated_date" type="timestamp without time zone"/>
     </createTable>
 
-    <createIndex indexName="instance_id_idx" tableName="instance_id">
+    <createIndex indexName="instance_id_idx" tableName="sharing_instance_action">
       <column name="instance_id"/>
     </createIndex>
 
