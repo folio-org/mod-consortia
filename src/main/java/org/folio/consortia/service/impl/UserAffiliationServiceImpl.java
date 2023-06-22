@@ -68,6 +68,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(userEvent);
       String data = objectMapper.writeValueAsString(affiliationEvent);
 
+      // context is changed in save() method and context is empty after save() method, so we need to set context again.
       try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentContext))) {
         kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_CREATED, consortiaTenant.getConsortiumId().toString(), data);
       }
@@ -97,8 +98,9 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
 
       PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(userEvent);
       String data = objectMapper.writeValueAsString(affiliationEvent);
-
       String centralTenantId = folioExecutionContext.getTenantId();
+
+      // context is changed in deleteShadowUsers() method and context is empty after deleteShadowUsers() method, so we need to set context again.
       try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentContext))) {
         kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_DELETED, consortiaTenant.getConsortiumId().toString(), data);
       }
