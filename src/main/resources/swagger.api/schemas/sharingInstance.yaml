@@ -1,4 +1,4 @@
-SharingInstanceAction:
+SharingInstance:
   type: object
   properties:
     id:

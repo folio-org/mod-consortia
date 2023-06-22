@@ -8,15 +8,15 @@ servers:
 paths:
   /sharing/instances:
     post:
-      summary: Save Sharing instance action
-      operationId: saveSharingInstanceAction
+      summary: Save Sharing instance
+      operationId: saveSharingInstance
       parameters:
         - $ref: "#/components/parameters/consortiumId"
       requestBody:
-        $ref: "#/components/requestBodies/SharingInstanceActionBody"
+        $ref: "#/components/requestBodies/SharingInstanceBody"
       responses:
         "201":
-          $ref: "#/components/responses/SharingInstanceAction"
+          $ref: "#/components/responses/SharingInstance"
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -29,20 +29,20 @@ paths:
           $ref: "#/components/responses/InternalServerError"
 components:
   requestBodies:
-    SharingInstanceActionBody:
-      description: Sharing Instance Action object
+    SharingInstanceBody:
+      description: Sharing Instance object
       required: true
       content:
         application/json:
           schema:
-            $ref: "schemas/sharingInstanceAction.yaml#/SharingInstanceAction"
+            $ref: "schemas/sharingInstance.yaml#/SharingInstance"
   responses:
-    SharingInstanceAction:
+    SharingInstance:
       description: Returns a sharing instance object object
       content:
         application/json:
           schema:
-            $ref: "schemas/sharingInstanceAction.yaml#/SharingInstanceAction"
+            $ref: "schemas/sharingInstance.yaml#/SharingInstance"
     NoContent:
       description: No content
     Conflict:

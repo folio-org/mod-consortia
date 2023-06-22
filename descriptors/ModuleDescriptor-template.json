@@ -334,8 +334,8 @@
     },
     {
       "permissionName": "consortia.sharing-instances.item.post",
-      "displayName": "create sharing instance action",
-      "description": "Create sharing instance action"
+      "displayName": "create sharing instance",
+      "description": "Create sharing instance"
     }
   ],
   "launchDescriptor": {

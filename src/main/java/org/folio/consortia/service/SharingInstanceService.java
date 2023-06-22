@@ -2,15 +2,15 @@ package org.folio.consortia.service;
 
 import java.util.UUID;
 
-import org.folio.consortia.domain.dto.SharingInstanceAction;
+import org.folio.consortia.domain.dto.SharingInstance;
 
 public interface SharingInstanceService {
 
   /**
    * Create Shared Instance action
    * @param consortiumId UUID of consortium entity
-   * @param sharedInstanceAction the sharedActionDto
+   * @param sharedInstance the sharedActionDto
    * @return SharedInstanceDto
    */
-  SharingInstanceAction save(UUID consortiumId, SharingInstanceAction sharedInstanceAction);
+  SharingInstance save(UUID consortiumId, SharingInstance sharedInstance);
 }

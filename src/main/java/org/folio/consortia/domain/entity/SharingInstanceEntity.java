@@ -20,8 +20,8 @@ import lombok.ToString;
 @ToString
 @RequiredArgsConstructor
 @Entity
-@Table(name = "sharing_instance_action")
-public class SharingInstanceActionEntity extends AuditableEntity {
+@Table(name = "sharing_instance")
+public class SharingInstanceEntity extends AuditableEntity {
   @Id
   @GeneratedValue
   private UUID id;
@@ -31,6 +31,7 @@ public class SharingInstanceActionEntity extends AuditableEntity {
   @Enumerated(EnumType.STRING)
   private StatusType status;
   private String error;
+
   public enum StatusType{
     IN_PROGRESS,
     COMPLETE,

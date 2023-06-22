@@ -4,11 +4,11 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-  <changeSet id="MODCON-59@@create-sharing-instance-action-table" author="azizbekxm">
+  <changeSet id="MODCON-59@@create-sharing-instance-table" author="azizbekxm">
 
-    <createTable tableName="sharing_instance_action">
+    <createTable tableName="sharing_instance">
       <column name="id" type="uuid">
-        <constraints primaryKey="true" primaryKeyName="pk_sharing_instance_action_id"/>
+        <constraints primaryKey="true" primaryKeyName="pk_sharing_instance_id"/>
       </column>
       <column name="instance_id" type="uuid">
         <constraints unique="true" uniqueConstraintName="uq_instance_id_source_tenant_id_target_tenant_id" nullable="false"/>
@@ -33,7 +33,7 @@
       <column name="updated_date" type="timestamp without time zone"/>
     </createTable>
 
-    <createIndex indexName="instance_id_idx" tableName="sharing_instance_action">
+    <createIndex indexName="instance_id_idx" tableName="sharing_instance">
       <column name="instance_id"/>
     </createIndex>
 
