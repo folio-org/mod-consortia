@@ -7,10 +7,10 @@ import org.folio.consortia.domain.dto.SharingInstance;
 public interface SharingInstanceService {
 
   /**
-   * Create Shared Instance action
+   * Create Sharing Instance action
    * @param consortiumId UUID of consortium entity
-   * @param sharedInstance the sharedActionDto
-   * @return SharedInstanceDto
+   * @param sharingInstance the sharingInstanceDto
+   * @return SharingInstanceDto
    */
-  SharingInstance save(UUID consortiumId, SharingInstance sharedInstance);
+  SharingInstance save(UUID consortiumId, SharingInstance sharingInstance);
 }
