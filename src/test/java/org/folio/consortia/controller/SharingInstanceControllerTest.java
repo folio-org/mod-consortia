@@ -17,6 +17,7 @@ import java.util.UUID;
 import org.folio.consortia.domain.dto.SharingInstance;
 import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.SharingInstanceRepository;
+import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.service.SharingInstanceService;
 import org.folio.consortia.support.BaseTest;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,8 @@ class SharingInstanceControllerTest extends BaseTest {
   private SharingInstanceRepository sharingInstanceRepository;
   @MockBean
   private ConsortiumRepository consortiumRepository;
+  @MockBean
+  private TenantRepository tenantRepository;
 
   /* Success cases */
   @Test
@@ -62,7 +65,6 @@ class SharingInstanceControllerTest extends BaseTest {
     var headers = defaultHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
 
-    when(consortiumRepository.existsById(CONSORTIUM_ID)).thenReturn(true);
     when(sharingInstanceService.save(any(), any())).thenReturn(sharingInstance);
 
     this.mockMvc.perform(
@@ -86,6 +88,7 @@ class SharingInstanceControllerTest extends BaseTest {
     UUID actionId = UUID.fromString("3be3f9da-9d80-402c-905e-e5fa104da3e1");
 
     when(consortiumRepository.existsById(CONSORTIUM_ID)).thenReturn(true);
+    when(tenantRepository.existsById(any())).thenReturn(true);
     when(sharingInstanceRepository.findById(actionId)).thenReturn(null);
 
     this.mockMvc.perform(

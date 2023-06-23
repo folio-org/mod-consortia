@@ -43,7 +43,8 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
     tenantService.checkTenantExistsOrThrow(sharingInstance.getSourceTenantId());
     tenantService.checkTenantExistsOrThrow(sharingInstance.getTargetTenantId());
     SharingInstanceEntity savedSharingInstance = sharingInstanceRepository.save(toEntity(sharingInstance));
-    log.info("save:: SharingInstance: {} successfully saved", savedSharingInstance.getId());
+    log.info("save:: SharingInstance '{}' with instanceId '{}', sourceTenantId '{}', targetTenantId '{}'  successfully saved",
+      savedSharingInstance.getId(), savedSharingInstance.getInstanceId(), savedSharingInstance.getSourceTenantId(), savedSharingInstance.getTargetTenantId());
     return converter.convert(savedSharingInstance, SharingInstance.class);
   }
 
