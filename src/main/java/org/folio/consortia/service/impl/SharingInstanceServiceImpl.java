@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.folio.consortia.domain.dto.SharingInstance;
 import org.folio.consortia.domain.entity.SharingInstanceEntity;
+import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.SharingInstanceRepository;
 import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.SharingInstanceService;
@@ -22,6 +23,14 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
   private final SharingInstanceRepository sharingInstanceRepository;
   private final ConsortiumService consortiumService;
   private final ConversionService converter;
+
+  @Override
+  public SharingInstance getById(UUID consortiumId, UUID actionId) {
+    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
+    SharingInstanceEntity sharingInstanceEntity = sharingInstanceRepository.findById(actionId).
+      orElseThrow(() -> new ResourceNotFoundException("actionId", String.valueOf(actionId)));
+    return converter.convert(sharingInstanceEntity, SharingInstance.class);
+  }
 
   @Override
   @Transactional

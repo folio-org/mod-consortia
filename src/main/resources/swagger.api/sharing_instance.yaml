@@ -15,7 +15,7 @@ paths:
       requestBody:
         $ref: "#/components/requestBodies/SharingInstanceBody"
       responses:
-        "201":
+        "204":
           $ref: "#/components/responses/SharingInstance"
         "400":
           $ref: "#/components/responses/BadRequest"
@@ -25,6 +25,22 @@ paths:
           $ref: "#/components/responses/Conflict"
         "422":
           $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /sharing/instances/{actionId}:
+    get:
+      summary: Get Sharing instance by action ID
+      operationId: getSharingInstanceById
+      parameters:
+        - $ref: "#/components/parameters/consortiumId"
+        - $ref: "#/components/parameters/actionId"
+      responses:
+        "201":
+          $ref: "#/components/responses/SharingInstance"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
 components:
@@ -88,3 +104,10 @@ components:
         $ref: "schemas/common.yaml#/uuid"
       required: true
       description: The ID of consortium
+    actionId:
+      in: path
+      name: actionId
+      schema:
+        $ref: "schemas/common.yaml#/uuid"
+      required: true
+      description: The ID of sharing instance

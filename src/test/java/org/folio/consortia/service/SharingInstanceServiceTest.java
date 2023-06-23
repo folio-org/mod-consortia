@@ -1,6 +1,8 @@
 package org.folio.consortia.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.folio.consortia.utils.EntityUtils.ACTION_ID;
+import static org.folio.consortia.utils.EntityUtils.CONSORTIUM_ID;
 import static org.folio.consortia.utils.EntityUtils.createSharingInstance;
 import static org.folio.consortia.utils.EntityUtils.createSharingInstanceEntity;
 import static org.mockito.Mockito.times;
@@ -8,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.any;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.folio.consortia.domain.dto.SharingInstance;
@@ -15,6 +18,7 @@ import org.folio.consortia.domain.entity.SharingInstanceEntity;
 import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.SharingInstanceRepository;
 import org.folio.consortia.service.impl.SharingInstanceServiceImpl;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -40,6 +44,22 @@ class SharingInstanceServiceTest {
   private ConversionService conversionService;
 
   @Test
+  void shouldGetSharingInstanceById() {
+    SharingInstance expectedSharingInstance = createSharingInstance(ACTION_ID, instanceIdentifier, "college", "mobius");
+    SharingInstanceEntity savedSharingInstance = createSharingInstanceEntity(ACTION_ID, instanceIdentifier, "college", "mobius");
+
+    when(consortiumRepository.existsById(any())).thenReturn(true);
+    when(conversionService.convert(any(), any())).thenReturn(toDto(savedSharingInstance));
+    when(sharingInstanceRepository.findById(any())).thenReturn(Optional.of(savedSharingInstance));
+
+    var actualSharingInstance = sharingInstanceService.getById(UUID.randomUUID(), ACTION_ID);
+
+    assertThat(actualSharingInstance.getId()).isEqualTo(expectedSharingInstance.getId());
+
+    verify(sharingInstanceRepository, times(1)).findById(ACTION_ID);
+  }
+
+  @Test
   void shouldSaveSharingInstance() {
     SharingInstance sharingInstance = createSharingInstance(instanceIdentifier, "college", "mobius");
     SharingInstanceEntity savedSharingInstance = createSharingInstanceEntity(instanceIdentifier, "college", "mobius");
@@ -58,13 +78,24 @@ class SharingInstanceServiceTest {
     verify(sharingInstanceRepository, times(1)).save(any());
   }
 
+  /* Negative cases */
+  @Test
+  void shouldThrowResourceNotFoundExceptionWhenTryingToGetSharingInstanceById() {
+    when(consortiumRepository.existsById(any())).thenReturn(true);
+    when(sharingInstanceRepository.findById(any())).thenReturn(Optional.ofNullable(null));
+
+    Assertions.assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class,
+      () -> sharingInstanceService.getById(CONSORTIUM_ID, ACTION_ID));
+  }
 
   private SharingInstance toDto(SharingInstanceEntity entity) {
     SharingInstance sharingInstance = new SharingInstance();
+    sharingInstance.setId(entity.getId());
     sharingInstance.setInstanceIdentifier(entity.getInstanceId());
     sharingInstance.setSourceTenantId(entity.getSourceTenantId());
     sharingInstance.setTargetTenantId(entity.getTargetTenantId());
     sharingInstance.setStatus(String.valueOf(entity.getStatus()));
+    sharingInstance.setError(entity.getError());
     return sharingInstance;
   }
 }

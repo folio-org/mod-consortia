@@ -17,6 +17,9 @@ import java.util.UUID;
 
 @UtilityClass
 public class EntityUtils {
+  public static final UUID CONSORTIUM_ID = UUID.fromString("7698e46-c3e3-11ed-afa1-0242ac120002");
+  public static final UUID ACTION_ID = UUID.fromString("dcfc317b-0d7c-4334-8656-596105fa6c99");
+  public static final UUID INSTANCE_ID = UUID.fromString("111841e3-e6fb-4191-8fd8-5674a5107c33");
 
   public static ConsortiumEntity createConsortiumEntity(String id, String name) {
     ConsortiumEntity consortiumEntity = new ConsortiumEntity();
@@ -115,7 +118,17 @@ public class EntityUtils {
 
   public static SharingInstance createSharingInstance(UUID instanceIdentifier, String sourceTenantId, String targetTenantId) {
     SharingInstance sharingInstance = new SharingInstance();
-    sharingInstance.setId(UUID.fromString("dcfc317b-0d7c-4334-8656-596105fa6c99"));
+    sharingInstance.setId(ACTION_ID);
+    sharingInstance.setInstanceIdentifier(instanceIdentifier);
+    sharingInstance.setSourceTenantId(sourceTenantId);
+    sharingInstance.setTargetTenantId(targetTenantId);
+    return sharingInstance;
+  }
+
+  public static SharingInstance createSharingInstance(UUID actionId, UUID instanceIdentifier, String sourceTenantId,
+    String targetTenantId) {
+    SharingInstance sharingInstance = new SharingInstance();
+    sharingInstance.setId(actionId);
     sharingInstance.setInstanceIdentifier(instanceIdentifier);
     sharingInstance.setSourceTenantId(sourceTenantId);
     sharingInstance.setTargetTenantId(targetTenantId);
@@ -124,7 +137,18 @@ public class EntityUtils {
 
   public static SharingInstanceEntity createSharingInstanceEntity(UUID instanceIdentifier, String sourceTenantId, String targetTenantId) {
     SharingInstanceEntity sharingInstance = new SharingInstanceEntity();
-    sharingInstance.setId(UUID.fromString("dcfc317b-0d7c-4334-8656-596105fa6c99"));
+    sharingInstance.setId(ACTION_ID);
+    sharingInstance.setInstanceId(instanceIdentifier);
+    sharingInstance.setSourceTenantId(sourceTenantId);
+    sharingInstance.setTargetTenantId(targetTenantId);
+    sharingInstance.setCreatedDate(LocalDateTime.now());
+    sharingInstance.setCreatedBy(UUID.fromString("dcfc317b-0d7c-4334-8656-596105fa6c99"));
+    return sharingInstance;
+  }
+
+  public static SharingInstanceEntity createSharingInstanceEntity(UUID actionId, UUID instanceIdentifier, String sourceTenantId, String targetTenantId) {
+    SharingInstanceEntity sharingInstance = new SharingInstanceEntity();
+    sharingInstance.setId(actionId);
     sharingInstance.setInstanceId(instanceIdentifier);
     sharingInstance.setSourceTenantId(sourceTenantId);
     sharingInstance.setTargetTenantId(targetTenantId);
