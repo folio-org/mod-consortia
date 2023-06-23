@@ -88,7 +88,7 @@ class SharingInstanceServiceTest {
   @Test
   void shouldThrowResourceNotFoundExceptionWhenTryingToGetSharingInstanceById() {
     when(consortiumRepository.existsById(any())).thenReturn(true);
-    when(sharingInstanceRepository.findById(any())).thenReturn(Optional.ofNullable(null));
+    when(sharingInstanceRepository.findById(any())).thenReturn(Optional.empty());
 
     Assertions.assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class,
       () -> sharingInstanceService.getById(CONSORTIUM_ID, ACTION_ID));
