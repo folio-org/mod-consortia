@@ -8,8 +8,8 @@ servers:
 paths:
   /sharing/instances:
     post:
-      summary: Save Sharing instance
-      operationId: saveSharingInstance
+      summary: start instance sharing
+      operationId: startInstanceSharing
       parameters:
         - $ref: "#/components/parameters/consortiumId"
       requestBody:

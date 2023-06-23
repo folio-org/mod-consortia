@@ -15,10 +15,10 @@ public interface SharingInstanceService {
   SharingInstance getById(UUID consortiumId, UUID actionId);
 
   /**
-   * Create Sharing Instance action
+   * Start instance sharing action
    * @param consortiumId UUID of consortium entity
    * @param sharingInstance the sharingInstanceDto
    * @return SharingInstanceDto
    */
-  SharingInstance save(UUID consortiumId, SharingInstance sharingInstance);
+  SharingInstance startInstanceSharing(UUID consortiumId, SharingInstance sharingInstance);
 }

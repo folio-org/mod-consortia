@@ -75,7 +75,7 @@ class SharingInstanceServiceTest {
     when(sharingInstanceRepository.save(any())).thenReturn(savedSharingInstance);
 
     var expectedSharingInstance = createSharingInstance(instanceIdentifier, "college", "mobius");
-    var actualSharingInstance = sharingInstanceService.save(UUID.randomUUID(), sharingInstance);
+    var actualSharingInstance = sharingInstanceService.startInstanceSharing(UUID.randomUUID(), sharingInstance);
 
     assertThat(actualSharingInstance.getInstanceIdentifier()).isEqualTo(expectedSharingInstance.getInstanceIdentifier());
     assertThat(actualSharingInstance.getSourceTenantId()).isEqualTo(expectedSharingInstance.getSourceTenantId());

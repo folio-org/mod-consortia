@@ -24,8 +24,8 @@ public class SharingInstanceController implements  SharingApi{
   private final SharingInstanceService sharingInstanceService;
 
   @Override
-  public ResponseEntity<SharingInstance> saveSharingInstance(UUID consortiumId, @Validated SharingInstance sharingInstance) {
-    return ResponseEntity.status(CREATED).body(sharingInstanceService.save(consortiumId, sharingInstance));
+  public ResponseEntity<SharingInstance> startInstanceSharing(UUID consortiumId, @Validated SharingInstance sharingInstance) {
+    return ResponseEntity.status(CREATED).body(sharingInstanceService.startInstanceSharing(consortiumId, sharingInstance));
   }
 
   @Override
