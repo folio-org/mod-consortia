@@ -65,7 +65,7 @@ class SharingInstanceControllerTest extends BaseTest {
     var headers = defaultHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
 
-    when(sharingInstanceService.startInstanceSharing(any(), any())).thenReturn(sharingInstance);
+    when(sharingInstanceService.start(any(), any())).thenReturn(sharingInstance);
 
     this.mockMvc.perform(
       post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/sharing/instances")

@@ -2,7 +2,7 @@ package org.folio.consortia.domain.converter;
 
 import java.util.Objects;
 
-import org.folio.consortia.domain.dto.MiniMetadata;
+import org.folio.consortia.domain.dto.Metadata;
 import org.folio.consortia.domain.dto.SharingInstance;
 import org.folio.consortia.domain.entity.SharingInstanceEntity;
 import org.springframework.core.convert.converter.Converter;
@@ -20,8 +20,8 @@ public class SharingInstanceConverter implements Converter<SharingInstanceEntity
     sharingInstance.setTargetTenantId(source.getTargetTenantId());
     sharingInstance.setStatus(String.valueOf(source.getStatus()));
     sharingInstance.setError(source.getError());
-    MiniMetadata metadata = new MiniMetadata();
-    metadata.setCreatedBy(source.getCreatedBy());
+    Metadata metadata = new Metadata();
+    metadata.setCreatedByUserId(source.getCreatedBy());
     // in order to prevent writing "null" as a string
     if (Objects.nonNull(source.getCreatedDate())) {
       metadata.setCreatedDate(String.valueOf(source.getCreatedDate()));
@@ -29,7 +29,7 @@ public class SharingInstanceConverter implements Converter<SharingInstanceEntity
     if (Objects.nonNull(source.getUpdatedDate())) {
       metadata.setUpdatedDate(String.valueOf(source.getUpdatedDate()));
     }
-    metadata.setUpdatedBy(source.getUpdatedBy());
+    metadata.setUpdatedByUserId(source.getUpdatedBy());
     sharingInstance.setMetadata(metadata);
     return sharingInstance;
   }

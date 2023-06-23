@@ -56,8 +56,6 @@ User:
       description: Deprecated
       type: string
       format: date-time
-    metadata:
-      "$ref": "common.yaml#/Metadata"
     tags:
       "$ref": "user.yaml#/Tags"
     customFields:

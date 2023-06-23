@@ -20,5 +20,5 @@ public interface SharingInstanceService {
    * @param sharingInstance the sharingInstanceDto
    * @return SharingInstanceDto
    */
-  SharingInstance startInstanceSharing(UUID consortiumId, SharingInstance sharingInstance);
+  SharingInstance start(UUID consortiumId, SharingInstance sharingInstance);
 }

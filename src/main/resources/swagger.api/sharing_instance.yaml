@@ -9,7 +9,7 @@ paths:
   /sharing/instances:
     post:
       summary: start instance sharing
-      operationId: startInstanceSharing
+      operationId: start
       parameters:
         - $ref: "#/components/parameters/consortiumId"
       requestBody:

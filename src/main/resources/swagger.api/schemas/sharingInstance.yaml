@@ -17,7 +17,7 @@ SharingInstance:
       type: string
     metadata:
       type: object
-      $ref: "common.yaml#/MiniMetadata"
+      $ref: "common.yaml#/Metadata"
   additionalProperties: false
   required:
     - instanceIdentifier
