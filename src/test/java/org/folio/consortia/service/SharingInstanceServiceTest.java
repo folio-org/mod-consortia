@@ -5,10 +5,12 @@ import static org.folio.consortia.utils.EntityUtils.ACTION_ID;
 import static org.folio.consortia.utils.EntityUtils.CONSORTIUM_ID;
 import static org.folio.consortia.utils.EntityUtils.createSharingInstance;
 import static org.folio.consortia.utils.EntityUtils.createSharingInstanceEntity;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.ArgumentMatchers.any;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -39,6 +41,8 @@ class SharingInstanceServiceTest {
   @Mock
   private ConsortiumService consortiumService;
   @Mock
+  private TenantService tenantService;
+  @Mock
   private SharingInstanceRepository sharingInstanceRepository;
   @Mock
   private ConversionService conversionService;
@@ -50,6 +54,7 @@ class SharingInstanceServiceTest {
 
     when(consortiumRepository.existsById(any())).thenReturn(true);
     when(conversionService.convert(any(), any())).thenReturn(toDto(savedSharingInstance));
+    doNothing().when(tenantService).checkTenantExistsOrThrow(anyString());
     when(sharingInstanceRepository.findById(any())).thenReturn(Optional.of(savedSharingInstance));
 
     var actualSharingInstance = sharingInstanceService.getById(UUID.randomUUID(), ACTION_ID);
@@ -66,6 +71,7 @@ class SharingInstanceServiceTest {
 
     when(consortiumRepository.existsById(any())).thenReturn(true);
     when(conversionService.convert(any(), any())).thenReturn(toDto(savedSharingInstance));
+    doNothing().when(tenantService).checkTenantExistsOrThrow(anyString());
     when(sharingInstanceRepository.save(any())).thenReturn(savedSharingInstance);
 
     var expectedSharingInstance = createSharingInstance(instanceIdentifier, "college", "mobius");

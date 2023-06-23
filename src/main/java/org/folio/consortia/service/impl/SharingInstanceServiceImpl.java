@@ -8,6 +8,7 @@ import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.SharingInstanceRepository;
 import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.SharingInstanceService;
+import org.folio.consortia.service.TenantService;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
@@ -22,23 +23,30 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
 
   private final SharingInstanceRepository sharingInstanceRepository;
   private final ConsortiumService consortiumService;
+  private final TenantService tenantService;
   private final ConversionService converter;
 
   @Override
   public SharingInstance getById(UUID consortiumId, UUID actionId) {
-    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
+    log.debug("getById:: Trying to get by consortiumId: {} and action id: {}", consortiumId, actionId);
     SharingInstanceEntity sharingInstanceEntity = sharingInstanceRepository.findById(actionId).
       orElseThrow(() -> new ResourceNotFoundException("actionId", String.valueOf(actionId)));
+    log.info("getById:: SharedInstance object: {} was successfully retrieved", sharingInstanceEntity.getId());
     return converter.convert(sharingInstanceEntity, SharingInstance.class);
   }
 
   @Override
   @Transactional
   public SharingInstance save(UUID consortiumId, SharingInstance sharingInstance) {
+    log.debug("save:: Trying to save sharing instance: {} for consortium: {}",  sharingInstance.getInstanceIdentifier(), consortiumId);
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
+    tenantService.checkTenantExistsOrThrow(sharingInstance.getSourceTenantId());
+    tenantService.checkTenantExistsOrThrow(sharingInstance.getTargetTenantId());
     SharingInstanceEntity savedSharingInstance = sharingInstanceRepository.save(toEntity(sharingInstance));
+    log.info("save:: SharingInstance: {} successfully saved", savedSharingInstance.getId());
     return converter.convert(savedSharingInstance, SharingInstance.class);
   }
+
 
   private SharingInstanceEntity toEntity(SharingInstance dto) {
     SharingInstanceEntity entity = new SharingInstanceEntity();
