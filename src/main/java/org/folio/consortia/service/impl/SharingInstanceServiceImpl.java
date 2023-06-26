@@ -1,6 +1,7 @@
 package org.folio.consortia.service.impl;
 
 import java.util.UUID;
+import java.util.function.Function;
 
 import org.folio.consortia.domain.dto.SharingInstance;
 import org.folio.consortia.domain.dto.SharingInstanceCollection;
@@ -11,6 +12,9 @@ import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.SharingInstanceService;
 import org.folio.consortia.service.TenantService;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -51,7 +55,33 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
 
   @Override
   public SharingInstanceCollection getSharingInstances(UUID consortiumId, UUID instanceIdentifier, String sourceTenantId, String targetTenantId, String status, Integer offset, Integer limit) {
-    return null;
+    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
+    var result = new SharingInstanceCollection();
+    Specification<SharingInstanceEntity> specification = constructSpecification(instanceIdentifier, sourceTenantId, targetTenantId, status);
+    Page<SharingInstanceEntity> sharingInstancePage = sharingInstanceRepository.findAll(specification, PageRequest.of(offset, limit));
+    result.setSharingInstances(sharingInstancePage.stream().map(o -> converter.convert(o, SharingInstance.class)).toList());
+    result.setTotalRecords((int) sharingInstancePage.getTotalElements());
+    return result;
+  }
+
+  private Specification<SharingInstanceEntity> constructSpecification(UUID instanceIdentifier, String sourceTenantId, String targetTenantId, String status) {
+    Specification<SharingInstanceEntity> specification = merge(null, p -> SharingInstanceRepository.Specifications.byInstanceIdentifier(instanceIdentifier));
+    specification = merge(specification, p -> SharingInstanceRepository.Specifications.bySourceTenantId(sourceTenantId));
+    specification = merge(specification, p -> SharingInstanceRepository.Specifications.byTargetTenantId(targetTenantId));
+
+    var statusType = status == null ? null: SharingInstanceEntity.StatusType.valueOf(status);
+    return merge(specification, p -> SharingInstanceRepository.Specifications.byStatusType(statusType));
+  }
+
+  private Specification<SharingInstanceEntity> merge(Specification<SharingInstanceEntity> specification, Function<?, Specification<SharingInstanceEntity>> param) {
+    if(specification == null && param == null) {
+      return null;
+    } else if(specification == null) {
+      return (Specification<SharingInstanceEntity>) param;
+    } else if (param == null) {
+      return specification;
+    }
+    return specification.and((Specification<SharingInstanceEntity>) param);
   }
 
   private SharingInstanceEntity toEntity(SharingInstance dto) {
