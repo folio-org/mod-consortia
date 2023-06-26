@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @SpringBootTest
-public class ConsortiaUserEventListenerTest {
+class ConsortiaUserEventListenerTest {
 
   private static final String USER_CREATED_EVENT_SAMPLE = getMockData("mockdata/kafka/create_primary_affiliation_request.json");
   private static final String USER_DELETED_EVENT_SAMPLE = getMockData("mockdata/kafka/delete_primary_affiliation_request.json");
@@ -32,33 +32,33 @@ public class ConsortiaUserEventListenerTest {
   private ConsortiaConfigurationService configurationService;
 
   @Test
-  public void shouldCreatePrimaryAffiliationWhenConfigurationExists() {
+  void shouldCreatePrimaryAffiliationWhenConfigurationExists() {
     when(configurationService.getCentralTenantId(TENANT)).thenReturn(TENANT);
     eventListener.handleUserCreating(USER_CREATED_EVENT_SAMPLE, getMessageHeaders());
     verify(userAffiliationService).createPrimaryUserAffiliation(anyString());
   }
 
   @Test
-  public void shouldDeletePrimaryAffiliationWhenConfigurationExists() {
+  void shouldDeletePrimaryAffiliationWhenConfigurationExists() {
     when(configurationService.getCentralTenantId(TENANT)).thenReturn(TENANT);
     eventListener.handleUserDeleting(USER_DELETED_EVENT_SAMPLE, getMessageHeaders());
     verify(userAffiliationService).deletePrimaryUserAffiliation(anyString());
   }
 
   @Test
-  public void shouldThrowErrorForUserCreatedWhenBusinessExceptionThrown() {
+  void shouldThrowErrorForUserCreatedWhenBusinessExceptionThrown() {
     when(configurationService.getCentralTenantId(TENANT)).thenThrow(new RuntimeException("Operation failed"));
-    assertThrows(RuntimeException.class, () -> eventListener.handleUserCreating(USER_CREATED_EVENT_SAMPLE, getMessageHeaders()));
+    assertThrows(java.lang.RuntimeException.class, () -> eventListener.handleUserCreating(USER_CREATED_EVENT_SAMPLE, getMessageHeaders()));
   }
 
   @Test
-  public void shouldThrowErrorForUserDeletedWhenBusinessExceptionThrown() {
+  void shouldThrowErrorForUserDeletedWhenBusinessExceptionThrown() {
     when(configurationService.getCentralTenantId(TENANT)).thenThrow(new RuntimeException("Operation failed"));
-    assertThrows(RuntimeException.class, () -> eventListener.handleUserDeleting(USER_DELETED_EVENT_SAMPLE, getMessageHeaders()));
+    assertThrows(java.lang.RuntimeException.class, () -> eventListener.handleUserDeleting(USER_DELETED_EVENT_SAMPLE, getMessageHeaders()));
   }
 
   @Test
-  public void shouldNotThrowErrorForUserCreatedWhenCouldNotGetCentralTenantId() {
+  void shouldNotThrowErrorForUserCreatedWhenCouldNotGetCentralTenantId() {
     // in case when we have consortium and standalone tenants in the same cluster - we should skip processing of event from standalone tenant
     when(configurationService.getCentralTenantId(TENANT))
       .thenThrow(new BadSqlGrammarException("table 'consortia_configuration' not found", "", new SQLException()));
@@ -67,7 +67,7 @@ public class ConsortiaUserEventListenerTest {
   }
 
   @Test
-  public void shouldNotThrowErrorForUserDeletedWhenCouldNotGetCentralTenantId() {
+  void shouldNotThrowErrorForUserDeletedWhenCouldNotGetCentralTenantId() {
     // in case when we have consortium and standalone tenants in the same cluster - we should skip processing of event from standalone tenant
     when(configurationService.getCentralTenantId(TENANT))
       .thenThrow(new BadSqlGrammarException("table 'consortia_configuration' not found", "", new SQLException()));
