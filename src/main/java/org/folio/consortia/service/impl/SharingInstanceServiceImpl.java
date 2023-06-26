@@ -3,6 +3,7 @@ package org.folio.consortia.service.impl;
 import java.util.UUID;
 
 import org.folio.consortia.domain.dto.SharingInstance;
+import org.folio.consortia.domain.dto.SharingInstanceCollection;
 import org.folio.consortia.domain.entity.SharingInstanceEntity;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.SharingInstanceRepository;
@@ -46,6 +47,11 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
     log.info("start:: SharingInstance '{}' with instanceId '{}', sourceTenantId '{}', targetTenantId '{}'  successfully saved in db",
       savedSharingInstance.getId(), savedSharingInstance.getInstanceId(), savedSharingInstance.getSourceTenantId(), savedSharingInstance.getTargetTenantId());
     return converter.convert(savedSharingInstance, SharingInstance.class);
+  }
+
+  @Override
+  public SharingInstanceCollection getSharingInstances(UUID consortiumId, UUID instanceIdentifier, String sourceTenantId, String targetTenantId, String status, Integer offset, Integer limit) {
+    return null;
   }
 
   private SharingInstanceEntity toEntity(SharingInstance dto) {

@@ -3,6 +3,7 @@ package org.folio.consortia.service;
 import java.util.UUID;
 
 import org.folio.consortia.domain.dto.SharingInstance;
+import org.folio.consortia.domain.dto.SharingInstanceCollection;
 
 public interface SharingInstanceService {
 
@@ -21,4 +22,17 @@ public interface SharingInstanceService {
    * @return SharingInstanceDto
    */
   SharingInstance start(UUID consortiumId, SharingInstance sharingInstance);
+
+  /**
+   * Get a sharing instance collection
+   * @param consortiumId       the UUID of the consortium
+   * @param instanceIdentifier the UUID of the instance
+   * @param sourceTenantId     the ID of the source tenant
+   * @param targetTenantId     the ID of the target tenant
+   * @param status             the status of the sharing instance
+   * @param offset             the offset
+   * @param limit              the limit
+   * @return the sharing instance collection
+   */
+  SharingInstanceCollection getSharingInstances(UUID consortiumId, UUID instanceIdentifier, String sourceTenantId, String targetTenantId, String status, Integer offset, Integer limit);
 }

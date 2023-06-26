@@ -35,7 +35,9 @@ public class SharingInstanceController implements SharingApi{
   }
 
   @Override
-  public ResponseEntity<SharingInstanceCollection> getSharingInstances(UUID instanceIdentifier, String sourceTenantId, String targetTenantId, String status, Integer offset, Integer limit) {
-    return null;
+  public ResponseEntity<SharingInstanceCollection> getSharingInstances(UUID consortiumId, UUID instanceIdentifier, String sourceTenantId,
+    String targetTenantId, String status, Integer offset, Integer limit) {
+
+    return ResponseEntity.ok(sharingInstanceService.getSharingInstances(consortiumId, instanceIdentifier, sourceTenantId, targetTenantId, status, offset, limit));
   }
 }

@@ -12,6 +12,7 @@ paths:
       summary: Get list of sharing instances
       operationId: getSharingInstances
       parameters:
+        - $ref: "#/components/parameters/consortiumId"
         - $ref: "#/components/parameters/instanceIdentifier"
         - $ref: "#/components/parameters/sourceTenantId"
         - $ref: "#/components/parameters/targetTenantId"
