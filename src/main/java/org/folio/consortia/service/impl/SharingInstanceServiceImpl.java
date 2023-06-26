@@ -1,7 +1,8 @@
 package org.folio.consortia.service.impl;
 
+import java.util.ArrayList;
+import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Function;
 
 import org.folio.consortia.domain.dto.SharingInstance;
 import org.folio.consortia.domain.dto.SharingInstanceCollection;
@@ -65,23 +66,13 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
   }
 
   private Specification<SharingInstanceEntity> constructSpecification(UUID instanceIdentifier, String sourceTenantId, String targetTenantId, String status) {
-    Specification<SharingInstanceEntity> specification = merge(null, p -> SharingInstanceRepository.Specifications.byInstanceIdentifier(instanceIdentifier));
-    specification = merge(specification, p -> SharingInstanceRepository.Specifications.bySourceTenantId(sourceTenantId));
-    specification = merge(specification, p -> SharingInstanceRepository.Specifications.byTargetTenantId(targetTenantId));
+    var list = new ArrayList<Specification<SharingInstanceEntity>>();
+    list.add(SharingInstanceRepository.Specifications.byInstanceIdentifier(instanceIdentifier));
+    list.add(SharingInstanceRepository.Specifications.bySourceTenantId(sourceTenantId));
+    list.add(SharingInstanceRepository.Specifications.byTargetTenantId(targetTenantId));
+    list.add(SharingInstanceRepository.Specifications.byStatusType(status));
 
-    var statusType = status == null ? null: SharingInstanceEntity.StatusType.valueOf(status);
-    return merge(specification, p -> SharingInstanceRepository.Specifications.byStatusType(statusType));
-  }
-
-  private Specification<SharingInstanceEntity> merge(Specification<SharingInstanceEntity> specification, Function<?, Specification<SharingInstanceEntity>> param) {
-    if(specification == null && param == null) {
-      return null;
-    } else if(specification == null) {
-      return (Specification<SharingInstanceEntity>) param;
-    } else if (param == null) {
-      return specification;
-    }
-    return specification.and((Specification<SharingInstanceEntity>) param);
+    return list.stream().filter(Objects::nonNull).reduce(Specification::and).orElse(null);
   }
 
   private SharingInstanceEntity toEntity(SharingInstance dto) {
@@ -93,5 +84,4 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
     entity.setStatus(SharingInstanceEntity.StatusType.IN_PROGRESS);
     return entity;
   }
-
 }
