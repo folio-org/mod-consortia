@@ -91,7 +91,7 @@ public class TenantServiceImpl implements TenantService {
 
     // validation part
     checkTenantNotExistsAndConsortiumExistsOrThrow(consortiumId, tenantDto.getId());
-    checkUniquenessCodeAndName(tenantDto);
+    checkCodeAndNameUniqueness(tenantDto);
     if (tenantDto.getIsCentral()) {
       checkCentralTenantExistsOrThrow();
     }
@@ -178,7 +178,7 @@ public class TenantServiceImpl implements TenantService {
     }
   }
 
-  private void checkUniquenessCodeAndName(Tenant tenant) {
+  private void checkCodeAndNameUniqueness(Tenant tenant) {
     if (tenantRepository.existsByName(tenant.getName())) {
       throw new ResourceAlreadyExistException("name", tenant.getName());
     }
