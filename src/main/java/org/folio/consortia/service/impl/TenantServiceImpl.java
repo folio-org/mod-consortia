@@ -125,6 +125,7 @@ public class TenantServiceImpl implements TenantService {
   }
 
   @Override
+  @Transactional
   public Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     checkTenantExistsOrThrow(tenantId);
@@ -133,6 +134,7 @@ public class TenantServiceImpl implements TenantService {
   }
 
   @Override
+  @Transactional
   public void delete(UUID consortiumId, String tenantId) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     checkTenantExistsOrThrow(tenantId);
