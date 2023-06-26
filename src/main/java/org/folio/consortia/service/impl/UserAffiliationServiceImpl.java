@@ -83,6 +83,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   @Transactional
   public void deletePrimaryUserAffiliation(String eventPayload) {
     FolioExecutionContext currentContext = (FolioExecutionContext) folioExecutionContext.getInstance();
+    String centralTenantId = folioExecutionContext.getTenantId();
     try {
       var userEvent = objectMapper.readValue(eventPayload, UserEvent.class);
       log.info("Received event for deleting primary affiliation for user: {} and tenant: {}", userEvent.getUserDto().getId(), userEvent.getTenantId());
@@ -98,7 +99,6 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
 
       PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(userEvent);
       String data = objectMapper.writeValueAsString(affiliationEvent);
-      String centralTenantId = folioExecutionContext.getTenantId();
 
       // context is changed in deleteShadowUsers() method and context is empty after deleteShadowUsers() method, so we need to set context again.
       try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentContext))) {
