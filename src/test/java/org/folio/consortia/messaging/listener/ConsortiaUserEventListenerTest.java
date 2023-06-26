@@ -34,27 +34,27 @@ public class ConsortiaUserEventListenerTest {
   @Test
   public void shouldCreatePrimaryAffiliationWhenConfigurationExists() {
     when(configurationService.getCentralTenantId(TENANT)).thenReturn(TENANT);
-    eventListener.listenUserCreated(USER_CREATED_EVENT_SAMPLE, getMessageHeaders());
+    eventListener.handleUserCreating(USER_CREATED_EVENT_SAMPLE, getMessageHeaders());
     verify(userAffiliationService).createPrimaryUserAffiliation(anyString());
   }
 
   @Test
   public void shouldDeletePrimaryAffiliationWhenConfigurationExists() {
     when(configurationService.getCentralTenantId(TENANT)).thenReturn(TENANT);
-    eventListener.listenUserDeleted(USER_DELETED_EVENT_SAMPLE, getMessageHeaders());
+    eventListener.handleUserDeleting(USER_DELETED_EVENT_SAMPLE, getMessageHeaders());
     verify(userAffiliationService).deletePrimaryUserAffiliation(anyString());
   }
 
   @Test
   public void shouldThrowErrorForUserCreatedWhenBusinessExceptionThrown() {
     when(configurationService.getCentralTenantId(TENANT)).thenThrow(new RuntimeException("Operation failed"));
-    assertThrows(RuntimeException.class, () -> eventListener.listenUserCreated(USER_CREATED_EVENT_SAMPLE, getMessageHeaders()));
+    assertThrows(RuntimeException.class, () -> eventListener.handleUserCreating(USER_CREATED_EVENT_SAMPLE, getMessageHeaders()));
   }
 
   @Test
   public void shouldThrowErrorForUserDeletedWhenBusinessExceptionThrown() {
     when(configurationService.getCentralTenantId(TENANT)).thenThrow(new RuntimeException("Operation failed"));
-    assertThrows(RuntimeException.class, () -> eventListener.listenUserDeleted(USER_DELETED_EVENT_SAMPLE, getMessageHeaders()));
+    assertThrows(RuntimeException.class, () -> eventListener.handleUserDeleting(USER_DELETED_EVENT_SAMPLE, getMessageHeaders()));
   }
 
   @Test
@@ -62,7 +62,7 @@ public class ConsortiaUserEventListenerTest {
     // in case when we have consortium and standalone tenants in the same cluster - we should skip processing of event from standalone tenant
     when(configurationService.getCentralTenantId(TENANT))
       .thenThrow(new BadSqlGrammarException("table 'consortia_configuration' not found", "", new SQLException()));
-    eventListener.listenUserCreated(USER_CREATED_EVENT_SAMPLE, getMessageHeaders());
+    eventListener.handleUserCreating(USER_CREATED_EVENT_SAMPLE, getMessageHeaders());
     verifyNoInteractions(userAffiliationService);
   }
 
@@ -71,7 +71,7 @@ public class ConsortiaUserEventListenerTest {
     // in case when we have consortium and standalone tenants in the same cluster - we should skip processing of event from standalone tenant
     when(configurationService.getCentralTenantId(TENANT))
       .thenThrow(new BadSqlGrammarException("table 'consortia_configuration' not found", "", new SQLException()));
-    eventListener.listenUserDeleted(USER_DELETED_EVENT_SAMPLE, getMessageHeaders());
+    eventListener.handleUserDeleting(USER_DELETED_EVENT_SAMPLE, getMessageHeaders());
     verifyNoInteractions(userAffiliationService);
   }
 

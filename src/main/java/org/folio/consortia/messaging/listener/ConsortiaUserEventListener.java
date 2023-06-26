@@ -34,7 +34,7 @@ public class ConsortiaUserEventListener {
     topicPattern = "#{folioKafkaProperties.listener['user-created'].topicPattern}",
     concurrency = "#{folioKafkaProperties.listener['user-created'].concurrency}",
     containerFactory = "kafkaListenerContainerFactory")
-  public void listenUserCreated(String data, MessageHeaders messageHeaders) {
+  public void handleUserCreating(String data, MessageHeaders messageHeaders) {
     // to create affiliation in central tenant schema
     String centralTenantId = getCentralTenantByIdByHeader(messageHeaders);
     if (StringUtils.isNotBlank(centralTenantId)) {
@@ -48,12 +48,12 @@ public class ConsortiaUserEventListener {
     topicPattern = "#{folioKafkaProperties.listener['user-deleted'].topicPattern}",
     concurrency = "#{folioKafkaProperties.listener['user-deleted'].concurrency}",
     containerFactory = "kafkaListenerContainerFactory")
-  public void listenUserDeleted(String data, MessageHeaders messageHeaders) {
+  public void handleUserDeleting(String data, MessageHeaders messageHeaders) {
     // to delete affiliation from central tenant schema
     String centralTenantId = getCentralTenantByIdByHeader(messageHeaders);
     if (StringUtils.isNotBlank(centralTenantId)) {
-      runInFolioContext(createFolioExecutionContext(messageHeaders, folioMetadata, centralTenantId),
-        () -> userAffiliationService.deletePrimaryUserAffiliation(data));
+      runInFolioContext(createFolioExecutionContext(messageHeaders, folioMetadata, centralTenantId), () ->
+        userAffiliationService.deletePrimaryUserAffiliation(data));
     }
   }
 
