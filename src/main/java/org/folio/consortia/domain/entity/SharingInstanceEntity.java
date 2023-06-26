@@ -8,7 +8,6 @@ import org.folio.consortia.domain.entity.base.AuditableEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -24,7 +23,6 @@ import lombok.ToString;
 @Table(name = "sharing_instance")
 public class SharingInstanceEntity extends AuditableEntity {
   @Id
-  @GeneratedValue
   private UUID id;
   private UUID instanceId;
   private String sourceTenantId;

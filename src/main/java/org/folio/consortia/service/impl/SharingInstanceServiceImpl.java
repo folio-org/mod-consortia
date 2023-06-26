@@ -38,7 +38,7 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
   @Override
   @Transactional
   public SharingInstance start(UUID consortiumId, SharingInstance sharingInstance) {
-    log.debug("start:: Trying to start instance sharing: {} for consortium: {}",  sharingInstance.getInstanceIdentifier(), consortiumId);
+    log.debug("start:: Trying to start instance sharing: {} for consortium: {}", sharingInstance.getInstanceIdentifier(), consortiumId);
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     tenantService.checkTenantExistsOrThrow(sharingInstance.getSourceTenantId());
     tenantService.checkTenantExistsOrThrow(sharingInstance.getTargetTenantId());
@@ -48,9 +48,9 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
     return converter.convert(savedSharingInstance, SharingInstance.class);
   }
 
-
   private SharingInstanceEntity toEntity(SharingInstance dto) {
     SharingInstanceEntity entity = new SharingInstanceEntity();
+    entity.setId(UUID.randomUUID());
     entity.setInstanceId(dto.getInstanceIdentifier());
     entity.setSourceTenantId(dto.getSourceTenantId());
     entity.setTargetTenantId(dto.getTargetTenantId());
