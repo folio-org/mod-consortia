@@ -1,61 +1,83 @@
 package org.folio.consortia.messaging.listener;
 
-import org.folio.consortia.exception.ResourceNotFoundException;
-import org.folio.consortia.service.UserAffiliationService;
-import org.folio.consortia.support.BaseTest;
+import static org.folio.consortia.support.BaseTest.TENANT;
 import static org.folio.consortia.utils.InputOutputTestUtils.getMockData;
-import org.folio.spring.integration.XOkapiHeaders;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+import org.folio.consortia.service.ConsortiaConfigurationService;
+import org.folio.consortia.service.UserAffiliationService;
+import org.folio.spring.integration.XOkapiHeaders;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.messaging.MessageHeaders;
-
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ConsortiaUserEventListenerTest extends BaseTest {
-  private static final String CONSORTIUM_TENANT_ID = "diku";
-  private static final String STANDALONE_TENANT_ID = "some_tenant";
+@SpringBootTest
+public class ConsortiaUserEventListenerTest {
 
-  private static final String userCreatedEventSample = getMockData("mockdata/kafka/create_primary_affiliation_request.json");
-  private static final String userDeletedEventSample = getMockData("mockdata/kafka/delete_primary_affiliation_request.json");
+  private static final String USER_CREATED_EVENT_SAMPLE = getMockData("mockdata/kafka/create_primary_affiliation_request.json");
+  private static final String USER_DELETED_EVENT_SAMPLE = getMockData("mockdata/kafka/delete_primary_affiliation_request.json");
 
-  @Autowired
+  @InjectMocks
   private ConsortiaUserEventListener eventListener;
-  @Autowired
+  @Mock
   private UserAffiliationService userAffiliationService;
+  @Mock
+  private ConsortiaConfigurationService configurationService;
 
   @Test
-  public void userCreatedEventCanCallConsortiaConfigurationTable() {
-    // in this test tenant included into consortium, table consortia_configuration exists and can be queried
-    // consortia_configuration has no rows, so ResourceNotFoundException is expected
-    assertThrows(ResourceNotFoundException.class, () -> eventListener.listenUserCreated(userCreatedEventSample, getMessageHeaders(CONSORTIUM_TENANT_ID)));
+  public void shouldCreatePrimaryAffiliationWhenConfigurationExists() {
+    when(configurationService.getCentralTenantId(TENANT)).thenReturn(TENANT);
+    eventListener.listenUserCreated(USER_CREATED_EVENT_SAMPLE, getMessageHeaders());
+    verify(userAffiliationService).createPrimaryUserAffiliation(anyString());
   }
 
   @Test
-  public void userDeletedEventCanCallConsortiaConfigurationTable() {
-    // in this test tenant included into consortium, table consortia_configuration exists and can be queried
-    // consortia_configuration has no rows, so ResourceNotFoundException is expected
-    assertThrows(ResourceNotFoundException.class, () -> eventListener.listenUserDeleted(userDeletedEventSample, getMessageHeaders(CONSORTIUM_TENANT_ID)));
+  public void shouldDeletePrimaryAffiliationWhenConfigurationExists() {
+    when(configurationService.getCentralTenantId(TENANT)).thenReturn(TENANT);
+    eventListener.listenUserDeleted(USER_DELETED_EVENT_SAMPLE, getMessageHeaders());
+    verify(userAffiliationService).deletePrimaryUserAffiliation(anyString());
   }
 
   @Test
-  public void userCreatedEventCompletesWithoutProcessingFor() {
-    // in this test tenant does not include into consortium, so table consortia_configuration does not exist
-    // offset committed without event processing, situation is possible when consortium and standalone tenants exists on the same cluster
-    eventListener.listenUserCreated(userCreatedEventSample, getMessageHeaders(STANDALONE_TENANT_ID));
+  public void shouldThrowErrorForUserCreatedWhenBusinessExceptionThrown() {
+    when(configurationService.getCentralTenantId(TENANT)).thenThrow(new RuntimeException("Operation failed"));
+    assertThrows(RuntimeException.class, () -> eventListener.listenUserCreated(USER_CREATED_EVENT_SAMPLE, getMessageHeaders()));
   }
 
   @Test
-  public void userDeletedEventCompletesWithoutProcessingFor() {
-    // in this test tenant does not include into consortium, so table consortia_configuration does not exist
-    // offset committed without event processing, situation is possible when consortium and standalone tenants exists on the same cluster
-    eventListener.listenUserCreated(userCreatedEventSample, getMessageHeaders(STANDALONE_TENANT_ID));
+  public void shouldThrowErrorForUserDeletedWhenBusinessExceptionThrown() {
+    when(configurationService.getCentralTenantId(TENANT)).thenThrow(new RuntimeException("Operation failed"));
+    assertThrows(RuntimeException.class, () -> eventListener.listenUserDeleted(USER_DELETED_EVENT_SAMPLE, getMessageHeaders()));
   }
 
-  private MessageHeaders getMessageHeaders(String tenantId) {
+  @Test
+  public void shouldNotThrowErrorForUserCreatedWhenCouldNotGetCentralTenantId() {
+    // in case when we have consortium and standalone tenants in the same cluster - we should skip processing of event from standalone tenant
+    when(configurationService.getCentralTenantId(TENANT))
+      .thenThrow(new BadSqlGrammarException("table 'consortia_configuration' not found", "", new SQLException()));
+    eventListener.listenUserCreated(USER_CREATED_EVENT_SAMPLE, getMessageHeaders());
+    verifyNoInteractions(userAffiliationService);
+  }
+
+  @Test
+  public void shouldNotThrowErrorForUserDeletedWhenCouldNotGetCentralTenantId() {
+    // in case when we have consortium and standalone tenants in the same cluster - we should skip processing of event from standalone tenant
+    when(configurationService.getCentralTenantId(TENANT))
+      .thenThrow(new BadSqlGrammarException("table 'consortia_configuration' not found", "", new SQLException()));
+    eventListener.listenUserDeleted(USER_DELETED_EVENT_SAMPLE, getMessageHeaders());
+    verifyNoInteractions(userAffiliationService);
+  }
+
+  private MessageHeaders getMessageHeaders() {
     Map<String, Object> header = new HashMap<>();
-    header.put(XOkapiHeaders.TENANT, tenantId.getBytes());
+    header.put(XOkapiHeaders.TENANT, TENANT.getBytes());
 
     return new MessageHeaders(header);
   }
