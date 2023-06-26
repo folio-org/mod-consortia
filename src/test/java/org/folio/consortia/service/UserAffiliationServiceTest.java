@@ -87,6 +87,7 @@ class UserAffiliationServiceTest {
     verify(kafkaService, times(1)).send(any(), anyString(), any());
 
   }
+
   @Test
   void primaryAffiliationAddedSuccessfullyTestToCentralTenant() {
     var te = createTenantEntity();
