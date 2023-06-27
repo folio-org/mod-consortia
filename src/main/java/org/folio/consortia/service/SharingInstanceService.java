@@ -34,5 +34,6 @@ public interface SharingInstanceService {
    * @param limit              the limit
    * @return the sharing instance collection
    */
-  SharingInstanceCollection getSharingInstances(UUID consortiumId, UUID instanceIdentifier, String sourceTenantId, String targetTenantId, String status, Integer offset, Integer limit);
+  SharingInstanceCollection getSharingInstances(UUID consortiumId, UUID instanceIdentifier, String sourceTenantId,
+      String targetTenantId, String status, Integer offset, Integer limit);
 }

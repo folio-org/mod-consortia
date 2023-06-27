@@ -1,8 +1,9 @@
 package org.folio.consortia.service.impl;
 
-import java.util.ArrayList;
-import java.util.Objects;
+import static org.folio.consortia.repository.SharingInstanceRepository.Specifications.constructSpecification;
+
 import java.util.UUID;
+import jakarta.transaction.Transactional;
 
 import org.folio.consortia.domain.dto.SharingInstance;
 import org.folio.consortia.domain.dto.SharingInstanceCollection;
@@ -13,12 +14,9 @@ import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.SharingInstanceService;
 import org.folio.consortia.service.TenantService;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -55,24 +53,16 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
   }
 
   @Override
-  public SharingInstanceCollection getSharingInstances(UUID consortiumId, UUID instanceIdentifier, String sourceTenantId, String targetTenantId, String status, Integer offset, Integer limit) {
+  public SharingInstanceCollection getSharingInstances(UUID consortiumId, UUID instanceIdentifier, String sourceTenantId,
+      String targetTenantId, String status, Integer offset, Integer limit) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
+    var specification = constructSpecification(instanceIdentifier, sourceTenantId, targetTenantId, status);
+
+    var sharingInstancePage = sharingInstanceRepository.findAll(specification, PageRequest.of(offset, limit));
     var result = new SharingInstanceCollection();
-    Specification<SharingInstanceEntity> specification = constructSpecification(instanceIdentifier, sourceTenantId, targetTenantId, status);
-    Page<SharingInstanceEntity> sharingInstancePage = sharingInstanceRepository.findAll(specification, PageRequest.of(offset, limit));
     result.setSharingInstances(sharingInstancePage.stream().map(o -> converter.convert(o, SharingInstance.class)).toList());
     result.setTotalRecords((int) sharingInstancePage.getTotalElements());
     return result;
-  }
-
-  private Specification<SharingInstanceEntity> constructSpecification(UUID instanceIdentifier, String sourceTenantId, String targetTenantId, String status) {
-    var list = new ArrayList<Specification<SharingInstanceEntity>>();
-    list.add(SharingInstanceRepository.Specifications.byInstanceIdentifier(instanceIdentifier));
-    list.add(SharingInstanceRepository.Specifications.bySourceTenantId(sourceTenantId));
-    list.add(SharingInstanceRepository.Specifications.byTargetTenantId(targetTenantId));
-    list.add(SharingInstanceRepository.Specifications.byStatusType(status));
-
-    return list.stream().filter(Objects::nonNull).reduce(Specification::and).orElse(null);
   }
 
   private SharingInstanceEntity toEntity(SharingInstance dto) {
