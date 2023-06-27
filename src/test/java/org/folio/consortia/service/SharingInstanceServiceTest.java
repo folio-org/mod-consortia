@@ -72,6 +72,7 @@ class SharingInstanceServiceTest {
     when(consortiumRepository.existsById(any())).thenReturn(true);
     when(conversionService.convert(any(), any())).thenReturn(toDto(savedSharingInstance));
     doNothing().when(tenantService).checkTenantExistsOrThrow(anyString());
+    when(tenantService.getCentralTenantId()).thenReturn("college");
     when(sharingInstanceRepository.save(any())).thenReturn(savedSharingInstance);
 
     var expectedSharingInstance = createSharingInstance(instanceIdentifier, "college", "mobius");

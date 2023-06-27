@@ -128,7 +128,7 @@ class SharingInstanceControllerIntegrationTests extends BaseTest {
       .map(k -> k + "=" + parameters.get(k))
       .collect(Collectors.joining("&"));
 
-    return query = query.length() == 0 ? "" : "?" + query;
+    return query.length() == 0 ? "" : "?" + query;
   }
 
   private static class ParameterArgumentsProvider implements ArgumentsProvider {
