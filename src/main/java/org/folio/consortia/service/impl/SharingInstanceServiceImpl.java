@@ -2,6 +2,7 @@ package org.folio.consortia.service.impl;
 
 import static org.folio.consortia.repository.SharingInstanceRepository.Specifications.constructSpecification;
 
+import java.util.Objects;
 import java.util.UUID;
 import jakarta.transaction.Transactional;
 
@@ -44,8 +45,8 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
   public SharingInstance start(UUID consortiumId, SharingInstance sharingInstance) {
     log.debug("start:: Trying to start instance sharing: {} for consortium: {}", sharingInstance.getInstanceIdentifier(), consortiumId);
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    tenantService.checkTenantExistsOrThrow(sharingInstance.getSourceTenantId());
-    tenantService.checkTenantExistsOrThrow(sharingInstance.getTargetTenantId());
+    validateTenantIds(sharingInstance.getSourceTenantId(), sharingInstance.getTargetTenantId());
+
     SharingInstanceEntity savedSharingInstance = sharingInstanceRepository.save(toEntity(sharingInstance));
     log.info("start:: SharingInstance '{}' with instanceId '{}', sourceTenantId '{}', targetTenantId '{}'  successfully saved in db",
       savedSharingInstance.getId(), savedSharingInstance.getInstanceId(), savedSharingInstance.getSourceTenantId(), savedSharingInstance.getTargetTenantId());
@@ -63,6 +64,17 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
     result.setSharingInstances(sharingInstancePage.stream().map(o -> converter.convert(o, SharingInstance.class)).toList());
     result.setTotalRecords((int) sharingInstancePage.getTotalElements());
     return result;
+  }
+
+  private void validateTenantIds(String sourceTenantId, String targetTenantId) {
+    // both tenants should exist in the consortium
+    tenantService.checkTenantExistsOrThrow(sourceTenantId);
+    tenantService.checkTenantExistsOrThrow(targetTenantId);
+
+    // at least one of the tenants should be 'centralTenant'
+    String centralTenantId = tenantService.getCentralTenantId();
+    if(Objects.equals(centralTenantId, sourceTenantId) || Objects.equals(centralTenantId, targetTenantId)) return;
+    throw new IllegalArgumentException("Both 'sourceTenantId' and 'targetTenantId' cannot be member tenants at the same time");
   }
 
   private SharingInstanceEntity toEntity(SharingInstance dto) {
