@@ -36,7 +36,7 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
     log.debug("getById:: Trying to get by consortiumId: {} and action id: {}", consortiumId, actionId);
     SharingInstanceEntity sharingInstanceEntity = sharingInstanceRepository.findById(actionId).
       orElseThrow(() -> new ResourceNotFoundException("actionId", String.valueOf(actionId)));
-    log.info("getById:: SharedInstance object: {} was successfully retrieved", sharingInstanceEntity.getId());
+    log.info("getById:: sharedInstance object with id: {} was successfully retrieved", sharingInstanceEntity.getId());
     return converter.convert(sharingInstanceEntity, SharingInstance.class);
   }
 
@@ -45,10 +45,10 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
   public SharingInstance start(UUID consortiumId, SharingInstance sharingInstance) {
     log.debug("start:: Trying to start instance sharing: {} for consortium: {}", sharingInstance.getInstanceIdentifier(), consortiumId);
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    validateTenantIds(sharingInstance.getSourceTenantId(), sharingInstance.getTargetTenantId());
+    checkTenantsExistAndContainCentralTenantOrThrow(sharingInstance.getSourceTenantId(), sharingInstance.getTargetTenantId());
 
     SharingInstanceEntity savedSharingInstance = sharingInstanceRepository.save(toEntity(sharingInstance));
-    log.info("start:: SharingInstance '{}' with instanceId '{}', sourceTenantId '{}', targetTenantId '{}'  successfully saved in db",
+    log.info("start:: sharingInstance with id: {}, instanceId: {}, sourceTenantId: {}, targetTenantId: {} successfully saved in db",
       savedSharingInstance.getId(), savedSharingInstance.getInstanceId(), savedSharingInstance.getSourceTenantId(), savedSharingInstance.getTargetTenantId());
     return converter.convert(savedSharingInstance, SharingInstance.class);
   }
@@ -56,6 +56,8 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
   @Override
   public SharingInstanceCollection getSharingInstances(UUID consortiumId, UUID instanceIdentifier, String sourceTenantId,
       String targetTenantId, String status, Integer offset, Integer limit) {
+    log.debug("getSharingInstances:: parameters consortiumId: {}, instanceIdentifier: {}, sourceTenantId: {}, targetTenantId: {}, status: {}.",
+      consortiumId, instanceIdentifier, sourceTenantId, targetTenantId, status);
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     var specification = constructSpecification(instanceIdentifier, sourceTenantId, targetTenantId, status);
 
@@ -63,10 +65,11 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
     var result = new SharingInstanceCollection();
     result.setSharingInstances(sharingInstancePage.stream().map(o -> converter.convert(o, SharingInstance.class)).toList());
     result.setTotalRecords((int) sharingInstancePage.getTotalElements());
+    log.info("getSharingInstances:: total number of matched sharingInstances: {}.", result.getTotalRecords());
     return result;
   }
 
-  private void validateTenantIds(String sourceTenantId, String targetTenantId) {
+  private void checkTenantsExistAndContainCentralTenantOrThrow(String sourceTenantId, String targetTenantId) {
     // both tenants should exist in the consortium
     tenantService.checkTenantExistsOrThrow(sourceTenantId);
     tenantService.checkTenantExistsOrThrow(targetTenantId);
@@ -74,7 +77,7 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
     // at least one of the tenants should be 'centralTenant'
     String centralTenantId = tenantService.getCentralTenantId();
     if(Objects.equals(centralTenantId, sourceTenantId) || Objects.equals(centralTenantId, targetTenantId)) return;
-    throw new IllegalArgumentException("Both 'sourceTenantId' and 'targetTenantId' cannot be member tenants at the same time");
+    throw new IllegalArgumentException("Both 'sourceTenantId' and 'targetTenantId' cannot be member tenants.");
   }
 
   private SharingInstanceEntity toEntity(SharingInstance dto) {

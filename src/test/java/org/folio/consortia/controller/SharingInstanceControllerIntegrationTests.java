@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -35,14 +34,14 @@ class SharingInstanceControllerIntegrationTests extends BaseTest {
   private static final String UNIVERSITY = "university";
   private static final String COLLEGE = "college";
 
-  private static final List<String> SHARING_INSTANCES = List.of(
-    String.format("8673c2b0-dfe6-447b-bb6e-a1d7eb2e3572 %s %s IN_PROGRESS", TENANT, UNIVERSITY),
-    String.format("8673c2b0-dfe6-447b-bb6e-a1d7eb2e3572 %s %s IN_PROGRESS", TENANT, COLLEGE),
-    String.format("d5649ef9-231d-4293-8657-c86b01d46ccc %s %s IN_PROGRESS", TENANT, UNIVERSITY),
-    String.format("1eb8fc73-24aa-424e-9487-24c178313783 %s %s IN_PROGRESS", TENANT, TENANT),
-    String.format("ac9865a8-8e17-4351-adb6-eb0a18cdcf9b %s %s IN_PROGRESS", UNIVERSITY, TENANT),
-    String.format("c3291fa4-b7f0-40c9-ab93-68eec638d9eb %s %s IN_PROGRESS", COLLEGE, TENANT)
-  );
+  private static final String[][] SHARING_INSTANCES = {
+    {"8673c2b0-dfe6-447b-bb6e-a1d7eb2e3572", TENANT, UNIVERSITY, "IN_PROGRESS"},
+    {"8673c2b0-dfe6-447b-bb6e-a1d7eb2e3572", TENANT, COLLEGE, "IN_PROGRESS"},
+    {"d5649ef9-231d-4293-8657-c86b01d46ccc", TENANT, UNIVERSITY, "IN_PROGRESS"},
+    {"1eb8fc73-24aa-424e-9487-24c178313783", TENANT, TENANT, "IN_PROGRESS"},
+    {"ac9865a8-8e17-4351-adb6-eb0a18cdcf9b", UNIVERSITY, TENANT, "IN_PROGRESS"},
+    {"c3291fa4-b7f0-40c9-ab93-68eec638d9eb", COLLEGE, TENANT, "IN_PROGRESS"}
+  };
 
   @MockBean
   private ConsortiumRepository consortiumRepository;
@@ -53,12 +52,15 @@ class SharingInstanceControllerIntegrationTests extends BaseTest {
 
   @BeforeEach
   void initialize() {
-    postAndVerifyResponseBody(SHARING_INSTANCES);
+    if (!INITIALIZED) {
+      postAndVerifyResponseBody(SHARING_INSTANCES);
+      INITIALIZED = true;
+    }
   }
 
   @ParameterizedTest
   @ArgumentsSource(ParameterArgumentsProvider.class)
-  void canGetAllSharingInstances(String instanceId, String sourceTenantId, String targetTenantId, String status, String totalRecords) {
+  void canGetSharingInstancesByFiltering(String instanceId, String sourceTenantId, String targetTenantId, String status, String totalRecords) {
     // prepare request params
     String params = params(instanceId, sourceTenantId, targetTenantId, status);
 
@@ -79,40 +81,34 @@ class SharingInstanceControllerIntegrationTests extends BaseTest {
   }
 
   @SneakyThrows
-  private void postAndVerifyResponseBody(List<String> list) {
-    if(!INITIALIZED) {
-      for(String instanceSharing : list) {
-        // to skip the validation part
-        when(consortiumRepository.existsById(any())).thenReturn(true);
-        when(tenantRepository.existsById(any())).thenReturn(true);
-        when(tenantService.getCentralTenantId()).thenReturn(TENANT);
+  private void postAndVerifyResponseBody(String[][] instances) {
+    for (String[] fields : instances) {
+      // to skip the validation part
+      when(consortiumRepository.existsById(any())).thenReturn(true);
+      when(tenantRepository.existsById(any())).thenReturn(true);
+      when(tenantService.getCentralTenantId()).thenReturn(TENANT);
 
-        // extract fields
-        String[] fields = instanceSharing.split(" ");
+      // create payload
+      String body = new JSONObject()
+        .appendField("instanceIdentifier", fields[0])
+        .appendField("sourceTenantId", fields[1])
+        .appendField("targetTenantId", fields[2])
+        .appendField("status", fields[3])
+        .toJSONString();
 
-        // create payload
-        String body = new JSONObject()
-          .appendField("instanceIdentifier", fields[0])
-          .appendField("sourceTenantId", fields[1])
-          .appendField("targetTenantId", fields[2])
-          .appendField("status", fields[3])
-          .toJSONString();
-
-        // POST and verify response
-        this.mockMvc.perform(
-            post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/sharing/instances")
-              .headers(defaultHeaders())
-              .content(body)
-              .contentType(MediaType.APPLICATION_JSON)
-              .accept(MediaType.APPLICATION_JSON))
-          .andExpect(status().isCreated())
-          .andExpect(jsonPath("$.id").isNotEmpty())
-          .andExpect(jsonPath("$.instanceIdentifier").value(fields[0]))
-          .andExpect(jsonPath("$.sourceTenantId").value(fields[1]))
-          .andExpect(jsonPath("$.targetTenantId").value(fields[2]))
-          .andExpect(jsonPath("$.status").value(fields[3]));
-      }
-      INITIALIZED = true;
+      // POST and verify response
+      this.mockMvc.perform(
+          post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/sharing/instances")
+            .headers(defaultHeaders())
+            .content(body)
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.id").isNotEmpty())
+        .andExpect(jsonPath("$.instanceIdentifier").value(fields[0]))
+        .andExpect(jsonPath("$.sourceTenantId").value(fields[1]))
+        .andExpect(jsonPath("$.targetTenantId").value(fields[2]))
+        .andExpect(jsonPath("$.status").value(fields[3]));
     }
   }
 
