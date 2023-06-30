@@ -24,13 +24,13 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   private final FolioExecutionContext folioExecutionContext;
 
   @Override
-  public ResponseEntity<Object> postRequest(String url, Object payload) {
+  public ResponseEntity<String> performRequest(String url, HttpMethod httpMethod, Object payload) {
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     var headers = convertHeadersToMultiMap(folioExecutionContext.getAllHeaders());
     HttpEntity<Object> httpEntity = new HttpEntity<>(payload, headers);
     var absUrl = currentTenantContext.getOkapiUrl() + url;
 
-    return restTemplate.exchange(absUrl, HttpMethod.POST, httpEntity, Object.class);
+    return restTemplate.exchange(absUrl, httpMethod, httpEntity, String.class);
   }
 
   private HttpHeaders convertHeadersToMultiMap(Map<String, Collection<String>> contextHeaders) {

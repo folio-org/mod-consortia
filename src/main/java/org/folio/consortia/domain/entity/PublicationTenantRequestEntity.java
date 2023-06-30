@@ -4,30 +4,33 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.data.annotation.LastModifiedDate;
 
 @Getter
 @Setter
 @ToString
 @RequiredArgsConstructor
 @Entity
-@Table(name = "pc_state")
+@Table(name = "pc_tenant_request")
 public class PublicationTenantRequestEntity {
   @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
-  private UUID pcId;
+
+  @ManyToOne
+  @JoinColumn(name = "pc_id", referencedColumnName = "id")
+  private PublicationStatusEntity pcState;
+
   private String tenantId;
   private String status;
   private String requestUrl;
@@ -40,7 +43,7 @@ public class PublicationTenantRequestEntity {
   private LocalDateTime startedDate;
 
   @LastModifiedDate
-  @Column(name = "completed_date", nullable = false, updatable = false)
+  @Column(name = "completed_date")
   private LocalDateTime completedDate;
 
 }
