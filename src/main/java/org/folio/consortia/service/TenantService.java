@@ -67,4 +67,9 @@ public interface TenantService {
    */
 
   void checkTenantsAndConsortiumExistsOrThrow(UUID consortiumId, List<String> tenantIds);
+
+  /**
+   * Check whether tenant exists or throw ResourceNotFound exception
+   */
+  void checkTenantExistsOrThrow(String tenantId);
 }

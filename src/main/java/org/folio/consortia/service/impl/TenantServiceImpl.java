@@ -29,7 +29,6 @@ import org.folio.consortia.service.PermissionUserService;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserService;
 import org.folio.spring.FolioExecutionContext;
-import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
@@ -55,7 +54,6 @@ public class TenantServiceImpl implements TenantService {
   private final ConversionService converter;
   private final ConsortiumService consortiumService;
   private final FolioExecutionContext folioExecutionContext;
-  private final FolioModuleMetadata folioModuleMetadata;
   private final ConsortiaConfigurationClient configurationClient;
   private final PermissionUserService permissionUserService;
   private final UserService userService;
@@ -95,6 +93,7 @@ public class TenantServiceImpl implements TenantService {
 
     // validation part
     checkTenantNotExistsAndConsortiumExistsOrThrow(consortiumId, tenantDto.getId());
+    checkCodeAndNameUniqueness(tenantDto);
     if (tenantDto.getIsCentral()) {
       checkCentralTenantExistsOrThrow();
     }
@@ -127,17 +126,20 @@ public class TenantServiceImpl implements TenantService {
     return savedTenant;
   }
 
-
   @Override
+  @Transactional
   public Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto) {
-    checkTenantAndConsortiumExistsOrThrow(consortiumId, tenantId);
+    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
+    checkTenantExistsOrThrow(tenantId);
     checkIdenticalOrThrow(tenantId, tenantDto.getId(), TENANTS_IDS_NOT_MATCHED_ERROR_MSG);
     return saveTenant(consortiumId, tenantDto);
   }
 
   @Override
+  @Transactional
   public void delete(UUID consortiumId, String tenantId) {
-    checkTenantAndConsortiumExistsOrThrow(consortiumId, tenantId);
+    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
+    checkTenantExistsOrThrow(tenantId);
     if (userTenantRepository.existsByTenantId(tenantId)) {
       throw new IllegalArgumentException(TENANT_HAS_ACTIVE_USER_ASSOCIATIONS_ERROR_MSG);
     }
@@ -178,8 +180,17 @@ public class TenantServiceImpl implements TenantService {
     }
   }
 
-  private void checkTenantAndConsortiumExistsOrThrow(UUID consortiumId, String tenantId) {
-    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
+  private void checkCodeAndNameUniqueness(Tenant tenant) {
+    if (tenantRepository.existsByName(tenant.getName())) {
+      throw new ResourceAlreadyExistException("name", tenant.getName());
+    }
+    if (tenantRepository.existsByCode(tenant.getCode())) {
+      throw new ResourceAlreadyExistException("code", tenant.getCode());
+    }
+  }
+
+  @Override
+  public void checkTenantExistsOrThrow(String tenantId) {
     if (!tenantRepository.existsById(tenantId)) {
       throw new ResourceNotFoundException("id", tenantId);
     }
