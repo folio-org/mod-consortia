@@ -87,6 +87,7 @@ public class PublicationServiceImpl implements PublicationService {
         } catch (InterruptedException ie) {
           log.error("Failed to acquire semaphore permit");
           futures.add(CompletableFuture.failedFuture(ie));
+          Thread.currentThread().interrupt();
         }
       }
       CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
