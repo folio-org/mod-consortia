@@ -64,7 +64,7 @@ public class PublicationServiceImpl implements PublicationService {
     FolioExecutionContext centralTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     validatePublicationRequest(consortiumId, publicationRequest, centralTenantContext);
 
-    PublicationStatusEntity createdPublicationEntity = persistPublicationRecord(centralTenantContext.getUserId(), publicationRequest.getTenants().size());
+    PublicationStatusEntity createdPublicationEntity = persistPublicationRecord(publicationRequest.getTenants().size());
 
     List<CompletableFuture<PublicationTenantRequestEntity>> futures = new ArrayList<>();
 
@@ -132,9 +132,6 @@ public class PublicationServiceImpl implements PublicationService {
 
       var currentLocalDateTime = LocalDateTime.now();
       ptrEntity.setCompletedDate(currentLocalDateTime);
-      // update metadata
-      ptrEntity.setUpdatedBy(centralTenantContext.getUserId());
-      ptrEntity.setUpdatedDate(currentLocalDateTime);
 
       if (t == null) {
         ptrEntity.setResponseStatusCode(responseEntity.getStatusCode().value());
@@ -167,23 +164,14 @@ public class PublicationServiceImpl implements PublicationService {
     ptrEntity.setStatus(PublicationStatus.IN_PROGRESS);
     ptrEntity.setPcState(savedPublicationEntity);
 
-    // set metadata
-    ptrEntity.setCreatedDate(LocalDateTime.now());
-    ptrEntity.setCreatedBy(savedPublicationEntity.getCreatedBy());
     return ptrEntity;
   }
 
-  private PublicationStatusEntity persistPublicationRecord(UUID userId, int totalRecords) {
-    var currentLocalDateTime = LocalDateTime.now();
-
+  private PublicationStatusEntity persistPublicationRecord(int totalRecords) {
     PublicationStatusEntity publicationStatusEntity = new PublicationStatusEntity();
     publicationStatusEntity.setId(UUID.randomUUID());
     publicationStatusEntity.setStatus(PublicationStatus.IN_PROGRESS);
     publicationStatusEntity.setTotalRecords(totalRecords);
-
-    // set metadata
-    publicationStatusEntity.setCreatedBy(userId);
-    publicationStatusEntity.setCreatedDate(currentLocalDateTime);
 
     var savedPSE = publicationStatusRepository.save(publicationStatusEntity);
 
@@ -203,9 +191,6 @@ public class PublicationServiceImpl implements PublicationService {
     var updateStatus = isErrorStatus ? PublicationStatus.ERROR : PublicationStatus.COMPLETE;
     publicationStatusEntity.setStatus(updateStatus);
 
-    // update metadata
-    publicationStatusEntity.setUpdatedBy(centralTenantContext.getUserId());
-    publicationStatusEntity.setUpdatedDate(LocalDateTime.now());
     try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantContext.getTenantId(), folioModuleMetadata, centralTenantContext))) {
       publicationStatusRepository.save(publicationStatusEntity);
     }
