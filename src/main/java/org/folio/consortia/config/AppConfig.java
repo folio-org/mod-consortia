@@ -33,8 +33,8 @@ public class AppConfig implements WebMvcConfigurer {
   @Bean("asyncTaskExecutor")
   public TaskExecutor asyncTaskExecutor() {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-    executor.setCorePoolSize(Runtime.getRuntime().availableProcessors());
-    executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors());
+    executor.setCorePoolSize(Math.max(1, Runtime.getRuntime().availableProcessors() / 2));
+    executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors() * 2);
     executor.setQueueCapacity(500);
     executor.setThreadNamePrefix("ConsortiaAsync-");
     executor.setTaskDecorator(FolioExecutionScopeExecutionContextManager::getRunnableWithCurrentFolioContext);

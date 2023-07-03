@@ -3,7 +3,7 @@ package org.folio.consortia.domain.entity;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import org.springframework.data.annotation.CreatedDate;
+import org.folio.consortia.domain.entity.base.AuditableEntity;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import jakarta.persistence.Column;
@@ -23,7 +23,7 @@ import lombok.ToString;
 @RequiredArgsConstructor
 @Entity
 @Table(name = "pc_tenant_request")
-public class PublicationTenantRequestEntity {
+public class PublicationTenantRequestEntity extends AuditableEntity {
   @Id
   private UUID id;
 
@@ -37,10 +37,6 @@ public class PublicationTenantRequestEntity {
   private String requestPayload;
   private String response;
   private Integer responseStatusCode;
-
-  @CreatedDate
-  @Column(name = "started_date", nullable = false, updatable = false)
-  private LocalDateTime startedDate;
 
   @LastModifiedDate
   @Column(name = "completed_date")
