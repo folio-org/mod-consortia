@@ -27,7 +27,11 @@ PublicationResponse:
       description: id of publication record
       type: string
     status:
-      description: HTTP method
       type: string
-      enum: [ "IN_PROGRESS", "ERROR", "SUCCESS" ]
+      $ref: "publication_schema.yaml#/PublicationStatus"
+
   additionalProperties: false
+
+PublicationStatus:
+  description: publication status
+  enum: [ "IN_PROGRESS", "ERROR", "SUCCESS" ]

@@ -15,6 +15,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.http.HttpException;
 import org.folio.consortia.domain.dto.PublicationRequest;
 import org.folio.consortia.domain.dto.PublicationResponse;
+import org.folio.consortia.domain.dto.PublicationStatus;
 import org.folio.consortia.domain.entity.PublicationStatusEntity;
 import org.folio.consortia.domain.entity.PublicationTenantRequestEntity;
 import org.folio.consortia.exception.PublicationException;
@@ -138,9 +139,9 @@ public class PublicationServiceImpl implements PublicationService {
       if (t == null) {
         ptrEntity.setResponseStatusCode(responseEntity.getStatusCode().value());
         ptrEntity.setResponse(responseEntity.getBody());
-        ptrEntity.setStatus(PublicationResponse.StatusEnum.SUCCESS.toString());
+        ptrEntity.setStatus(PublicationStatus.SUCCESS);
       } else {
-        ptrEntity.setStatus(PublicationResponse.StatusEnum.ERROR.toString());
+        ptrEntity.setStatus(PublicationStatus.ERROR);
         if (t.getCause() instanceof HttpClientErrorException httpClientErrorException) {
           ptrEntity.setResponseStatusCode(httpClientErrorException.getStatusCode().value());
           ptrEntity.setResponse(httpClientErrorException.getStatusText());
@@ -163,7 +164,7 @@ public class PublicationServiceImpl implements PublicationService {
     ptrEntity.setRequestUrl(publicationRequest.getUrl());
     ptrEntity.setRequestPayload(payload);
     ptrEntity.setTenantId(tenantId);
-    ptrEntity.setStatus(PublicationResponse.StatusEnum.IN_PROGRESS.toString());
+    ptrEntity.setStatus(PublicationStatus.IN_PROGRESS);
     ptrEntity.setPcState(savedPublicationEntity);
 
     // set metadata
@@ -177,7 +178,7 @@ public class PublicationServiceImpl implements PublicationService {
 
     PublicationStatusEntity publicationStatusEntity = new PublicationStatusEntity();
     publicationStatusEntity.setId(UUID.randomUUID());
-    publicationStatusEntity.setStatus(PublicationResponse.StatusEnum.IN_PROGRESS.toString());
+    publicationStatusEntity.setStatus(PublicationStatus.IN_PROGRESS);
     publicationStatusEntity.setTotalRecords(totalRecords);
 
     // set metadata
@@ -196,11 +197,11 @@ public class PublicationServiceImpl implements PublicationService {
       .filter(future -> !future.isCompletedExceptionally())
       .map(CompletableFuture::join)
       .map(PublicationTenantRequestEntity::getStatus)
-      .anyMatch(status -> status.equals(PublicationResponse.StatusEnum.ERROR.getValue()));
+      .anyMatch(status -> status.equals(PublicationStatus.ERROR.getValue()));
     var isErrorStatus = isCompletedWithExceptions || hasErrorStatus;
 
-    var updateStatus = isErrorStatus ? PublicationResponse.StatusEnum.ERROR : PublicationResponse.StatusEnum.SUCCESS;
-    publicationStatusEntity.setStatus(updateStatus.toString());
+    var updateStatus = isErrorStatus ? PublicationStatus.ERROR : PublicationStatus.SUCCESS;
+    publicationStatusEntity.setStatus(updateStatus);
 
     // update metadata
     publicationStatusEntity.setUpdatedBy(centralTenantContext.getUserId());
@@ -225,7 +226,7 @@ public class PublicationServiceImpl implements PublicationService {
   private PublicationResponse buildPublicationResponse(UUID publicationId) {
     return new PublicationResponse()
       .id(publicationId.toString())
-      .status(PublicationResponse.StatusEnum.IN_PROGRESS);
+      .status(PublicationStatus.IN_PROGRESS);
   }
 
 }

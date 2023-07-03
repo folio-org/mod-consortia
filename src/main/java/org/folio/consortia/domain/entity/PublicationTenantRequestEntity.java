@@ -3,11 +3,14 @@ package org.folio.consortia.domain.entity;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.folio.consortia.domain.dto.PublicationStatus;
 import org.folio.consortia.domain.entity.base.AuditableEntity;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -32,7 +35,10 @@ public class PublicationTenantRequestEntity extends AuditableEntity {
   private PublicationStatusEntity pcState;
 
   private String tenantId;
-  private String status;
+
+  @Enumerated(EnumType.ORDINAL)
+  private PublicationStatus status;
+
   private String requestUrl;
   private String requestPayload;
   private String response;

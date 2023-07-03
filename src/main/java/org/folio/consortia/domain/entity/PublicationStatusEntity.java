@@ -2,9 +2,12 @@ package org.folio.consortia.domain.entity;
 
 import java.util.UUID;
 
+import org.folio.consortia.domain.dto.PublicationStatus;
 import org.folio.consortia.domain.entity.base.AuditableEntity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -22,7 +25,8 @@ public class PublicationStatusEntity extends AuditableEntity {
   @Id
   private UUID id;
 
-  private String status;
+  @Enumerated(EnumType.ORDINAL)
+  private PublicationStatus status;
 
   private Integer totalRecords;
 }
