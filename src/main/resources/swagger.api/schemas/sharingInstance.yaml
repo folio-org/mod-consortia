@@ -14,6 +14,7 @@ SharingInstance:
       type: string
     status:
       type: string
+      $ref: "status.yaml#/Status"
     error:
       type: string
     metadata:

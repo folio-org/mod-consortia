@@ -101,7 +101,7 @@ class SharingInstanceServiceTest {
     sharingInstance.setInstanceIdentifier(entity.getInstanceId());
     sharingInstance.setSourceTenantId(entity.getSourceTenantId());
     sharingInstance.setTargetTenantId(entity.getTargetTenantId());
-    sharingInstance.setStatus(String.valueOf(entity.getStatus()));
+    sharingInstance.setStatus(entity.getStatus());
     sharingInstance.setError(entity.getError());
     return sharingInstance;
   }

@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.folio.consortia.domain.dto.SharingInstance;
 import org.folio.consortia.domain.dto.SharingInstanceCollection;
+import org.folio.consortia.domain.dto.Status;
 
 public interface SharingInstanceService {
 
@@ -35,5 +36,5 @@ public interface SharingInstanceService {
    * @return the sharing instance collection
    */
   SharingInstanceCollection getSharingInstances(UUID consortiumId, UUID instanceIdentifier, String sourceTenantId,
-      String targetTenantId, String status, Integer offset, Integer limit);
+      String targetTenantId, Status status, Integer offset, Integer limit);
 }

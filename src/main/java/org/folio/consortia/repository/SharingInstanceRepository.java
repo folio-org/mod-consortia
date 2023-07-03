@@ -1,10 +1,12 @@
 package org.folio.consortia.repository;
 
 import static java.util.Objects.nonNull;
+import static com.github.jknack.handlebars.internal.lang3.StringUtils.isNotEmpty;
 
 import java.util.ArrayList;
 import java.util.UUID;
 
+import org.folio.consortia.domain.dto.Status;
 import org.folio.consortia.domain.entity.SharingInstanceEntity;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,31 +19,18 @@ public interface SharingInstanceRepository
 
   interface Specifications {
     static Specification<SharingInstanceEntity> constructSpecification(UUID instanceIdentifier, String sourceTenantId,
-        String targetTenantId, String status) {
+        String targetTenantId, Status status) {
       var list = new ArrayList<Specification<SharingInstanceEntity>>();
-      if(nonNull(instanceIdentifier)) list.add(byInstanceIdentifier(instanceIdentifier));
-      if(nonNull(sourceTenantId)) list.add(bySourceTenantId(sourceTenantId));
-      if(nonNull(targetTenantId)) list.add(byTargetTenantId(targetTenantId));
-      if(nonNull(status)) list.add(byStatusType(status));
+      if(nonNull(instanceIdentifier)) list.add(by("instanceId", instanceIdentifier, UUID.class));
+      if(isNotEmpty(sourceTenantId)) list.add(by("sourceTenantId", sourceTenantId, String.class));
+      if(isNotEmpty(targetTenantId)) list.add(by("targetTenantId", targetTenantId, String.class));
+      if(nonNull(status)) list.add(by("status", status, Status.class));
 
       return list.stream().reduce(Specification::and).orElse(null);
     }
 
-    static Specification<SharingInstanceEntity> byInstanceIdentifier(UUID instanceId) {
-      return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("instanceId"), instanceId);
-    }
-
-    static Specification<SharingInstanceEntity> bySourceTenantId(String sourceTenantId) {
-      return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("sourceTenantId"), sourceTenantId);
-    }
-
-    static Specification<SharingInstanceEntity> byTargetTenantId(String targetTenantId) {
-      return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("targetTenantId"), targetTenantId);
-    }
-
-    static Specification<SharingInstanceEntity> byStatusType(String status) {
-      var statusType = SharingInstanceEntity.StatusType.valueOf(status);
-      return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("status"), statusType);
+    static Specification<SharingInstanceEntity> by(String fieldName, Object fieldValue, Class<?> clazz) {
+      return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get(fieldName), clazz.cast(fieldValue));
     }
   }
 }

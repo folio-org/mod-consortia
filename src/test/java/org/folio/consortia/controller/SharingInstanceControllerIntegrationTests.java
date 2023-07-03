@@ -33,14 +33,15 @@ class SharingInstanceControllerIntegrationTests extends BaseTest {
   private static boolean INITIALIZED = false;
   private static final String UNIVERSITY = "university";
   private static final String COLLEGE = "college";
+  private static final String STATUS = "IN_PROGRESS";
 
   private static final String[][] SHARING_INSTANCES = {
-    {"8673c2b0-dfe6-447b-bb6e-a1d7eb2e3572", TENANT, UNIVERSITY, "IN_PROGRESS"},
-    {"8673c2b0-dfe6-447b-bb6e-a1d7eb2e3572", TENANT, COLLEGE, "IN_PROGRESS"},
-    {"d5649ef9-231d-4293-8657-c86b01d46ccc", TENANT, UNIVERSITY, "IN_PROGRESS"},
-    {"1eb8fc73-24aa-424e-9487-24c178313783", TENANT, TENANT, "IN_PROGRESS"},
-    {"ac9865a8-8e17-4351-adb6-eb0a18cdcf9b", UNIVERSITY, TENANT, "IN_PROGRESS"},
-    {"c3291fa4-b7f0-40c9-ab93-68eec638d9eb", COLLEGE, TENANT, "IN_PROGRESS"}
+    {"8673c2b0-dfe6-447b-bb6e-a1d7eb2e3572", TENANT, UNIVERSITY, STATUS},
+    {"8673c2b0-dfe6-447b-bb6e-a1d7eb2e3572", TENANT, COLLEGE, STATUS},
+    {"d5649ef9-231d-4293-8657-c86b01d46ccc", TENANT, UNIVERSITY, STATUS},
+    {"1eb8fc73-24aa-424e-9487-24c178313783", TENANT, TENANT, STATUS},
+    {"ac9865a8-8e17-4351-adb6-eb0a18cdcf9b", UNIVERSITY, TENANT, STATUS},
+    {"c3291fa4-b7f0-40c9-ab93-68eec638d9eb", COLLEGE, TENANT, STATUS}
   };
 
   @MockBean
@@ -131,22 +132,23 @@ class SharingInstanceControllerIntegrationTests extends BaseTest {
     @Override
     public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
       return Stream.of(
-        Arguments.of("c3291fa4-b7f0-40c9-ab93-68eec638d9eb", COLLEGE, TENANT, "IN_PROGRESS", "1"),
+        Arguments.of("c3291fa4-b7f0-40c9-ab93-68eec638d9eb", COLLEGE, TENANT, STATUS, "1"),
         Arguments.of("ac9865a8-8e17-4351-adb6-eb0a18cdcf9b", COLLEGE, UNIVERSITY, null, "0"),
-        Arguments.of("8673c2b0-dfe6-447b-bb6e-a1d7eb2e3572", TENANT, null, "IN_PROGRESS", "2"),
+        Arguments.of("8673c2b0-dfe6-447b-bb6e-a1d7eb2e3572", TENANT, null, STATUS, "2"),
         Arguments.of("8673c2b0-dfe6-447b-bb6e-a1d7eb2e3572", TENANT, null, null, "2"),
-        Arguments.of("d5649ef9-231d-4293-8657-c86b01d46ccc", null, UNIVERSITY, "IN_PROGRESS", "1"),
+        Arguments.of("d5649ef9-231d-4293-8657-c86b01d46ccc", null, UNIVERSITY, STATUS, "1"),
         Arguments.of("ac9865a8-8e17-4351-adb6-eb0a18cdcf9b", null, TENANT, null, "1"),
-        Arguments.of("8673c2b0-dfe6-447b-bb6e-a1d7eb2e3572", null, null, "IN_PROGRESS", "2"),
+        Arguments.of("8673c2b0-dfe6-447b-bb6e-a1d7eb2e3572", null, null, STATUS, "2"),
         Arguments.of("1eb8fc73-24aa-424e-9487-24c178313783", null, null, null, "1"),
-        Arguments.of(null, TENANT, UNIVERSITY, "IN_PROGRESS", "2"),
+        Arguments.of(null, TENANT, UNIVERSITY, STATUS, "2"),
         Arguments.of(null, TENANT, UNIVERSITY, null, "2"),
-        Arguments.of(null, COLLEGE, null, "IN_PROGRESS", "1"),
+        Arguments.of(null, COLLEGE, null, STATUS, "1"),
         Arguments.of(null, TENANT, null, null, "4"),
-        Arguments.of(null, null, UNIVERSITY, "IN_PROGRESS", "2"),
+        Arguments.of(null, null, UNIVERSITY, STATUS, "2"),
         Arguments.of(null, null, UNIVERSITY, null, "2"),
-        Arguments.of(null, null, null, "IN_PROGRESS", "6"),
-        Arguments.of(null, null, null, null, "6")
+        Arguments.of(null, null, null, STATUS, "6"),
+        Arguments.of(null, null, null, null, "6"),
+        Arguments.of(null, "", "", null, "6")
       );
     }
   }

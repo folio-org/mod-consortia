@@ -160,8 +160,8 @@ components:
       in: query
       name: status
       schema:
-        type: string
-        description: The status of the sharing instance
+        $ref: "schemas/status.yaml#/Status"
+      description: The status of the sharing instance
     trait_pageable_offset:
       name: offset
       in: query

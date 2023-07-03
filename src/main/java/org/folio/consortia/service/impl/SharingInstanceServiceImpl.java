@@ -4,10 +4,10 @@ import static org.folio.consortia.repository.SharingInstanceRepository.Specifica
 
 import java.util.Objects;
 import java.util.UUID;
-import jakarta.transaction.Transactional;
 
 import org.folio.consortia.domain.dto.SharingInstance;
 import org.folio.consortia.domain.dto.SharingInstanceCollection;
+import org.folio.consortia.domain.dto.Status;
 import org.folio.consortia.domain.entity.SharingInstanceEntity;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.SharingInstanceRepository;
@@ -18,6 +18,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -55,7 +56,7 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
 
   @Override
   public SharingInstanceCollection getSharingInstances(UUID consortiumId, UUID instanceIdentifier, String sourceTenantId,
-      String targetTenantId, String status, Integer offset, Integer limit) {
+      String targetTenantId, Status status, Integer offset, Integer limit) {
     log.debug("getSharingInstances:: parameters consortiumId: {}, instanceIdentifier: {}, sourceTenantId: {}, targetTenantId: {}, status: {}.",
       consortiumId, instanceIdentifier, sourceTenantId, targetTenantId, status);
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
@@ -76,7 +77,9 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
 
     // at least one of the tenants should be 'centralTenant'
     String centralTenantId = tenantService.getCentralTenantId();
-    if(Objects.equals(centralTenantId, sourceTenantId) || Objects.equals(centralTenantId, targetTenantId)) return;
+    if (Objects.equals(centralTenantId, sourceTenantId) || Objects.equals(centralTenantId, targetTenantId)) {
+      return;
+    }
     throw new IllegalArgumentException("Both 'sourceTenantId' and 'targetTenantId' cannot be member tenants.");
   }
 
@@ -86,7 +89,7 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
     entity.setInstanceId(dto.getInstanceIdentifier());
     entity.setSourceTenantId(dto.getSourceTenantId());
     entity.setTargetTenantId(dto.getTargetTenantId());
-    entity.setStatus(SharingInstanceEntity.StatusType.IN_PROGRESS);
+    entity.setStatus(Status.IN_PROGRESS);
     return entity;
   }
 }
