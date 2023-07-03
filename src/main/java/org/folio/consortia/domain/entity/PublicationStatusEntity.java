@@ -25,7 +25,7 @@ public class PublicationStatusEntity extends AuditableEntity {
   @Id
   private UUID id;
 
-  @Enumerated(EnumType.ORDINAL)
+  @Enumerated(EnumType.STRING)
   private PublicationStatus status;
 
   private Integer totalRecords;

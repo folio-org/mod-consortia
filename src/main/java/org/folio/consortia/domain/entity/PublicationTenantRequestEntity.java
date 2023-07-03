@@ -36,7 +36,7 @@ public class PublicationTenantRequestEntity extends AuditableEntity {
 
   private String tenantId;
 
-  @Enumerated(EnumType.ORDINAL)
+  @Enumerated(EnumType.STRING)
   private PublicationStatus status;
 
   private String requestUrl;

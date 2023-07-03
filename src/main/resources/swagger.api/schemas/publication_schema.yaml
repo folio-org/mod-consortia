@@ -34,4 +34,4 @@ PublicationResponse:
 
 PublicationStatus:
   description: publication status
-  enum: [ "IN_PROGRESS", "ERROR", "SUCCESS" ]
+  enum: [ "IN_PROGRESS", "ERROR", "COMPLETE" ]

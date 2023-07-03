@@ -139,7 +139,7 @@ public class PublicationServiceImpl implements PublicationService {
       if (t == null) {
         ptrEntity.setResponseStatusCode(responseEntity.getStatusCode().value());
         ptrEntity.setResponse(responseEntity.getBody());
-        ptrEntity.setStatus(PublicationStatus.SUCCESS);
+        ptrEntity.setStatus(PublicationStatus.COMPLETE);
       } else {
         ptrEntity.setStatus(PublicationStatus.ERROR);
         if (t.getCause() instanceof HttpClientErrorException httpClientErrorException) {
@@ -197,10 +197,10 @@ public class PublicationServiceImpl implements PublicationService {
       .filter(future -> !future.isCompletedExceptionally())
       .map(CompletableFuture::join)
       .map(PublicationTenantRequestEntity::getStatus)
-      .anyMatch(status -> status.equals(PublicationStatus.ERROR.getValue()));
+      .anyMatch(status -> status.equals(PublicationStatus.ERROR));
     var isErrorStatus = isCompletedWithExceptions || hasErrorStatus;
 
-    var updateStatus = isErrorStatus ? PublicationStatus.ERROR : PublicationStatus.SUCCESS;
+    var updateStatus = isErrorStatus ? PublicationStatus.ERROR : PublicationStatus.COMPLETE;
     publicationStatusEntity.setStatus(updateStatus);
 
     // update metadata
