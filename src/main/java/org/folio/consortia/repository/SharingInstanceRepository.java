@@ -1,7 +1,7 @@
 package org.folio.consortia.repository;
 
 import static java.util.Objects.nonNull;
-import static com.github.jknack.handlebars.internal.lang3.StringUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -14,8 +14,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface SharingInstanceRepository
-  extends JpaRepository<SharingInstanceEntity, UUID>, JpaSpecificationExecutor<SharingInstanceEntity> {
+public interface SharingInstanceRepository extends JpaRepository<SharingInstanceEntity, UUID>, JpaSpecificationExecutor<SharingInstanceEntity> {
 
   interface Specifications {
     static Specification<SharingInstanceEntity> constructSpecification(UUID instanceIdentifier, String sourceTenantId,
