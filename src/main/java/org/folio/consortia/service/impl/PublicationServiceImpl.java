@@ -61,8 +61,7 @@ public class PublicationServiceImpl implements PublicationService {
   @Override
   @SneakyThrows
   public PublicationResponse publishRequest(UUID consortiumId, PublicationRequest publicationRequest) {
-    FolioExecutionContext centralTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
-    validatePublicationRequest(consortiumId, publicationRequest, centralTenantContext);
+    validatePublicationRequest(consortiumId, publicationRequest, folioExecutionContext);
 
     PublicationStatusEntity createdPublicationEntity = persistPublicationRecord(publicationRequest.getTenants().size());
 
@@ -75,24 +74,25 @@ public class PublicationServiceImpl implements PublicationService {
           semaphore.acquire();
           PublicationTenantRequestEntity ptrEntity = buildPublicationRequestEntity(publicationRequest, createdPublicationEntity, tenantId);
 
-          var savedPublicationTenantRequest = savePublicationTenantRequest(ptrEntity, centralTenantContext);
+          var savedPublicationTenantRequest = savePublicationTenantRequest(ptrEntity, folioExecutionContext);
 
-          var future = executeAsyncHttpRequest(publicationRequest, tenantId, centralTenantContext)
+          var future = executeAsyncHttpRequest(publicationRequest, tenantId, folioExecutionContext)
             .whenComplete((ok, err) -> semaphore.release())
-            .handle((response, t) -> updatePublicationTenantRequest(response, t, savedPublicationTenantRequest, centralTenantContext));
+            .handle((response, t) -> updatePublicationTenantRequest(response, t, savedPublicationTenantRequest, folioExecutionContext));
 
           futures.add(future);
         } catch (RuntimeException | JsonProcessingException e) {
+          log.error("publishRequest:: failed to save publication tenant request");
           semaphore.release();
           futures.add(CompletableFuture.failedFuture(e));
         } catch (InterruptedException ie) {
-          log.error("Failed to acquire semaphore permit" , ie);
+          log.error("publishRequest:: failed to acquire semaphore permit", ie);
           futures.add(CompletableFuture.failedFuture(ie));
           Thread.currentThread().interrupt();
         }
       }
       CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-        .thenAccept(cf -> updatePublicationsStatus(futures, createdPublicationEntity, centralTenantContext));
+        .thenAccept(cf -> updatePublicationsStatus(futures, createdPublicationEntity, folioExecutionContext));
     });
 
     return buildPublicationResponse(createdPublicationEntity.getId());

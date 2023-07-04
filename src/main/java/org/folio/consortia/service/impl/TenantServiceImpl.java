@@ -206,6 +206,8 @@ public class TenantServiceImpl implements TenantService {
         .map(TenantEntity::getId)
         .toList();
       String absentTenants = String.join(", ", CollectionUtils.subtract(tenantIds, foundTenantIds));
+      log.warn("Tenants with ids {} not found", absentTenants);
+
       throw new ResourceNotFoundException("ids", absentTenants);
     }
   }

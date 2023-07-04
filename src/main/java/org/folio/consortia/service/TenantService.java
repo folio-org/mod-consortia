@@ -65,7 +65,6 @@ public interface TenantService {
    * Check for tenant existence in consortia
    * @throws ResourceNotFoundException in case if tenants absence in consortia
    */
-
   void checkTenantsAndConsortiumExistsOrThrow(UUID consortiumId, List<String> tenantIds);
 
   /**

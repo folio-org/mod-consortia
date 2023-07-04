@@ -80,8 +80,4 @@ public class PublicationControllerTest extends BaseTest {
       .andExpectAll(status().is4xxClientError());
   }
 
-  /*
-   * private String getMockPublicationRequest() throws JsonProcessingException { var publication =
-   * getMockData("mockdata/publication_request.json"); return new ObjectMapper().readValue(publication, PublicationRequest.class); }
-   */
 }

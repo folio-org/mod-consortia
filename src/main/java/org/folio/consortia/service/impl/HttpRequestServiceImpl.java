@@ -25,10 +25,9 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
   @Override
   public ResponseEntity<String> performRequest(String url, HttpMethod httpMethod, Object payload) {
-    FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     var headers = convertHeadersToMultiMap(folioExecutionContext.getAllHeaders());
     HttpEntity<Object> httpEntity = new HttpEntity<>(payload, headers);
-    var absUrl = currentTenantContext.getOkapiUrl() + url;
+    var absUrl = folioExecutionContext.getOkapiUrl() + url;
 
     return restTemplate.exchange(absUrl, httpMethod, httpEntity, String.class);
   }
