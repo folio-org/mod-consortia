@@ -34,10 +34,10 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
 
   @Override
   public SharingInstance getById(UUID consortiumId, UUID actionId) {
-    log.debug("getById:: Trying to get by consortiumId: {} and action id: {}", consortiumId, actionId);
+    log.debug("getById:: Trying to get sharingInstance by consortiumId: {} and action id: {}", consortiumId, actionId);
     SharingInstanceEntity sharingInstanceEntity = sharingInstanceRepository.findById(actionId).
       orElseThrow(() -> new ResourceNotFoundException("actionId", String.valueOf(actionId)));
-    log.info("getById:: sharedInstance object with id: {} was successfully retrieved", sharingInstanceEntity.getId());
+    log.info("getById:: sharingInstance object with id: {} was successfully retrieved", sharingInstanceEntity.getId());
     return converter.convert(sharingInstanceEntity, SharingInstance.class);
   }
 
