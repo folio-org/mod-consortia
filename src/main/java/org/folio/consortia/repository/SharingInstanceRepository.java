@@ -19,10 +19,18 @@ public interface SharingInstanceRepository extends JpaRepository<SharingInstance
     static Specification<SharingInstanceEntity> constructSpecification(UUID instanceIdentifier, String sourceTenantId,
         String targetTenantId, Status status) {
       var list = new ArrayList<Specification<SharingInstanceEntity>>();
-      if(Objects.nonNull(instanceIdentifier)) list.add(by("instanceId", instanceIdentifier));
-      if(StringUtils.isNotEmpty(sourceTenantId)) list.add(by("sourceTenantId", sourceTenantId));
-      if(StringUtils.isNotEmpty(targetTenantId)) list.add(by("targetTenantId", targetTenantId));
-      if(Objects.nonNull(status)) list.add(by("status", status));
+      if (Objects.nonNull(instanceIdentifier)) {
+        list.add(by("instanceId", instanceIdentifier));
+      }
+      if (StringUtils.isNotEmpty(sourceTenantId)) {
+        list.add(by("sourceTenantId", sourceTenantId));
+      }
+      if (StringUtils.isNotEmpty(targetTenantId)) {
+        list.add(by("targetTenantId", targetTenantId));
+      }
+      if (Objects.nonNull(status)) {
+        list.add(by("status", status));
+      }
 
       return list.stream().reduce(Specification::and).orElse(null);
     }
