@@ -9,8 +9,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.CompletionException;
 
 import org.folio.consortia.domain.dto.PublicationRequest;
+import org.folio.consortia.domain.dto.PublicationStatus;
 import org.folio.consortia.domain.entity.PublicationStatusEntity;
 import org.folio.consortia.domain.entity.PublicationTenantRequestEntity;
 import org.folio.consortia.repository.PublicationTenantRequestRepository;
@@ -18,6 +20,8 @@ import org.folio.consortia.service.HttpRequestService;
 import org.folio.consortia.support.BaseUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.http.HttpMethod;
@@ -41,6 +45,9 @@ class PublicationServiceImplTest extends BaseUnitTest {
   HttpRequestService httpRequestService;
   @Mock
   ObjectMapper objectMapper;
+  @Captor
+  ArgumentCaptor<PublicationTenantRequestEntity> ptreCaptor;
+
   @Test
   void createTenantRequestEntitiesSuccess() throws JsonProcessingException {
     PublicationRequest pr = getMockDataObject(PUBLICATION_REQUEST_SAMPLE, PublicationRequest.class);
@@ -106,4 +113,40 @@ class PublicationServiceImplTest extends BaseUnitTest {
 
     assertThrowsCause(HttpClientErrorException.class, future::join);
   }
+
+
+  @Test
+  void updatePublicationTenantRequestOnSuccess() {
+    PublicationTenantRequestEntity ptrEntity = new PublicationTenantRequestEntity();
+    ptrEntity.setStatus(PublicationStatus.IN_PROGRESS);
+    when(publicationTenantRequestRepository.save(any(PublicationTenantRequestEntity.class))).thenReturn(new PublicationTenantRequestEntity());
+
+    var payload = RandomStringUtils.random(10);
+    ResponseEntity<String> restTemplateResponse = new ResponseEntity<>(payload, HttpStatusCode.valueOf(201));
+
+    publicationService.updatePublicationTenantRequest(restTemplateResponse, null, ptrEntity, folioExecutionContext);
+    verify(publicationTenantRequestRepository).save(ptreCaptor.capture());
+
+    var capturedPtre = ptreCaptor.getValue();
+    Assertions.assertEquals(PublicationStatus.COMPLETE, capturedPtre.getStatus());
+    Assertions.assertEquals(payload, capturedPtre.getResponse());
+    Assertions.assertEquals(HttpStatus.CREATED.value(), capturedPtre.getResponseStatusCode());
+  }
+
+  @Test
+  void updatePublicationTenantRequestOnFailure() {
+    PublicationTenantRequestEntity ptrEntity = new PublicationTenantRequestEntity();
+    ptrEntity.setStatus(PublicationStatus.IN_PROGRESS);
+    when(publicationTenantRequestRepository.save(any(PublicationTenantRequestEntity.class))).thenReturn(new PublicationTenantRequestEntity());
+
+    Throwable t = new CompletionException(new HttpClientErrorException(HttpStatusCode.valueOf(400), HttpStatus.BAD_REQUEST.getReasonPhrase()));
+    publicationService.updatePublicationTenantRequest(null, t, ptrEntity, folioExecutionContext);
+    verify(publicationTenantRequestRepository).save(ptreCaptor.capture());
+
+    var capturedPtre = ptreCaptor.getValue();
+    Assertions.assertEquals(PublicationStatus.ERROR, capturedPtre.getStatus());
+    Assertions.assertEquals(HttpStatus.BAD_REQUEST.getReasonPhrase(), capturedPtre.getResponse());
+    Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), capturedPtre.getResponseStatusCode());
+  }
+
 }

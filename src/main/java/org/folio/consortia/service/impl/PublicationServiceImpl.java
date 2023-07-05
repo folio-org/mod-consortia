@@ -127,7 +127,7 @@ public class PublicationServiceImpl implements PublicationService {
   }
 
   @SneakyThrows
-  private PublicationTenantRequestEntity updatePublicationTenantRequest(ResponseEntity<String> responseEntity, Throwable t,
+  PublicationTenantRequestEntity updatePublicationTenantRequest(ResponseEntity<String> responseEntity, Throwable t,
       PublicationTenantRequestEntity ptrEntity, FolioExecutionContext centralTenantContext) {
 
       var currentLocalDateTime = LocalDateTime.now();
