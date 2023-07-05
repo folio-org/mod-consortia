@@ -3,7 +3,8 @@
   "method": "POST",
   "tenants": [
     "central",
-    "secondary"
+    "another_tenant",
+    "and_one_more_tenant"
   ],
   "payload": {
     "name": "ORG-NAME",

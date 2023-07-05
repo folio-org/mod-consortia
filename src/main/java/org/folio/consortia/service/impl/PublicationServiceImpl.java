@@ -38,13 +38,13 @@ import org.springframework.web.client.HttpClientErrorException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 
 @Service
 @Log4j2
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class PublicationServiceImpl implements PublicationService {
   private final TenantService tenantService;
   private final UserTenantService userTenantService;
@@ -65,37 +65,37 @@ public class PublicationServiceImpl implements PublicationService {
 
     PublicationStatusEntity createdPublicationEntity = persistPublicationRecord(publicationRequest.getTenants().size());
 
-    List<CompletableFuture<PublicationTenantRequestEntity>> futures = new ArrayList<>();
-
-    Semaphore semaphore = new Semaphore(MAX_ACTIVE_THREADS);
-    asyncTaskExecutor.execute(() -> {
-      for (String tenantId : publicationRequest.getTenants()) {
-        try {
-          semaphore.acquire();
-          PublicationTenantRequestEntity ptrEntity = buildPublicationRequestEntity(publicationRequest, createdPublicationEntity, tenantId);
-
-          var savedPublicationTenantRequest = savePublicationTenantRequest(ptrEntity, folioExecutionContext);
-
-          var future = executeAsyncHttpRequest(publicationRequest, tenantId, folioExecutionContext)
-            .whenComplete((ok, err) -> semaphore.release())
-            .handle((response, t) -> updatePublicationTenantRequest(response, t, savedPublicationTenantRequest, folioExecutionContext));
-
-          futures.add(future);
-        } catch (RuntimeException | JsonProcessingException e) {
-          log.error("publishRequest:: failed to save publication tenant request");
-          semaphore.release();
-          futures.add(CompletableFuture.failedFuture(e));
-        } catch (InterruptedException ie) {
-          log.error("publishRequest:: failed to acquire semaphore permit", ie);
-          futures.add(CompletableFuture.failedFuture(ie));
-          Thread.currentThread().interrupt();
-        }
-      }
-      CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-        .thenAccept(cf -> updatePublicationsStatus(futures, createdPublicationEntity, folioExecutionContext));
-    });
+    asyncTaskExecutor.execute(() -> processTenantRequests(publicationRequest, createdPublicationEntity));
 
     return buildPublicationResponse(createdPublicationEntity.getId());
+  }
+  void processTenantRequests(PublicationRequest publicationRequest, PublicationStatusEntity createdPublicationEntity) {
+    List<CompletableFuture<PublicationTenantRequestEntity>> futures = new ArrayList<>();
+    Semaphore semaphore = new Semaphore(MAX_ACTIVE_THREADS);
+
+    for (String tenantId : publicationRequest.getTenants()) {
+      try {
+        PublicationTenantRequestEntity ptrEntity = buildPublicationRequestEntity(publicationRequest, createdPublicationEntity, tenantId);
+
+        var savedPublicationTenantRequest = savePublicationTenantRequest(ptrEntity, folioExecutionContext);
+
+        semaphore.acquire();
+        var future = executeAsyncHttpRequest(publicationRequest, tenantId, folioExecutionContext)
+          .whenComplete((ok, err) -> semaphore.release())
+          .handle((response, t) -> updatePublicationTenantRequest(response, t, savedPublicationTenantRequest, folioExecutionContext));
+        futures.add(future);
+      } catch (RuntimeException | JsonProcessingException e) {
+        log.error("publishRequest:: failed to save publication tenant request", e);
+        semaphore.release();
+        futures.add(CompletableFuture.failedFuture(e));
+      } catch (InterruptedException ie) {
+        log.error("publishRequest:: failed to acquire semaphore permit", ie);
+        futures.add(CompletableFuture.failedFuture(ie));
+        Thread.currentThread().interrupt();
+      }
+    }
+    CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+      .thenAccept(cf -> updatePublicationsStatus(futures, createdPublicationEntity, folioExecutionContext));
   }
 
   private PublicationTenantRequestEntity savePublicationTenantRequest(PublicationTenantRequestEntity ptrEntity, FolioExecutionContext centralTenantContext) {
@@ -107,7 +107,7 @@ public class PublicationServiceImpl implements PublicationService {
     }
   }
 
-  private CompletableFuture<ResponseEntity<String>> executeAsyncHttpRequest(PublicationRequest publicationRequest, String tenantId, FolioExecutionContext centralTenantContext) {
+  CompletableFuture<ResponseEntity<String>> executeAsyncHttpRequest(PublicationRequest publicationRequest, String tenantId, FolioExecutionContext centralTenantContext) {
     return CompletableFuture.supplyAsync(() -> {
         try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioModuleMetadata, centralTenantContext))) {
           var response = httpRequestService.performRequest(publicationRequest.getUrl(), HttpMethod.POST, publicationRequest.getPayload());
@@ -186,7 +186,7 @@ public class PublicationServiceImpl implements PublicationService {
       .map(CompletableFuture::join)
       .map(PublicationTenantRequestEntity::getStatus)
       .anyMatch(status -> status.equals(PublicationStatus.ERROR));
-    var isErrorStatus = isCompletedWithExceptions || hasErrorStatus;
+    var isErrorStatus = isCompletedWithExceptions || hasErrorStatus || futures.isEmpty();
 
     var updateStatus = isErrorStatus ? PublicationStatus.ERROR : PublicationStatus.COMPLETE;
     publicationStatusEntity.setStatus(updateStatus);

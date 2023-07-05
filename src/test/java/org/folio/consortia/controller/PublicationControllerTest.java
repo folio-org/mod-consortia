@@ -1,6 +1,6 @@
 package org.folio.consortia.controller;
 
-import static org.folio.consortia.utils.InputOutputTestUtils.getMockData;
+import static org.folio.consortia.utils.InputOutputTestUtils.getMockDataAsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -11,20 +11,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.UUID;
 
-import org.folio.consortia.domain.dto.PublicationRequest;
 import org.folio.consortia.service.HttpRequestService;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserTenantService;
-import org.folio.consortia.support.BaseTest;
+import org.folio.consortia.support.BaseIT;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-public class PublicationControllerTest extends BaseTest {
+public class PublicationControllerTest extends BaseIT {
   public static final String PRIMARY_AFFILIATIONS_URL = "/consortia/%s/publications";
   @MockBean
   TenantService tenantService;
@@ -37,9 +34,7 @@ public class PublicationControllerTest extends BaseTest {
   void publicationSuccessful() throws Exception {
     var headers = defaultHeaders();
     var consortiumId = UUID.randomUUID();
-    var publicationString = getMockData("mockdata/publication_request.json");
-
-    PublicationRequest publicationRequest = new ObjectMapper().readValue(publicationString, PublicationRequest.class);
+    var publicationString = getMockDataAsString("mockdata/publications/publication_request.json");
 
     doNothing().when(tenantService).checkTenantsAndConsortiumExistsOrThrow(any(UUID.class), any());
     when(userTenantService.checkUserIfHasPrimaryAffiliationByUserId(any(UUID.class), any())).thenReturn(true);
@@ -53,7 +48,7 @@ public class PublicationControllerTest extends BaseTest {
   void publicationWithTenantException() throws Exception {
     var headers = defaultHeaders();
     var consortiumId = UUID.randomUUID();
-    var publicationString = getMockData("mockdata/publication_request.json");
+    var publicationString = getMockDataAsString("mockdata/publications/publication_request.json");
 
 
     var respEntity = new ResponseEntity<>(publicationString, HttpStatusCode.valueOf(400));
@@ -70,7 +65,7 @@ public class PublicationControllerTest extends BaseTest {
   void publicationPreValidationError() throws Exception {
     var headers = defaultHeaders();
     var consortiumId = UUID.randomUUID();
-    var publicationString = getMockData("mockdata/publication_request.json");
+    var publicationString = getMockDataAsString("mockdata/publications/publication_request.json");
 
     doNothing().when(tenantService).checkTenantsAndConsortiumExistsOrThrow(any(UUID.class), any());
     when(userTenantService.checkUserIfHasPrimaryAffiliationByUserId(any(UUID.class), any())).thenReturn(false);

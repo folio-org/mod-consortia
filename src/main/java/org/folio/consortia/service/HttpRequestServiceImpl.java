@@ -1,10 +1,9 @@
-package org.folio.consortia.service.impl;
+package org.folio.consortia.service;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.folio.consortia.service.HttpRequestService;
 import org.folio.spring.FolioExecutionContext;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;

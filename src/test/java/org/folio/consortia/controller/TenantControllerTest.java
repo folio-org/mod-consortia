@@ -52,7 +52,7 @@ import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserService;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.consortia.service.impl.ConsortiaConfigurationServiceImpl;
-import org.folio.consortia.support.BaseTest;
+import org.folio.consortia.support.BaseIT;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.integration.XOkapiHeaders;
@@ -74,7 +74,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
 @EntityScan(basePackageClasses = TenantEntity.class)
-class TenantControllerTest extends BaseTest {
+class TenantControllerTest extends BaseIT {
   private static final String TENANT_REQUEST_BODY = "{\"id\":\"diku1234\",\"code\":\"TST\",\"name\":\"diku_tenant_name1234\", \"isCentral\":false}";
   private static final String CONSORTIUM_ID = "7698e46-c3e3-11ed-afa1-0242ac120002";
   private static final String CENTRAL_TENANT_ID = "diku";
