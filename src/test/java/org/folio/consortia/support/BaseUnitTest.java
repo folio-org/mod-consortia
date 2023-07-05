@@ -2,6 +2,10 @@ package org.folio.consortia.support;
 
 import static org.folio.spring.integration.XOkapiHeaders.TENANT;
 import static org.folio.spring.integration.XOkapiHeaders.TOKEN;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
@@ -14,6 +18,7 @@ import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
@@ -41,6 +46,10 @@ public abstract class BaseUnitTest {
     map.put(TOKEN, List.of(TOKEN));
     map.put(XOkapiHeaders.USER_ID, List.of(USER_ID));
     return map;
+  }
+
+  public void assertThrowsCause(Class<?> clazz, Executable executable) {
+    assertThat(assertThrows(Throwable.class, executable).getCause(), is(instanceOf(clazz)));
   }
 
 }

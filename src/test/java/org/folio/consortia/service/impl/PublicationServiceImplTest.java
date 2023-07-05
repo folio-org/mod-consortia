@@ -21,8 +21,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -54,7 +56,7 @@ class PublicationServiceImplTest extends BaseUnitTest {
   }
 
   @Test
-  void executeAsyncHttpRequest() throws JsonProcessingException {
+  void executeAsyncHttpRequestSuccess() throws JsonProcessingException {
     var pr = getMockDataObject(PUBLICATION_REQUEST_SAMPLE, PublicationRequest.class);
     var payload = objectMapper.writeValueAsString(pr.getPayload());
     var publicationStatusEntity = getMockDataObject(PUBLICATION_STATUS_ENTITY_SAMPLE, PublicationStatusEntity.class);
@@ -67,5 +69,41 @@ class PublicationServiceImplTest extends BaseUnitTest {
     when(httpRequestService.performRequest(anyString(), eq(HttpMethod.POST), any())).thenReturn(restTemplateResponse);
     var response = publicationService.executeAsyncHttpRequest(pr, CENTRAL_TENANT_NAME, folioExecutionContext).join();
     Assertions.assertEquals(payload, response.getBody());
+  }
+  @Test
+  void executeAsyncHttpWithErrorResponse() throws JsonProcessingException {
+    var pr = getMockDataObject(PUBLICATION_REQUEST_SAMPLE, PublicationRequest.class);
+    var payload = objectMapper.writeValueAsString(pr.getPayload());
+    var publicationStatusEntity = getMockDataObject(PUBLICATION_STATUS_ENTITY_SAMPLE, PublicationStatusEntity.class);
+    publicationStatusEntity.setCreatedDate(LocalDateTime.now());
+
+    when(objectMapper.writeValueAsString(anyString())).thenReturn(RandomStringUtils.random(10));
+    when(publicationTenantRequestRepository.save(any(PublicationTenantRequestEntity.class))).thenReturn(new PublicationTenantRequestEntity());
+
+    ResponseEntity<String> restTemplateResponse = new ResponseEntity<>(payload, HttpStatusCode.valueOf(301));
+    when(httpRequestService.performRequest(anyString(), eq(HttpMethod.POST), any())).thenReturn(restTemplateResponse);
+
+    var future = publicationService.executeAsyncHttpRequest(pr, CENTRAL_TENANT_NAME, folioExecutionContext);
+
+    assertThrowsCause(HttpClientErrorException.class, future::join);
+  }
+
+  @Test
+  void executeAsyncHttpFailure() throws JsonProcessingException {
+    var pr = getMockDataObject(PUBLICATION_REQUEST_SAMPLE, PublicationRequest.class);
+    var payload = objectMapper.writeValueAsString(pr.getPayload());
+    var publicationStatusEntity = getMockDataObject(PUBLICATION_STATUS_ENTITY_SAMPLE, PublicationStatusEntity.class);
+    publicationStatusEntity.setCreatedDate(LocalDateTime.now());
+
+    when(objectMapper.writeValueAsString(anyString())).thenReturn(RandomStringUtils.random(10));
+    when(publicationTenantRequestRepository.save(any(PublicationTenantRequestEntity.class))).thenReturn(new PublicationTenantRequestEntity());
+
+    ResponseEntity<String> restTemplateResponse = new ResponseEntity<>(payload, HttpStatusCode.valueOf(400));
+    when(httpRequestService.performRequest(anyString(), eq(HttpMethod.POST), any()))
+      .thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.getReasonPhrase()));
+
+    var future = publicationService.executeAsyncHttpRequest(pr, CENTRAL_TENANT_NAME, folioExecutionContext);
+
+    assertThrowsCause(HttpClientErrorException.class, future::join);
   }
 }
