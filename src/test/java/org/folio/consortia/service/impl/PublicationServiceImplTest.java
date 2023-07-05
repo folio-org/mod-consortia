@@ -15,6 +15,7 @@ import org.folio.consortia.domain.dto.PublicationRequest;
 import org.folio.consortia.domain.dto.PublicationStatus;
 import org.folio.consortia.domain.entity.PublicationStatusEntity;
 import org.folio.consortia.domain.entity.PublicationTenantRequestEntity;
+import org.folio.consortia.repository.PublicationStatusRepository;
 import org.folio.consortia.repository.PublicationTenantRequestRepository;
 import org.folio.consortia.service.HttpRequestService;
 import org.folio.consortia.support.BaseUnitTest;
@@ -41,6 +42,8 @@ class PublicationServiceImplTest extends BaseUnitTest {
   private PublicationServiceImpl publicationService;
   @Mock
   PublicationTenantRequestRepository publicationTenantRequestRepository;
+  @Mock
+  PublicationStatusRepository publicationStatusRepository;
   @Mock
   HttpRequestService httpRequestService;
   @Mock
@@ -98,14 +101,12 @@ class PublicationServiceImplTest extends BaseUnitTest {
   @Test
   void executeAsyncHttpFailure() throws JsonProcessingException {
     var pr = getMockDataObject(PUBLICATION_REQUEST_SAMPLE, PublicationRequest.class);
-    var payload = objectMapper.writeValueAsString(pr.getPayload());
     var publicationStatusEntity = getMockDataObject(PUBLICATION_STATUS_ENTITY_SAMPLE, PublicationStatusEntity.class);
     publicationStatusEntity.setCreatedDate(LocalDateTime.now());
 
     when(objectMapper.writeValueAsString(anyString())).thenReturn(RandomStringUtils.random(10));
     when(publicationTenantRequestRepository.save(any(PublicationTenantRequestEntity.class))).thenReturn(new PublicationTenantRequestEntity());
 
-    ResponseEntity<String> restTemplateResponse = new ResponseEntity<>(payload, HttpStatusCode.valueOf(400));
     when(httpRequestService.performRequest(anyString(), eq(HttpMethod.POST), any()))
       .thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.getReasonPhrase()));
 
@@ -120,6 +121,7 @@ class PublicationServiceImplTest extends BaseUnitTest {
     PublicationTenantRequestEntity ptrEntity = new PublicationTenantRequestEntity();
     ptrEntity.setStatus(PublicationStatus.IN_PROGRESS);
     when(publicationTenantRequestRepository.save(any(PublicationTenantRequestEntity.class))).thenReturn(new PublicationTenantRequestEntity());
+    when(publicationStatusRepository.save(any(PublicationStatusEntity.class))).thenReturn(new PublicationStatusEntity());
 
     var payload = RandomStringUtils.random(10);
     ResponseEntity<String> restTemplateResponse = new ResponseEntity<>(payload, HttpStatusCode.valueOf(201));
