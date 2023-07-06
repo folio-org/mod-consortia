@@ -60,9 +60,12 @@ public class PublicationControllerTest extends BaseIT {
     var headers = defaultHeaders();
     var consortiumId = UUID.randomUUID();
     var publicationString = getMockDataAsString("mockdata/publications/publication_request.json");
+    var publicationStatusEntity = getMockDataObject("mockdata/publications/publication_status_entity.json", PublicationStatusEntity.class);
+    publicationStatusEntity.setId(UUID.randomUUID());
 
     doNothing().when(tenantService).checkTenantsAndConsortiumExistsOrThrow(any(UUID.class), any());
     when(userTenantService.checkUserIfHasPrimaryAffiliationByUserId(any(UUID.class), any())).thenReturn(true);
+    when(publicationStatusRepository.save(any())).thenReturn(publicationStatusEntity);
 
     this.mockMvc.perform(post(String.format(PUBLICATIONS_URL, consortiumId)).headers(headers)
       .content(publicationString))
@@ -74,13 +77,15 @@ public class PublicationControllerTest extends BaseIT {
     var headers = defaultHeaders();
     var consortiumId = UUID.randomUUID();
     var publicationString = getMockDataAsString("mockdata/publications/publication_request.json");
-
+    var publicationStatusEntity = getMockDataObject("mockdata/publications/publication_status_entity.json", PublicationStatusEntity.class);
+    publicationStatusEntity.setId(UUID.randomUUID());
 
     var respEntity = new ResponseEntity<>(publicationString, HttpStatusCode.valueOf(400));
 
     doNothing().when(tenantService).checkTenantsAndConsortiumExistsOrThrow(any(UUID.class), any());
     when(userTenantService.checkUserIfHasPrimaryAffiliationByUserId(any(UUID.class), any())).thenReturn(true);
     when(httpRequestService.performRequest(anyString(), eq(HttpMethod.POST), any())).thenReturn(respEntity);
+    when(publicationStatusRepository.save(any())).thenReturn(publicationStatusEntity);
 
     this.mockMvc.perform(post(String.format(PUBLICATIONS_URL, consortiumId)).headers(headers)
         .content(publicationString))
