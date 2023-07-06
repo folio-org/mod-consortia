@@ -43,10 +43,10 @@ PublicationDetailsResponse:
       type: string
       $ref: "publication_schema.yaml#/PublicationStatus"
     dateTime:
-      description: id of publication record
+      description: the date of publication was created
       type: string
     request:
-      description: id of publication record
+      description: tenant request payload
       type: string
     errors:
       description: "List of errors"
