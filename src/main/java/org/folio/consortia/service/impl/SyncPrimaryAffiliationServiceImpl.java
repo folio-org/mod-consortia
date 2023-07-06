@@ -81,7 +81,7 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
   }
 
   @Override
-  @Async("asyncTaskExecutor")
+//  @Async("asyncTaskExecutor")
   public void createPrimaryUserAffiliations(UUID consortiumId, SyncPrimaryAffiliationBody syncPrimaryAffiliationBody) {
     FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     log.info("Start creating user primary affiliation for tenant {}", syncPrimaryAffiliationBody.getTenantId());
@@ -89,7 +89,7 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
     var userList = syncPrimaryAffiliationBody.getUsers();
     var centralTenantId = consortiaConfigurationService.getCentralTenantId(tenantId);
 
-    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentTenantContext))) {
+//    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentTenantContext))) {
       TenantEntity tenantEntity = tenantService.getByTenantId(tenantId);
       IntStream.range(0, userList.size())
         .sequential()
@@ -98,7 +98,7 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
           log.info("Processing users: {} of {}", idx + 1, userList.size());
 
           // context changes in every iteration and folioExecutionContext become an empty, so we should set saved context again.
-          try (var context2 = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentTenantContext))) {
+//          try (var context2 = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentTenantContext))) {
             Page<UserTenantEntity> userTenantPage = userTenantRepository.findByUserId(UUID.fromString(user.getId()), PageRequest.of(0, 1));
             if (userTenantPage.getTotalElements() > 0) {
               log.info("Primary affiliation already exists for tenant/user: {}/{}", tenantId, user.getUsername());
@@ -108,17 +108,17 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
                 userTenantService.save(consortiumId, createUserTenant(centralTenantId, user), true);
               }
               // context changes in userTenantService.save(), so we should set saved context again.
-              try (var context3 = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentTenantContext))) {
+//              try (var context3 = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentTenantContext))) {
                 sendCreatePrimaryAffiliationEvent(tenantEntity, user);
-              }
+//              }
             }
-          }
+//          }
 
       });
       log.info("Successfully created primary affiliations for tenant {}", tenantId);
-    } catch (Exception e) {
-      log.error("Failed to create primary affiliations for tenant {}", tenantId, e);
-    }
+//    } catch (Exception e) {
+//      log.error("Failed to create primary affiliations for tenant {}", tenantId, e);
+//    }
   }
 
   @SneakyThrows
