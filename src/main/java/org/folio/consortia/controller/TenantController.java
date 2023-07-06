@@ -1,6 +1,7 @@
 package org.folio.consortia.controller;
 
 import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
+import static org.folio.spring.scope.FolioExecutionScopeExecutionContextManager.getRunnableWithCurrentFolioContext;
 import static org.folio.spring.scope.FolioExecutionScopeExecutionContextManager.getRunnableWithFolioContext;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
@@ -57,14 +58,18 @@ public class TenantController implements TenantsApi {
 
   @Override
   public ResponseEntity<Void> syncPrimaryAffiliations(UUID consortiumId, String tenantId) {
-    syncPrimaryAffiliationService.syncPrimaryAffiliations(consortiumId, tenantId);
+//    var context  = prepareContextForTenant("diku", folioExecutionContext.getFolioModuleMetadata(), folioExecutionContext);
+    asyncTaskExecutor.execute(getRunnableWithCurrentFolioContext(
+      () -> syncPrimaryAffiliationService.syncPrimaryAffiliations(consortiumId, tenantId)));
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
   @Override
   public ResponseEntity<Void> createPrimaryAffiliations(UUID consortiumId, String tenantId,
       SyncPrimaryAffiliationBody syncPrimaryAffiliationBody) {
-
+//    try (var comtext  = new FolioExecutionContextSetter(prepareContextForTenant("diku", folioExecutionContext.getFolioModuleMetadata(), folioExecutionContext))) {
+//      syncPrimaryAffiliationService.createPrimaryUserAffiliations(consortiumId, syncPrimaryAffiliationBody);
+//    }
     var context  = prepareContextForTenant("diku", folioExecutionContext.getFolioModuleMetadata(), folioExecutionContext);
 
     asyncTaskExecutor.execute(getRunnableWithFolioContext(context,

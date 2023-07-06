@@ -37,7 +37,7 @@ public class AppConfig implements WebMvcConfigurer {
     executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors() * 2);
     executor.setQueueCapacity(500);
     executor.setThreadNamePrefix("ConsortiaAsync-");
-    executor.setTaskDecorator(FolioExecutionScopeExecutionContextManager::getRunnableWithCurrentFolioContext);
+//    executor.setTaskDecorator(FolioExecutionScopeExecutionContextManager::getRunnableWithCurrentFolioContext);
     executor.initialize();
     return executor;
   }

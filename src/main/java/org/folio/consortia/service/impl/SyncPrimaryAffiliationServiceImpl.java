@@ -56,7 +56,7 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
   private final SyncPrimaryAffiliationClient syncPrimaryAffiliationClient;
 
   @Override
-  @Async("asyncTaskExecutor")
+//  @Async("asyncTaskExecutor")
   public void syncPrimaryAffiliations(UUID consortiumId, String tenantId) {
     log.info("Start syncing user primary affiliations for tenant {}", tenantId);
     List<User> users = new ArrayList<>();
@@ -83,7 +83,7 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
   @Override
 //  @Async("asyncTaskExecutor")
   public void createPrimaryUserAffiliations(UUID consortiumId, SyncPrimaryAffiliationBody syncPrimaryAffiliationBody) {
-    FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
+//    FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     log.info("Start creating user primary affiliation for tenant {}", syncPrimaryAffiliationBody.getTenantId());
     var tenantId = syncPrimaryAffiliationBody.getTenantId();
     var userList = syncPrimaryAffiliationBody.getUsers();
