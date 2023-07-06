@@ -1,6 +1,7 @@
 package org.folio.consortia.service.impl;
 
 import static org.folio.consortia.repository.SharingInstanceRepository.Specifications.constructSpecification;
+import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -12,8 +13,13 @@ import org.folio.consortia.domain.entity.SharingInstanceEntity;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.SharingInstanceRepository;
 import org.folio.consortia.service.ConsortiumService;
+import org.folio.consortia.service.InventoryService;
 import org.folio.consortia.service.SharingInstanceService;
 import org.folio.consortia.service.TenantService;
+import org.folio.spring.FolioExecutionContext;
+import org.folio.spring.FolioModuleMetadata;
+import org.folio.spring.scope.FolioExecutionContextSetter;
+import org.json.JSONObject;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -31,6 +37,9 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
   private final ConsortiumService consortiumService;
   private final TenantService tenantService;
   private final ConversionService converter;
+  private final InventoryService inventoryService;
+  private final FolioModuleMetadata folioModuleMetadata;
+  private final FolioExecutionContext folioExecutionContext;
 
   @Override
   public SharingInstance getById(UUID consortiumId, UUID actionId) {
@@ -48,9 +57,38 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     checkTenantsExistAndContainCentralTenantOrThrow(sharingInstance.getSourceTenantId(), sharingInstance.getTargetTenantId());
 
-    SharingInstanceEntity savedSharingInstance = sharingInstanceRepository.save(toEntity(sharingInstance));
-    log.info("start:: sharingInstance with id: {}, instanceId: {}, sourceTenantId: {}, targetTenantId: {} successfully saved in db",
-      savedSharingInstance.getId(), savedSharingInstance.getInstanceId(), savedSharingInstance.getSourceTenantId(), savedSharingInstance.getTargetTenantId());
+    SharingInstanceEntity savedSharingInstance;
+    String centralTenantId = tenantService.getCentralTenantId();
+    if (Objects.equals(centralTenantId, sharingInstance.getSourceTenantId())) {
+      FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
+      String instance;
+
+      try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentTenantContext))) {
+        instance = inventoryService.getById(sharingInstance.getInstanceIdentifier());
+      } catch (Exception ex) {
+        sharingInstance.setStatus(Status.ERROR);
+        sharingInstance.setError(ex.getMessage());
+        savedSharingInstance = sharingInstanceRepository.save(toEntity(sharingInstance));
+        return converter.convert(savedSharingInstance, SharingInstance.class);
+      }
+
+      try (var context = new FolioExecutionContextSetter(prepareContextForTenant(sharingInstance.getTargetTenantId(), folioModuleMetadata, currentTenantContext))) {
+        JSONObject obj = new JSONObject(instance);
+        obj.put("source", "CONSORTIUM_FOLIO");
+        instance = obj.toString();
+        inventoryService.saveInstance(instance);
+      } catch (Exception ex) {
+        sharingInstance.setStatus(Status.ERROR);
+        sharingInstance.setError(ex.getMessage());
+        savedSharingInstance = sharingInstanceRepository.save(toEntity(sharingInstance));
+        return converter.convert(savedSharingInstance, SharingInstance.class);
+      }
+
+      sharingInstance.setStatus(Status.COMPLETE);
+    } else {
+      sharingInstance.setStatus(Status.IN_PROGRESS);
+    }
+    savedSharingInstance = sharingInstanceRepository.save(toEntity(sharingInstance));
     return converter.convert(savedSharingInstance, SharingInstance.class);
   }
 
@@ -89,7 +127,8 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
     entity.setInstanceId(dto.getInstanceIdentifier());
     entity.setSourceTenantId(dto.getSourceTenantId());
     entity.setTargetTenantId(dto.getTargetTenantId());
-    entity.setStatus(Status.IN_PROGRESS);
+    entity.setStatus(dto.getStatus());
+    entity.setError(dto.getError());
     return entity;
   }
 }
