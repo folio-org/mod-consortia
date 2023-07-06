@@ -2,13 +2,11 @@ package org.folio.consortia.controller;
 
 import java.util.UUID;
 
-import io.swagger.v3.oas.annotations.Parameter;
 import org.folio.consortia.domain.dto.PublicationDetailsResponse;
 import org.folio.consortia.domain.dto.PublicationRequest;
 import org.folio.consortia.domain.dto.PublicationResponse;
 import org.folio.consortia.service.PublicationService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
