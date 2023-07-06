@@ -63,7 +63,7 @@ public class PublicationServiceImpl implements PublicationService {
   public PublicationResponse publishRequest(UUID consortiumId, PublicationRequest publicationRequest) {
     validatePublicationRequest(consortiumId, publicationRequest, folioExecutionContext);
 
-    PublicationStatusEntity createdPublicationEntity = persistPublicationRecord(publicationRequest.getTenants().size());
+    PublicationStatusEntity createdPublicationEntity = savePublicationStatusRecord(publicationRequest.getTenants().size());
 
     asyncTaskExecutor.execute(() -> processTenantRequests(publicationRequest, createdPublicationEntity));
 
@@ -167,7 +167,7 @@ public class PublicationServiceImpl implements PublicationService {
     return ptrEntity;
   }
 
-  private PublicationStatusEntity persistPublicationRecord(int totalRecords) {
+  private PublicationStatusEntity savePublicationStatusRecord(int totalRecords) {
     PublicationStatusEntity publicationStatusEntity = new PublicationStatusEntity();
     publicationStatusEntity.setId(UUID.randomUUID());
     publicationStatusEntity.setStatus(PublicationStatus.IN_PROGRESS);

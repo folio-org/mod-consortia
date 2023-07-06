@@ -91,6 +91,7 @@ public class ErrorHandlingController {
   public Errors handlePrimaryAffiliationException(Exception e) {
     return createExternalError(e.getMessage(), VALIDATION_ERROR);
   }
+
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ExceptionHandler(PublicationException.class)
   public Errors handlePublicationException(PublicationException e) {
