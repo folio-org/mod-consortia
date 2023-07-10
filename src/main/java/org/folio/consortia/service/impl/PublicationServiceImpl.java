@@ -268,6 +268,7 @@ public class PublicationServiceImpl implements PublicationService {
   }
 
 
+  @Override
   public PublicationResultCollection getPublicationResults(UUID consortiumId, UUID publicationId){
     log.debug("getPublicationResults:: Trying to retrieve publication results by consortiumId: {} and publicationId id: {}", consortiumId, publicationId);
 
