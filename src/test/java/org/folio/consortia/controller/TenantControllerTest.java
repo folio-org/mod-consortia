@@ -166,7 +166,7 @@ class TenantControllerTest extends BaseIT {
     when(tenantRepository.existsById(any())).thenReturn(false);
     when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity);
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
-    doNothing().when(syncPrimaryAffiliationClient).syncPrimaryAffiliations(anyString(), anyString());//.thenReturn(new SyncPrimaryAffiliationBody());
+    doNothing().when(syncPrimaryAffiliationClient).syncPrimaryAffiliations(anyString(), anyString(), anyString());//.thenReturn(new SyncPrimaryAffiliationBody());
     doNothing().when(configurationClient).saveConfiguration(createConsortiaConfiguration(CENTRAL_TENANT_ID));
 
     this.mockMvc.perform(

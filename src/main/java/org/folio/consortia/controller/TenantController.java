@@ -14,9 +14,8 @@ import org.folio.consortia.domain.dto.TenantCollection;
 import org.folio.consortia.rest.resource.TenantsApi;
 import org.folio.consortia.service.SyncPrimaryAffiliationService;
 import org.folio.consortia.service.TenantService;
-import org.folio.spring.DefaultFolioExecutionContext;
 import org.folio.spring.FolioExecutionContext;
-import org.folio.spring.scope.FolioExecutionContextSetter;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -57,23 +56,18 @@ public class TenantController implements TenantsApi {
   }
 
   @Override
-  public ResponseEntity<Void> syncPrimaryAffiliations(UUID consortiumId, String tenantId) {
-//    var context  = prepareContextForTenant("diku", folioExecutionContext.getFolioModuleMetadata(), folioExecutionContext);
+  public ResponseEntity<Void> syncPrimaryAffiliations(UUID consortiumId, String tenantId, @NotNull String centralTenantId) {
     asyncTaskExecutor.execute(getRunnableWithCurrentFolioContext(
-      () -> syncPrimaryAffiliationService.syncPrimaryAffiliations(consortiumId, tenantId)));
+      () -> syncPrimaryAffiliationService.syncPrimaryAffiliations(consortiumId, tenantId, centralTenantId)));
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
   @Override
-  public ResponseEntity<Void> createPrimaryAffiliations(UUID consortiumId, String tenantId,
+  public ResponseEntity<Void> createPrimaryAffiliations(UUID consortiumId, String tenantId, @NotNull String centralTenantId,
       SyncPrimaryAffiliationBody syncPrimaryAffiliationBody) {
-//    try (var comtext  = new FolioExecutionContextSetter(prepareContextForTenant("diku", folioExecutionContext.getFolioModuleMetadata(), folioExecutionContext))) {
-//      syncPrimaryAffiliationService.createPrimaryUserAffiliations(consortiumId, syncPrimaryAffiliationBody);
-//    }
-    var context  = prepareContextForTenant("diku", folioExecutionContext.getFolioModuleMetadata(), folioExecutionContext);
-
+    var context  = prepareContextForTenant(centralTenantId, folioExecutionContext.getFolioModuleMetadata(), folioExecutionContext);
     asyncTaskExecutor.execute(getRunnableWithFolioContext(context,
-      () -> syncPrimaryAffiliationService.createPrimaryUserAffiliations(consortiumId, syncPrimaryAffiliationBody)));
+      () -> syncPrimaryAffiliationService.createPrimaryUserAffiliations(consortiumId, centralTenantId, syncPrimaryAffiliationBody)));
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 }

@@ -80,6 +80,7 @@ class SyncPrimaryAffiliationServiceImplTest {
   void createPrimaryUserAffiliationsWhenCentralTenantSaving() throws JsonProcessingException {
     var consortiumId = UUID.randomUUID();
     var tenantId = "ABC1";
+    var centralTenantId = "diku";
     TenantEntity tenantEntity1 = createTenantEntity(tenantId, "TestName1");
     tenantEntity1.setConsortiumId(consortiumId);
 
@@ -106,7 +107,7 @@ class SyncPrimaryAffiliationServiceImplTest {
     okapiHeaders.put(XOkapiHeaders.TENANT, List.of(tenantId));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
-    syncPrimaryAffiliationService.createPrimaryUserAffiliations(consortiumId, spab);
+    syncPrimaryAffiliationService.createPrimaryUserAffiliations(consortiumId, centralTenantId, spab);
 
     verify(kafkaService, timeout(2000)).send(any(), anyString(), anyString());
   }
@@ -142,7 +143,7 @@ class SyncPrimaryAffiliationServiceImplTest {
     okapiHeaders.put(XOkapiHeaders.TENANT, List.of(centralTenantId));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
-    syncPrimaryAffiliationService.createPrimaryUserAffiliations(consortiumId, spab);
+    syncPrimaryAffiliationService.createPrimaryUserAffiliations(consortiumId, centralTenantId, spab);
 
     verify(kafkaService, timeout(2000)).send(any(), anyString(), anyString());
   }
