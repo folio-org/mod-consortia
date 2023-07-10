@@ -2,18 +2,20 @@ package org.folio.consortia.service;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 public interface InventoryService {
 
   /**
    * Get an instance by id
    * @param instanceId UUID of the instance
-   * @return Instance as String
+   * @return Instance as JsonNode
    */
-  String getById(UUID instanceId);
+  JsonNode getById(UUID instanceId);
 
   /**
    * Create instance.
    * @param instance instance.
    */
-  void saveInstance(String instance);
+  void saveInstance(Object instance);
 }

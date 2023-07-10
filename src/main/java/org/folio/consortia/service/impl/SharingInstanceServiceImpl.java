@@ -3,6 +3,7 @@ package org.folio.consortia.service.impl;
 import static org.folio.consortia.repository.SharingInstanceRepository.Specifications.constructSpecification;
 import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -19,10 +20,12 @@ import org.folio.consortia.service.TenantService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.scope.FolioExecutionContextSetter;
-import org.json.JSONObject;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -55,16 +58,18 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
   public SharingInstance start(UUID consortiumId, SharingInstance sharingInstance) {
     log.debug("start:: Trying to start instance sharing: {} for consortium: {}", sharingInstance.getInstanceIdentifier(), consortiumId);
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    checkTenantsExistAndContainCentralTenantOrThrow(sharingInstance.getSourceTenantId(), sharingInstance.getTargetTenantId());
+
+    String centralTenantId = tenantService.getCentralTenantId();
+    String sourceTenantId = sharingInstance.getSourceTenantId(), targetTenantId = sharingInstance.getTargetTenantId();
+    checkTenantsExistAndContainCentralTenantOrThrow(centralTenantId, List.of(sourceTenantId, targetTenantId));
 
     SharingInstanceEntity savedSharingInstance;
-    String centralTenantId = tenantService.getCentralTenantId();
-    if (Objects.equals(centralTenantId, sharingInstance.getSourceTenantId())) {
+    if (Objects.equals(centralTenantId, sourceTenantId)) {
       FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
-      String instance;
+      JsonNode inventoryInstance;
 
-      try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentTenantContext))) {
-        instance = inventoryService.getById(sharingInstance.getInstanceIdentifier());
+      try (var context = new FolioExecutionContextSetter(prepareContextForTenant(sourceTenantId, folioModuleMetadata, currentTenantContext))) {
+        inventoryInstance = inventoryService.getById(sharingInstance.getInstanceIdentifier());
       } catch (Exception ex) {
         sharingInstance.setStatus(Status.ERROR);
         sharingInstance.setError(ex.getMessage());
@@ -72,11 +77,9 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
         return converter.convert(savedSharingInstance, SharingInstance.class);
       }
 
-      try (var context = new FolioExecutionContextSetter(prepareContextForTenant(sharingInstance.getTargetTenantId(), folioModuleMetadata, currentTenantContext))) {
-        JSONObject obj = new JSONObject(instance);
-        obj.put("source", "CONSORTIUM_FOLIO");
-        instance = obj.toString();
-        inventoryService.saveInstance(instance);
+      try (var context = new FolioExecutionContextSetter(prepareContextForTenant(targetTenantId, folioModuleMetadata, currentTenantContext))) {
+        var updatedInventoryInstance = ((ObjectNode) inventoryInstance).put("source", "CONSORTIUM-FOLIO");
+        inventoryService.saveInstance(updatedInventoryInstance);
       } catch (Exception ex) {
         sharingInstance.setStatus(Status.ERROR);
         sharingInstance.setError(ex.getMessage());
@@ -108,17 +111,11 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
     return result;
   }
 
-  private void checkTenantsExistAndContainCentralTenantOrThrow(String sourceTenantId, String targetTenantId) {
-    // both tenants should exist in the consortium
-    tenantService.checkTenantExistsOrThrow(sourceTenantId);
-    tenantService.checkTenantExistsOrThrow(targetTenantId);
-
-    // at least one of the tenants should be 'centralTenant'
-    String centralTenantId = tenantService.getCentralTenantId();
-    if (Objects.equals(centralTenantId, sourceTenantId) || Objects.equals(centralTenantId, targetTenantId)) {
-      return;
-    }
-    throw new IllegalArgumentException("Both 'sourceTenantId' and 'targetTenantId' cannot be member tenants.");
+  private void checkTenantsExistAndContainCentralTenantOrThrow(String centralTenantId, List<String> tenantIds) {
+    tenantIds.stream()
+      .peek(tenantService::checkTenantExistsOrThrow)
+      .filter(tenantId -> Objects.equals(centralTenantId, tenantId))
+      .findAny().orElseThrow(() -> new IllegalArgumentException("Both 'sourceTenantId' and 'targetTenantId' cannot be member tenants."));
   }
 
   private SharingInstanceEntity toEntity(SharingInstance dto) {

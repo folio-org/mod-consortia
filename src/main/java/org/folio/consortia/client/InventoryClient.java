@@ -8,12 +8,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 @FeignClient(name = "inventory" , configuration = FeignClientConfiguration.class)
 public interface InventoryClient {
 
   @GetMapping(value = "instances/{instanceId}")
-  String getInstanceById(@PathVariable String instanceId);
+  JsonNode getInstanceById(@PathVariable String instanceId);
 
   @PostMapping(value = "instances", consumes = MediaType.APPLICATION_JSON_VALUE)
-  void saveInstance(@RequestBody String instance);
+  void saveInstance(@RequestBody Object instance);
 }
