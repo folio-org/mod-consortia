@@ -79,17 +79,17 @@ public class PublicationServiceImpl implements PublicationService {
 
   @Override
   public PublicationDetailsResponse getPublicationDetails(UUID consortiumId, UUID publicationId) {
-    log.debug("getById:: Trying to retrieve publicationDetails by consortiumId: {} and publicationId id: {}", consortiumId, publicationId);
+    log.debug("getPublicationDetails:: Trying to retrieve publicationDetails by consortiumId: {} and publicationId id: {}", consortiumId, publicationId);
 
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     var publicationStatusEntity = publicationStatusRepository.findById(publicationId)
       .orElseThrow(() -> new ResourceNotFoundException("publicationId", String.valueOf(publicationId)));
 
-    var publicationTenantRequestEntity = publicationTenantRequestRepository.findByPcState_Id(publicationId, PageRequest.of(0, Integer.MAX_VALUE));
-    log.info("getPublicationDetails:: Found {} of {} expected tenant request records", publicationTenantRequestEntity.getTotalElements(), publicationStatusEntity.getTotalRecords());
+    var ptrEntities = publicationTenantRequestRepository.findByPcStateId(publicationId, PageRequest.of(0, Integer.MAX_VALUE));
+    log.info("getPublicationDetails:: Found {} of {} expected tenant request records", ptrEntities.getTotalElements(), publicationStatusEntity.getTotalRecords());
 
-    var errorList = buildErrorListFromPublicationTenantRequestEntities(publicationTenantRequestEntity);
-    var tenantRequestPayload = getPayloadFromPublicationTenantRequestEntities(publicationTenantRequestEntity);
+    var errorList = buildErrorListFromPublicationTenantRequestEntities(ptrEntities);
+    var tenantRequestPayload = getPayloadFromPublicationTenantRequestEntities(ptrEntities);
 
     var pdr = new PublicationDetailsResponse()
       .id(publicationStatusEntity.getId())
@@ -113,8 +113,10 @@ public class PublicationServiceImpl implements PublicationService {
     return publicationTenantRequestEntity.getContent()
       .stream()
       .filter(ptrEntity -> ptrEntity.getStatus() == PublicationStatus.ERROR)
-      .map(ptrEntity -> new PublicationStatusError().errorMessage(ptrEntity.getResponse())
-        .tenantId(ptrEntity.getTenantId()))
+      .map(ptrEntity -> new PublicationStatusError()
+        .errorMessage(ptrEntity.getResponse())
+        .errorCode(ptrEntity.getResponseStatusCode())
+      .tenantId(ptrEntity.getTenantId()))
       .toList();
   }
 

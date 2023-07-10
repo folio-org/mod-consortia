@@ -11,6 +11,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PublicationTenantRequestRepository extends JpaRepository<PublicationTenantRequestEntity, UUID> {
 
-  Page<PublicationTenantRequestEntity> findByPcState_Id(UUID publicationId, Pageable pageable);
+  Page<PublicationTenantRequestEntity> findByPcStateId(UUID publicationId, Pageable pageable);
 
 }

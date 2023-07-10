@@ -69,3 +69,6 @@ PublicationStatusError:
     errorMessage:
       description: error message of failed request
       type: string
+    errorCode:
+      description: error code of failed request
+      type: integer

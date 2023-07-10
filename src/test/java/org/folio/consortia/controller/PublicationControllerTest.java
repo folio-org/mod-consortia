@@ -123,7 +123,7 @@ public class PublicationControllerTest extends BaseIT {
     List<PublicationTenantRequestEntity> ptrEntityMockResponse = List.of(tenantRequest1, tenantRequest2);
 
     Page<PublicationTenantRequestEntity> ptrEntities  = new PageImpl<>(ptrEntityMockResponse);
-    when(publicationTenantRequestRepository.findByPcState_Id(eq(publicationId), any())).thenReturn(ptrEntities);
+    when(publicationTenantRequestRepository.findByPcStateId(eq(publicationId), any())).thenReturn(ptrEntities);
 
     this.mockMvc.perform(get(String.format(GET_PUBLICATION_BY_ID_URL, consortiumId, publicationId)).headers(headers))
       .andExpectAll(

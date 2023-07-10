@@ -152,7 +152,7 @@
         },
         {
           "methods": [
-            "POST"
+            "GET"
           ],
           "pathPattern": "/consortia/{consortiumId}/publications/{publicationId}",
           "permissionsRequired": [
