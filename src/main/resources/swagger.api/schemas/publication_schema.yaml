@@ -90,7 +90,7 @@ PublicationResult:
   description: publication result
   properties:
     tenantId:
-      description: "tenant name which failed to execute request"
+      description: "tenant name"
       type: string
     response:
       description: "response message of tenant request"
