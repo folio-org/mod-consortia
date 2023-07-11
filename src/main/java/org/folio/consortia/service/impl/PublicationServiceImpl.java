@@ -270,14 +270,14 @@ public class PublicationServiceImpl implements PublicationService {
 
   @Override
   public PublicationResultCollection getPublicationResults(UUID consortiumId, UUID publicationId){
-    log.debug("getPublicationResults:: Trying to retrieve publication results by consortiumId: {} and publicationId id: {}", consortiumId, publicationId);
+    log.info("getPublicationResults:: Trying to retrieve publication results by consortiumId: {} and publicationId id: {}", consortiumId, publicationId);
 
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     var publicationStatusEntity = publicationStatusRepository.findById(publicationId)
       .orElseThrow(() -> new ResourceNotFoundException("publicationId", String.valueOf(publicationId)));
 
     var ptrEntities = publicationTenantRequestRepository.findByPcStateId(publicationId, PageRequest.of(0, Integer.MAX_VALUE));
-    log.info("getPublicationResults:: Found {} of {} expected tenant request records", ptrEntities.getTotalElements(), publicationStatusEntity.getTotalRecords());
+    log.info("getPublicationResults:: Found {} of {} expected tenant request records for publication {}", ptrEntities.getTotalElements(), publicationStatusEntity.getTotalRecords(), publicationId);
 
     var resultList = ptrEntities.stream()
       .map(entity -> new PublicationResult()
