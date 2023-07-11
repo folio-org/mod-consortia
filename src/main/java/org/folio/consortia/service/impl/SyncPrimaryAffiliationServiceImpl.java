@@ -74,24 +74,28 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
     var tenantId = syncPrimaryAffiliationBody.getTenantId();
     var userList = syncPrimaryAffiliationBody.getUsers();
 
-    TenantEntity tenantEntity = tenantService.getByTenantId(tenantId);
-    IntStream.range(0, userList.size()).sequential().forEach(idx -> {
-      var user = userList.get(idx);
-      log.info("Processing users: {} of {}", idx + 1, userList.size());
-      Page<UserTenantEntity> userTenantPage = userTenantRepository.findByUserId(UUID.fromString(user.getId()), PageRequest.of(0, 1));
+    try {
+      TenantEntity tenantEntity = tenantService.getByTenantId(tenantId);
+      IntStream.range(0, userList.size()).sequential().forEach(idx -> {
+        var user = userList.get(idx);
+        log.info("Processing users: {} of {}", idx + 1, userList.size());
+        Page<UserTenantEntity> userTenantPage = userTenantRepository.findByUserId(UUID.fromString(user.getId()), PageRequest.of(0, 1));
 
-      if (userTenantPage.getTotalElements() > 0) {
-        log.info("Primary affiliation already exists for tenant/user: {}/{}", tenantId, user.getUsername());
-      } else {
-        userTenantService.createPrimaryUserTenantAffiliation(consortiumId, tenantEntity, user.getId(), user.getUsername());
-        if (ObjectUtils.notEqual(centralTenantId, tenantEntity.getId())) {
-          userTenantService.save(consortiumId, createUserTenant(centralTenantId, user), true);
+        if (userTenantPage.getTotalElements() > 0) {
+          log.info("Primary affiliation already exists for tenant/user: {}/{}", tenantId, user.getUsername());
+        } else {
+          userTenantService.createPrimaryUserTenantAffiliation(consortiumId, tenantEntity, user.getId(), user.getUsername());
+          if (ObjectUtils.notEqual(centralTenantId, tenantEntity.getId())) {
+            userTenantService.save(consortiumId, createUserTenant(centralTenantId, user), true);
+          }
+          sendCreatePrimaryAffiliationEvent(tenantEntity, user);
         }
-        sendCreatePrimaryAffiliationEvent(tenantEntity, user);
-      }
 
-    });
-    log.info("Successfully created primary affiliations for tenant {}", tenantId);
+      });
+      log.info("Successfully created primary affiliations for tenant {}", tenantId);
+    } catch (Exception e) {
+      log.error("Failed to create primary affiliations for tenant {}", tenantId, e);
+    }
   }
 
   @SneakyThrows
