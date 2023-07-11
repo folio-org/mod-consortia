@@ -158,6 +158,16 @@
           "methods": [
             "GET"
           ],
+          "pathPattern": "/consortia/{consortiumId}/publications/{publicationId}",
+          "permissionsRequired": [
+            "consortia.publications.item.get"
+          ],
+          "modulePermissions": []
+        },
+        {
+          "methods": [
+            "GET"
+          ],
           "pathPattern": "/consortia/{consortiumId}/user-tenants",
           "permissionsRequired": [
             "consortia.user-tenants.collection.get"
@@ -303,7 +313,9 @@
         "consortia.create-primary-affiliations.item.post",
         "consortia.sharing-instances.item.post",
         "consortia.sharing-instances.item.get",
-        "consortia.sharing-instances.collection.get"
+        "consortia.sharing-instances.collection.get",
+        "consortia.publications.item.post",
+        "consortia.publications.item.get"
       ]
     },
     {
@@ -340,6 +352,11 @@
       "permissionName": "consortia.publications.item.post",
       "displayName": "publish coordinator post request",
       "description": "publish coordinator post request"
+    },
+    {
+      "permissionName": "consortia.publications.item.get",
+      "displayName": "publish coordinator get publication details request",
+      "description": "publish coordinator get publication details request"
     },
     {
       "permissionName": "consortia.user-tenants.collection.get",
