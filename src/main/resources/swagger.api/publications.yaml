@@ -41,7 +41,7 @@ paths:
           $ref: '#/components/responses/InternalServerError'
   /publications/{publicationId}/results:
     get:
-      summary: Get publication details
+      summary: Get publication results
       operationId: getPublicationResults
       parameters:
         - $ref: "#/components/parameters/consortiumId"
