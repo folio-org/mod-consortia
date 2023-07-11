@@ -8,14 +8,19 @@ import static org.folio.consortia.utils.EntityUtils.createSharingInstanceEntity;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.nio.charset.Charset;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.folio.consortia.client.InventoryClient;
 import org.folio.consortia.domain.dto.SharingInstance;
+import org.folio.consortia.domain.dto.Status;
 import org.folio.consortia.domain.entity.SharingInstanceEntity;
 import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.SharingInstanceRepository;
@@ -28,6 +33,16 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.http.HttpStatus;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import feign.FeignException;
+import feign.Request;
+import feign.RequestTemplate;
+import feign.Response;
 
 @SpringBootTest
 @EnableAutoConfiguration(exclude = BatchAutoConfiguration.class)
@@ -46,6 +61,8 @@ class SharingInstanceServiceTest {
   private SharingInstanceRepository sharingInstanceRepository;
   @Mock
   private ConversionService conversionService;
+  @Mock
+  private InventoryClient inventoryClient;
 
   @Test
   void shouldGetSharingInstanceById() {
@@ -65,7 +82,7 @@ class SharingInstanceServiceTest {
   }
 
   @Test
-  void shouldSaveSharingInstance() {
+  void shouldSaveSharingInstanceWhenSourceTenantNotEqualCentralTenant() {
     SharingInstance sharingInstance = createSharingInstance(instanceIdentifier, "college", "mobius");
     SharingInstanceEntity savedSharingInstance = createSharingInstanceEntity(instanceIdentifier, "college", "mobius");
 
@@ -82,6 +99,64 @@ class SharingInstanceServiceTest {
     assertThat(actualSharingInstance.getSourceTenantId()).isEqualTo(expectedSharingInstance.getSourceTenantId());
     assertThat(actualSharingInstance.getTargetTenantId()).isEqualTo(expectedSharingInstance.getTargetTenantId());
 
+    verify(sharingInstanceRepository, times(1)).save(any());
+  }
+
+  @Test
+  void shouldSaveSharingInstanceWhenSourceTenantEqualsCentralTenantAndGetInstanceThrowsException() {
+    SharingInstance sharingInstance = new SharingInstance().id(UUID.randomUUID())
+        .instanceIdentifier(UUID.randomUUID()).sourceTenantId("mobius")
+        .targetTenantId("college").status(Status.IN_PROGRESS);
+    SharingInstanceEntity sharingInstanceEntity = new SharingInstanceEntity();
+
+    // skip validation part
+    when(consortiumRepository.existsById(any())).thenReturn(true);
+    doNothing().when(tenantService).checkTenantExistsOrThrow(anyString());
+
+    when(tenantService.getCentralTenantId()).thenReturn("mobius");
+    when(conversionService.convert(any(), any())).thenReturn(toDto(sharingInstanceEntity));
+    when(sharingInstanceRepository.save(any())).thenReturn(sharingInstanceEntity);
+
+    // throw NotFound exception when getting inventory instance
+    doThrow(FeignException.NotFound.errorStatus("getInstanceById", createResponse(Request.HttpMethod.GET, HttpStatus.NOT_FOUND)))
+      .when(inventoryClient).getInstanceById(any());
+
+    // verify status field gets updated and save() method gets called
+    sharingInstanceService.start(UUID.randomUUID(), sharingInstance);
+
+    assertThat(sharingInstance.getStatus()).isEqualTo(Status.ERROR);
+    verify(sharingInstanceRepository, times(1)).save(any());
+  }
+
+  @Test
+  void shouldSaveSharingInstanceWhenSourceTenantEqualsCentralTenantAndPostInstanceThrowsException() throws JsonProcessingException {
+    SharingInstance sharingInstance = new SharingInstance().id(UUID.randomUUID())
+      .instanceIdentifier(UUID.randomUUID()).sourceTenantId("mobius")
+      .targetTenantId("college").status(Status.IN_PROGRESS);
+    SharingInstanceEntity sharingInstanceEntity = new SharingInstanceEntity();
+
+    // skip validation part
+    when(consortiumRepository.existsById(any())).thenReturn(true);
+    doNothing().when(tenantService).checkTenantExistsOrThrow(anyString());
+
+    when(tenantService.getCentralTenantId()).thenReturn("mobius");
+    when(conversionService.convert(any(), any())).thenReturn(toDto(sharingInstanceEntity));
+    when(sharingInstanceRepository.save(any())).thenReturn(sharingInstanceEntity);
+
+    // return instance as JsonNode when getting
+    ObjectMapper objectMapper = new ObjectMapper();
+    JsonNode inventoryInstance = objectMapper.readTree("{ \"source\" : \"folio\" } ");
+
+    when(inventoryClient.getInstanceById(any())).thenReturn(inventoryInstance);
+
+    // throw BadRequest exception when posting inventory instance
+    doThrow(FeignException.BadRequest.errorStatus("saveInstance", createResponse(Request.HttpMethod.POST, HttpStatus.BAD_REQUEST)))
+      .when(inventoryClient).saveInstance(any());
+
+    // verify status field gets updated and save() method gets called
+    sharingInstanceService.start(UUID.randomUUID(), sharingInstance);
+
+    assertThat(sharingInstance.getStatus()).isEqualTo(Status.ERROR);
     verify(sharingInstanceRepository, times(1)).save(any());
   }
 
@@ -104,5 +179,14 @@ class SharingInstanceServiceTest {
     sharingInstance.setStatus(entity.getStatus());
     sharingInstance.setError(entity.getError());
     return sharingInstance;
+  }
+
+  private Response createResponse(Request.HttpMethod method, HttpStatus status) {
+    Request request = Request.create(method, "", Map.of(), null, Charset.defaultCharset(),
+      new RequestTemplate());
+    return Response.builder()
+      .status(status.value())
+      .request(request)
+      .build();
   }
 }
