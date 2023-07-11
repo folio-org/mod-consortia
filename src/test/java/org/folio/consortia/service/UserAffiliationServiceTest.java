@@ -6,6 +6,7 @@ import static org.folio.spring.integration.XOkapiHeaders.TENANT;
 import static org.folio.spring.integration.XOkapiHeaders.TOKEN;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -19,6 +20,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.folio.consortia.config.kafka.KafkaService;
+import org.folio.consortia.domain.dto.UserTenant;
+import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.service.impl.UserAffiliationServiceImpl;
 import org.folio.spring.DefaultFolioExecutionContext;
@@ -36,6 +39,7 @@ import org.mockito.MockitoAnnotations;
 
 class UserAffiliationServiceTest {
   private static final String userCreatedEventSample = getMockDataAsString("mockdata/kafka/create_primary_affiliation_request.json");
+  private static final String userUpdatedEventSample = getMockDataAsString("mockdata/kafka/update_primary_affiliation_request.json");
   private static final String userDeletedEventSample = getMockDataAsString("mockdata/kafka/delete_primary_affiliation_request.json");
   @Mock
   private FolioModuleMetadata folioModuleMetadata;
@@ -130,6 +134,34 @@ class UserAffiliationServiceTest {
       userAffiliationService.createPrimaryUserAffiliation(userCreatedEventSample);
     }
     verify(kafkaService, times(0)).send(any(), anyString(), any());
+  }
+
+  @Test
+  void primaryAffiliationSuccessfullyUpdatedTest() {
+    UserTenant userTenant = new UserTenant();
+    userTenant.setUserId(UUID.randomUUID());
+    userTenant.setUsername("TestUser");
+    UserTenantCollection userTenantCollection = new UserTenantCollection();
+    userTenantCollection.setUserTenants(List.of(userTenant));
+    userTenantCollection.setTotalRecords(1);
+
+    var te = createTenantEntity();
+
+    when(tenantService.getByTenantId(anyString())).thenReturn(te);
+    doNothing().when(consortiumService).checkConsortiumExistsOrThrow(any());
+    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
+    when(folioExecutionContext.getTenantId()).thenReturn("diku");
+    Map<String, Collection<String>> map = createOkapiHeaders();
+    when(folioExecutionContext.getOkapiHeaders()).thenReturn(map);
+
+    when(userTenantService.getByUserId(any(), any(), eq(0), eq(Integer.MAX_VALUE))).thenReturn(userTenantCollection);
+
+    folioExecutionContext = new DefaultFolioExecutionContext(folioModuleMetadata, map);
+    try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
+      userAffiliationService.updatePrimaryUserAffiliation(userUpdatedEventSample);
+    }
+
+    verify(kafkaService, times(1)).send(any(), anyString(), any());
   }
 
   @Test

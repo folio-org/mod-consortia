@@ -31,6 +31,7 @@ public class UserTenantEntity extends AuditableEntity {
   private TenantEntity tenant;
 
   private Boolean isPrimary;
+  private String centralTenantId;
 
   @Override
   public boolean equals(Object o) {
@@ -45,11 +46,12 @@ public class UserTenantEntity extends AuditableEntity {
       && Objects.equals(userId, that.userId)
       && Objects.equals(username, that.username)
       && Objects.equals(tenant, that.tenant)
-      && Objects.equals(isPrimary, that.isPrimary);
+      && Objects.equals(isPrimary, that.isPrimary)
+      && Objects.equals(centralTenantId, that.centralTenantId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, userId, username, tenant, isPrimary);
+    return Objects.hash(id, userId, username, tenant, isPrimary, centralTenantId);
   }
 }

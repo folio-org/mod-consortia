@@ -188,6 +188,16 @@ class UserTenantServiceTest {
   }
 
   @Test
+  void shouldUpdateUsernameInPrimaryAffiliation() {
+    var userEvent = createUserEvent();
+    doNothing().when(userTenantRepository).setUsernameByUserId(anyString(), any());
+
+    userTenantService.updateUsernameInPrimaryUserTenantAffiliation(UUID.fromString(userEvent.getUserDto().getId()), "newUsername");
+
+    verify(userTenantRepository, times(1)).setUsernameByUserId(anyString(), any());
+  }
+
+  @Test
   void shouldDeletePrimaryAffiliation() {
     var userEvent = createUserEvent();
     doNothing().when(userTenantRepository).deleteByUserIdAndIsPrimaryTrue(any());

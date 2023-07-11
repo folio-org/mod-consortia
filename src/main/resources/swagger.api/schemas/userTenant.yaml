@@ -16,6 +16,8 @@ UserTenant:
       type: string
     isPrimary:
       type: boolean
+    centralTenantId:
+      type: string
   additionalProperties: false
   required:
     - userId

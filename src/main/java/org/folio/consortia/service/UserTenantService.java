@@ -75,6 +75,14 @@ public interface UserTenantService {
   UserTenant createPrimaryUserTenantAffiliation(UUID consortiumId, TenantEntity consortiaTenant, String userId, String username);
 
   /**
+   * Update username fields of user_tenant based on kafka userEventDto.
+   *
+   * @param userId  id of existing user
+   * @param username    the new name of existing user
+   */
+  void updateUsernameInPrimaryUserTenantAffiliation(UUID userId, String username);
+
+  /**
    * Deletes user_tenant by userId and tenantId.
    *
    * @param consortiumId id of consortium

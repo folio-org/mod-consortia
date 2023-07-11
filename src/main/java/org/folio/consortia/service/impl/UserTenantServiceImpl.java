@@ -154,6 +154,11 @@ public class UserTenantServiceImpl implements UserTenantService {
   }
 
   @Override
+  public void updateUsernameInPrimaryUserTenantAffiliation(UUID userId, String username) {
+    userTenantRepository.setUsernameByUserId(username, userId);
+  }
+
+  @Override
   @Transactional
   public void deleteByUserIdAndTenantId(UUID consortiumId, String tenantId, UUID userId) {
     log.debug("Going to delete user affiliation for user id: {} in the tenant: {}", userId.toString(), tenantId);
