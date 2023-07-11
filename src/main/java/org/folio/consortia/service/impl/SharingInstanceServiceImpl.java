@@ -3,7 +3,6 @@ package org.folio.consortia.service.impl;
 import static org.folio.consortia.repository.SharingInstanceRepository.Specifications.constructSpecification;
 import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -67,12 +66,12 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
 
     SharingInstanceEntity savedSharingInstance;
     if (Objects.equals(centralTenantId, sourceTenantId)) {
-      FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
       JsonNode inventoryInstance;
 
-      try (var context = new FolioExecutionContextSetter(prepareContextForTenant(sourceTenantId, folioModuleMetadata, currentTenantContext))) {
+      try (var context = new FolioExecutionContextSetter(prepareContextForTenant(sourceTenantId, folioModuleMetadata, folioExecutionContext))) {
         inventoryInstance = inventoryService.getById(sharingInstance.getInstanceIdentifier());
       } catch (Exception ex) {
+        log.warn("Error when getting instance by id: {}", sharingInstance.getInstanceIdentifier(), ex);
         sharingInstance.setStatus(Status.ERROR);
         sharingInstance.setError(String.format("Failed to get inventory instance with reason: %s", InventoryClient.getReason(ex)));
         savedSharingInstance = sharingInstanceRepository.save(toEntity(sharingInstance));
@@ -81,11 +80,12 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
         return converter.convert(savedSharingInstance, SharingInstance.class);
       }
 
-      try (var context = new FolioExecutionContextSetter(prepareContextForTenant(targetTenantId, folioModuleMetadata, currentTenantContext))) {
+      try (var context = new FolioExecutionContextSetter(prepareContextForTenant(targetTenantId, folioModuleMetadata, folioExecutionContext))) {
         String source = "folio".equalsIgnoreCase(inventoryInstance.get("source").asText()) ? "CONSORTIUM-FOLIO" : "CONSORTIUM-MARC";
         var updatedInventoryInstance = ((ObjectNode) inventoryInstance).put("source", source);
         inventoryService.saveInstance(updatedInventoryInstance);
       } catch (Exception ex) {
+        log.warn("Error when posting instance with id: {}", sharingInstance.getInstanceIdentifier(), ex);
         sharingInstance.setStatus(Status.ERROR);
         sharingInstance.setError(String.format("Failed to post inventory instance with reason: %s", InventoryClient.getReason(ex)));
         savedSharingInstance = sharingInstanceRepository.save(toEntity(sharingInstance));
