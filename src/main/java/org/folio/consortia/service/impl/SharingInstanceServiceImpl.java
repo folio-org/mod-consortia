@@ -61,8 +61,9 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
 
     String centralTenantId = tenantService.getCentralTenantId();
-    String sourceTenantId = sharingInstance.getSourceTenantId(), targetTenantId = sharingInstance.getTargetTenantId();
-    checkTenantsExistAndContainCentralTenantOrThrow(centralTenantId, List.of(sourceTenantId, targetTenantId));
+    String sourceTenantId = sharingInstance.getSourceTenantId();
+    String targetTenantId = sharingInstance.getTargetTenantId();
+    checkTenantsExistAndContainCentralTenantOrThrow(sourceTenantId, targetTenantId);
 
     SharingInstanceEntity savedSharingInstance;
     if (Objects.equals(centralTenantId, sourceTenantId)) {
@@ -119,11 +120,17 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
     return result;
   }
 
-  private void checkTenantsExistAndContainCentralTenantOrThrow(String centralTenantId, List<String> tenantIds) {
-    tenantIds.stream()
-      .peek(tenantService::checkTenantExistsOrThrow)
-      .filter(tenantId -> Objects.equals(centralTenantId, tenantId))
-      .findAny().orElseThrow(() -> new IllegalArgumentException("Both 'sourceTenantId' and 'targetTenantId' cannot be member tenants."));
+  private void checkTenantsExistAndContainCentralTenantOrThrow(String sourceTenantId, String targetTenantId) {
+    // both tenants should exist in the consortium
+    tenantService.checkTenantExistsOrThrow(sourceTenantId);
+    tenantService.checkTenantExistsOrThrow(targetTenantId);
+
+    // at least one of the tenants should be 'centralTenant'
+    String centralTenantId = tenantService.getCentralTenantId();
+    if (Objects.equals(centralTenantId, sourceTenantId) || Objects.equals(centralTenantId, targetTenantId)) {
+      return;
+    }
+    throw new IllegalArgumentException("Both 'sourceTenantId' and 'targetTenantId' cannot be member tenants.");
   }
 
   private SharingInstanceEntity toEntity(SharingInstance dto) {
