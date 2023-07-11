@@ -186,7 +186,7 @@ class SharingInstanceServiceTest {
     // verify status field gets updated and save() method gets called
     sharingInstanceService.start(UUID.randomUUID(), sharingInstance);
 
-    assertThat(sharingInstance.getError()).isEqualTo(null);
+    assertThat(sharingInstance.getError()).isNull();
     assertThat(sharingInstance.getStatus()).isEqualTo(Status.COMPLETE);
     verify(sharingInstanceRepository, times(1)).save(any());
   }
