@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.folio.consortia.client.InventoryClient;
 import org.folio.consortia.domain.dto.SharingInstance;
 import org.folio.consortia.domain.dto.SharingInstanceCollection;
 import org.folio.consortia.domain.dto.Status;
@@ -56,7 +57,7 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
   @Override
   @Transactional
   public SharingInstance start(UUID consortiumId, SharingInstance sharingInstance) {
-    log.debug("start:: Trying to start instance sharing: {} for consortium: {}", sharingInstance.getInstanceIdentifier(), consortiumId);
+    log.debug("start:: Trying to start instance sharing with instanceIdentifier: {}, consortiumId: {}.", sharingInstance.getInstanceIdentifier(), consortiumId);
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
 
     String centralTenantId = tenantService.getCentralTenantId();
@@ -72,18 +73,23 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
         inventoryInstance = inventoryService.getById(sharingInstance.getInstanceIdentifier());
       } catch (Exception ex) {
         sharingInstance.setStatus(Status.ERROR);
-        sharingInstance.setError(ex.getMessage());
+        sharingInstance.setError(String.format("Failed to get inventory instance with reason: %s", InventoryClient.getReason(ex)));
         savedSharingInstance = sharingInstanceRepository.save(toEntity(sharingInstance));
+        log.info("start:: sharingInstance with instanceId: {}, sourceTenantId: {}, targetTenantId: {} failed with reason: {}",
+          sharingInstance.getInstanceIdentifier(), sourceTenantId, targetTenantId, sharingInstance.getError());
         return converter.convert(savedSharingInstance, SharingInstance.class);
       }
 
       try (var context = new FolioExecutionContextSetter(prepareContextForTenant(targetTenantId, folioModuleMetadata, currentTenantContext))) {
-        var updatedInventoryInstance = ((ObjectNode) inventoryInstance).put("source", "CONSORTIUM-FOLIO");
+        String source = "folio".equalsIgnoreCase(inventoryInstance.get("source").asText()) ? "CONSORTIUM-FOLIO" : "CONSORTIUM-MARC";
+        var updatedInventoryInstance = ((ObjectNode) inventoryInstance).put("source", source);
         inventoryService.saveInstance(updatedInventoryInstance);
       } catch (Exception ex) {
         sharingInstance.setStatus(Status.ERROR);
-        sharingInstance.setError(ex.getMessage());
+        sharingInstance.setError(String.format("Failed to post inventory instance with reason: %s", InventoryClient.getReason(ex)));
         savedSharingInstance = sharingInstanceRepository.save(toEntity(sharingInstance));
+        log.info("start:: sharingInstance with instanceId: {}, sourceTenantId: {}, targetTenantId: {} failed with reason: {}",
+          sharingInstance.getInstanceIdentifier(), sourceTenantId, targetTenantId, sharingInstance.getError());
         return converter.convert(savedSharingInstance, SharingInstance.class);
       }
 
@@ -92,6 +98,8 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
       sharingInstance.setStatus(Status.IN_PROGRESS);
     }
     savedSharingInstance = sharingInstanceRepository.save(toEntity(sharingInstance));
+    log.info("start:: sharingInstance with id: {}, instanceId: {}, sourceTenantId: {}, targetTenantId: {} has been saved with status: {}",
+      savedSharingInstance.getId(), savedSharingInstance.getInstanceId(), sourceTenantId, targetTenantId, savedSharingInstance.getStatus());
     return converter.convert(savedSharingInstance, SharingInstance.class);
   }
 
