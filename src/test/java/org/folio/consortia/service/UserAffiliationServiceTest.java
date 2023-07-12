@@ -22,6 +22,7 @@ import java.util.UUID;
 import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
+import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.service.impl.UserAffiliationServiceImpl;
 import org.folio.spring.DefaultFolioExecutionContext;
@@ -138,12 +139,9 @@ class UserAffiliationServiceTest {
 
   @Test
   void primaryAffiliationSuccessfullyUpdatedTest() {
-    UserTenant userTenant = new UserTenant();
+    UserTenantEntity userTenant = new UserTenantEntity();
     userTenant.setUserId(UUID.randomUUID());
     userTenant.setUsername("TestUser");
-    UserTenantCollection userTenantCollection = new UserTenantCollection();
-    userTenantCollection.setUserTenants(List.of(userTenant));
-    userTenantCollection.setTotalRecords(1);
 
     var te = createTenantEntity();
 
@@ -154,7 +152,7 @@ class UserAffiliationServiceTest {
     Map<String, Collection<String>> map = createOkapiHeaders();
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(map);
 
-    when(userTenantService.getByUserId(any(), any(), eq(0), eq(Integer.MAX_VALUE))).thenReturn(userTenantCollection);
+    when(userTenantService.getByUserIdAndTenantId(any(), anyString())).thenReturn(userTenant);
 
     folioExecutionContext = new DefaultFolioExecutionContext(folioModuleMetadata, map);
     try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
