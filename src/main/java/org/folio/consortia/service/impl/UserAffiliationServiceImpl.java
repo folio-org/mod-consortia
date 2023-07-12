@@ -1,7 +1,5 @@
 package org.folio.consortia.service.impl;
 
-import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
-
 import java.util.UUID;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -15,7 +13,6 @@ import org.folio.consortia.service.UserAffiliationService;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
-import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +38,6 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   @SneakyThrows
   @Transactional
   public void createPrimaryUserAffiliation(String eventPayload) {
-    FolioExecutionContext currentContext = (FolioExecutionContext) folioExecutionContext.getInstance();
     String centralTenantId = folioExecutionContext.getTenantId();
     try {
       var userEvent = objectMapper.readValue(eventPayload, UserEvent.class);
@@ -68,10 +64,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(userEvent);
       String data = objectMapper.writeValueAsString(affiliationEvent);
 
-      // context is changed in save() method and context is empty after save() method, so we need to set context again.
-      try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentContext))) {
-        kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_CREATED, consortiaTenant.getConsortiumId().toString(), data);
-      }
+      kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_CREATED, consortiaTenant.getConsortiumId().toString(), data);
       log.info("Primary affiliation has been set for the user: {}", userEvent.getUserDto().getId());
     } catch (Exception e) {
       log.error("Exception occurred while creating primary affiliation", e);
@@ -82,8 +75,6 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   @SneakyThrows
   @Transactional
   public void deletePrimaryUserAffiliation(String eventPayload) {
-    FolioExecutionContext currentContext = (FolioExecutionContext) folioExecutionContext.getInstance();
-    String centralTenantId = folioExecutionContext.getTenantId();
     try {
       var userEvent = objectMapper.readValue(eventPayload, UserEvent.class);
       log.info("Received event for deleting primary affiliation for user: {} and tenant: {}", userEvent.getUserDto().getId(), userEvent.getTenantId());
@@ -100,10 +91,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(userEvent);
       String data = objectMapper.writeValueAsString(affiliationEvent);
 
-      // context is changed in deleteShadowUsers() method and context is empty after deleteShadowUsers() method, so we need to set context again.
-      try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentContext))) {
-        kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_DELETED, consortiaTenant.getConsortiumId().toString(), data);
-      }
+      kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_DELETED, consortiaTenant.getConsortiumId().toString(), data);
       log.info("Primary affiliation has been deleted for the user: {}", userEvent.getUserDto().getId());
     } catch (Exception e) {
       log.error("Exception occurred while deleting primary affiliation", e);
