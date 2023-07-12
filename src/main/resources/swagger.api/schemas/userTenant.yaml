@@ -18,6 +18,12 @@ UserTenant:
       type: boolean
     centralTenantId:
       type: string
+    email:
+      type: string
+    mobilePhoneNumber:
+      type: string
+    phoneNumber:
+      type: string
   additionalProperties: false
   required:
     - userId

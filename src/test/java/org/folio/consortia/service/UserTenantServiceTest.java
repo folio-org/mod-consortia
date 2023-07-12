@@ -198,6 +198,15 @@ class UserTenantServiceTest {
   }
 
   @Test
+  void shouldThrowResourceNotFoundException() {
+    when(userTenantRepository.findByUserIdAndTenantId(any(), anyString())).thenReturn(Optional.empty());
+
+    assertThrows(ResourceNotFoundException.class, () -> userTenantService.getByUserIdAndTenantId(UUID.randomUUID(), UUID.randomUUID().toString()));
+
+    verify(userTenantRepository, times(1)).findByUserIdAndTenantId(any(), anyString());
+  }
+
+  @Test
   void shouldDeletePrimaryAffiliation() {
     var userEvent = createUserEvent();
     doNothing().when(userTenantRepository).deleteByUserIdAndIsPrimaryTrue(any());
