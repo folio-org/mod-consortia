@@ -209,7 +209,7 @@ class SharingInstanceServiceTest {
     when(tenantService.getCentralTenantId()).thenReturn("mobius");
 
     Assertions.assertThrows(IllegalArgumentException.class,
-      () -> sharingInstanceService.start(UUID.randomUUID(), sharingInstance));
+      () -> sharingInstanceService.start(CONSORTIUM_ID, sharingInstance));
   }
 
   private SharingInstance toDto(SharingInstanceEntity entity) {
