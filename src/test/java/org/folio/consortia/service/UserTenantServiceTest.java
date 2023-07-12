@@ -199,9 +199,13 @@ class UserTenantServiceTest {
 
   @Test
   void shouldThrowResourceNotFoundException() {
+    UserTenant userTenant = new UserTenant()
+      .userId(UUID.randomUUID())
+      .tenantId(UUID.randomUUID().toString());
+
     when(userTenantRepository.findByUserIdAndTenantId(any(), anyString())).thenReturn(Optional.empty());
 
-    assertThrows(ResourceNotFoundException.class, () -> userTenantService.getByUserIdAndTenantId(UUID.randomUUID(), UUID.randomUUID().toString()));
+    assertThrows(ResourceNotFoundException.class, () -> userTenantService.getByUserIdAndTenantId(userTenant.getUserId(), userTenant.getTenantId()));
 
     verify(userTenantRepository, times(1)).findByUserIdAndTenantId(any(), anyString());
   }

@@ -30,6 +30,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @AllArgsConstructor
 public class UserAffiliationServiceImpl implements UserAffiliationService {
+  private static final String TENANT_NOT_EXISTS_IN_CONSORTIA = "Tenant {} not exists in consortia";
 
   private final UserTenantService userTenantService;
   private final TenantService tenantService;
@@ -50,9 +51,10 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
 
       var consortiaTenant = tenantService.getByTenantId(userEvent.getTenantId());
       if (consortiaTenant == null) {
-        log.warn("Tenant {} not exists in consortia", userEvent.getTenantId());
+        log.warn(TENANT_NOT_EXISTS_IN_CONSORTIA, userEvent.getTenantId());
         return;
       }
+
 
       boolean isPrimaryAffiliationExists = userTenantService
         .checkUserIfHasPrimaryAffiliationByUserId(consortiaTenant.getConsortiumId(), userEvent.getUserDto().getId());
@@ -89,7 +91,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
 
       var consortiaTenant = tenantService.getByTenantId(userEvent.getTenantId());
       if (consortiaTenant == null) {
-        log.warn("Tenant {} not exists in consortia", userEvent.getTenantId());
+        log.warn(TENANT_NOT_EXISTS_IN_CONSORTIA, userEvent.getTenantId());
         return;
       }
       UUID userId = getUserId(userEvent);
@@ -124,7 +126,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
 
       var consortiaTenant = tenantService.getByTenantId(userEvent.getTenantId());
       if (consortiaTenant == null) {
-        log.warn("Tenant {} not exists in consortia", userEvent.getTenantId());
+        log.warn(TENANT_NOT_EXISTS_IN_CONSORTIA, userEvent.getTenantId());
         return;
       }
 
