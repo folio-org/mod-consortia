@@ -119,6 +119,9 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
     event.setUserId(UUID.fromString(user.getId()));
     event.setUsername(user.getUsername());
     event.setTenantId(tenantId);
+    event.setEmail(user.getEmail());
+    event.setPhoneNumber(user.getPhoneNumber());
+    event.setMobilePhoneNumber(user.getMobilePhoneNumber());
     return event;
   }
 }
