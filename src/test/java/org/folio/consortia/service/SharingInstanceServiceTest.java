@@ -201,6 +201,17 @@ class SharingInstanceServiceTest {
       () -> sharingInstanceService.getById(CONSORTIUM_ID, ACTION_ID));
   }
 
+  @Test
+  void shouldThrowExceptionWhenTryingToPostSharingInstanceWithMemberTenants() {
+    SharingInstance sharingInstance = createSharingInstance(instanceIdentifier, "university", "college");
+    when(consortiumRepository.existsById(any())).thenReturn(true);
+    doNothing().when(tenantService).checkTenantExistsOrThrow(anyString());
+    when(tenantService.getCentralTenantId()).thenReturn("mobius");
+
+    Assertions.assertThrows(IllegalArgumentException.class,
+      () -> sharingInstanceService.start(UUID.randomUUID(), sharingInstance));
+  }
+
   private SharingInstance toDto(SharingInstanceEntity entity) {
     SharingInstance sharingInstance = new SharingInstance();
     sharingInstance.setId(entity.getId());

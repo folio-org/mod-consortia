@@ -35,7 +35,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @RequiredArgsConstructor
 public class SharingInstanceServiceImpl implements SharingInstanceService {
-  private static final String INSTANCE_SOURCE_VALUE = "folio";
+  private static final String FOLIO_SOURCE_VALUE = "folio";
   private static final String CONSORTIUM_FOLIO = "CONSORTIUM-FOLIO";
   private static final String CONSORTIUM_MARK = "CONSORTIUM-MARC";
   private static final String GET_INSTANCE_EXCEPTION_MSG = "Failed to get inventory instance with reason: %s";
@@ -61,7 +61,7 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
   @Override
   @Transactional
   public SharingInstance start(UUID consortiumId, SharingInstance sharingInstance) {
-    log.debug("start:: Trying to start instance sharing with instanceIdentifier: {}, consortiumId: {}.", sharingInstance.getInstanceIdentifier(), consortiumId);
+    log.debug("start:: Trying to start instance sharing with instanceIdentifier: {}, consortiumId: {}", sharingInstance.getInstanceIdentifier(), consortiumId);
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
 
     String centralTenantId = tenantService.getCentralTenantId();
@@ -80,7 +80,7 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
       }
 
       try (var context = new FolioExecutionContextSetter(prepareContextForTenant(targetTenantId, folioModuleMetadata, folioExecutionContext))) {
-        String source = INSTANCE_SOURCE_VALUE.equalsIgnoreCase(inventoryInstance.get("source").asText()) ? CONSORTIUM_FOLIO : CONSORTIUM_MARK;
+        String source = FOLIO_SOURCE_VALUE.equalsIgnoreCase(inventoryInstance.get("source").asText()) ? CONSORTIUM_FOLIO : CONSORTIUM_MARK;
         var updatedInventoryInstance = ((ObjectNode) inventoryInstance).put("source", source);
         inventoryService.saveInstance(updatedInventoryInstance);
       } catch (Exception ex) {
