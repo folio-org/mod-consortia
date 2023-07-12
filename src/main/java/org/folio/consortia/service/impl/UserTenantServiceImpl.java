@@ -154,8 +154,14 @@ public class UserTenantServiceImpl implements UserTenantService {
   }
 
   @Override
-  public void updateUsernameInPrimaryUserTenantAffiliation(UUID userId, String username) {
-    userTenantRepository.setUsernameByUserId(username, userId);
+  public void updateUsernameInPrimaryUserTenantAffiliation(UUID userId, String username, String tenantId) {
+    userTenantRepository.setUsernameByUserIdAndTenantId(username, userId, tenantId);
+  }
+
+  @Override
+  public UserTenantEntity getByUserIdAndTenantId(UUID userId, String tenantId) {
+    return userTenantRepository.findByUserIdAndTenantId(userId, tenantId)
+      .orElseThrow(() -> new ResourceNotFoundException(USER_ID + ", " + TENANT_ID, userId + ", " + tenantId));
   }
 
   @Override

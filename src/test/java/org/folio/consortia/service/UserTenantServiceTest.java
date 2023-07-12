@@ -190,11 +190,11 @@ class UserTenantServiceTest {
   @Test
   void shouldUpdateUsernameInPrimaryAffiliation() {
     var userEvent = createUserEvent();
-    doNothing().when(userTenantRepository).setUsernameByUserId(anyString(), any());
+    doNothing().when(userTenantRepository).setUsernameByUserIdAndTenantId(anyString(), any(), anyString());
 
-    userTenantService.updateUsernameInPrimaryUserTenantAffiliation(UUID.fromString(userEvent.getUserDto().getId()), "newUsername");
+    userTenantService.updateUsernameInPrimaryUserTenantAffiliation(UUID.fromString(userEvent.getUserDto().getId()), "newUsername", userEvent.getTenantId());
 
-    verify(userTenantRepository, times(1)).setUsernameByUserId(anyString(), any());
+    verify(userTenantRepository, times(1)).setUsernameByUserIdAndTenantId(anyString(), any(), anyString());
   }
 
   @Test
@@ -601,6 +601,7 @@ class UserTenantServiceTest {
   private UserEvent createUserEvent() {
     var userEvent = new UserEvent();
     userEvent.userDto(new User().id(UUID.randomUUID().toString()).username("userName"));
+    userEvent.setTenantId(UUID.randomUUID().toString());
     return userEvent;
   }
 

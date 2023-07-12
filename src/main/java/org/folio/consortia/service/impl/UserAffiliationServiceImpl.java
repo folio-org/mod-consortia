@@ -10,7 +10,7 @@ import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.domain.dto.PrimaryAffiliationEvent;
 import org.folio.consortia.domain.dto.UserEvent;
 import org.folio.consortia.domain.dto.UserTenant;
-import org.folio.consortia.domain.dto.UserTenantCollection;
+import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserAffiliationService;
 import org.folio.consortia.service.UserTenantService;
@@ -83,8 +83,6 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   @SneakyThrows
   @Transactional
   public void updatePrimaryUserAffiliation(String eventPayload) {
-    FolioExecutionContext currentContext = (FolioExecutionContext) folioExecutionContext.getInstance();
-    String centralTenantId = folioExecutionContext.getTenantId();
     try {
       var userEvent = objectMapper.readValue(eventPayload, UserEvent.class);
       log.info("Received event for update primary affiliation for user: {} and tenant: {}", userEvent.getUserDto().getId(), userEvent.getTenantId());
@@ -97,21 +95,18 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       UUID userId = getUserId(userEvent);
       String newUsername = userEvent.getUserDto().getUsername();
 
-      UserTenantCollection userTenantCollection = userTenantService.getByUserId(consortiaTenant.getConsortiumId(), userId, 0, Integer.MAX_VALUE);
-      boolean isUsernameChanged = userTenantCollection.getUserTenants().stream()
-        .anyMatch(userTenant -> ObjectUtils.notEqual(userTenant.getUsername(), newUsername));
+      UserTenantEntity userTenant = userTenantService.getByUserIdAndTenantId(userId, userEvent.getTenantId());
+      boolean isUsernameChanged = ObjectUtils.notEqual(userTenant.getUsername(), newUsername);
 
       if (isUsernameChanged) {
-        userTenantService.updateUsernameInPrimaryUserTenantAffiliation(userId, newUsername);
+        userTenantService.updateUsernameInPrimaryUserTenantAffiliation(userId, newUsername, userEvent.getTenantId());
         log.info("Username in primary affiliation has been updated for the user: {}", userEvent.getUserDto().getId());
       }
 
       PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(userEvent);
       String data = objectMapper.writeValueAsString(affiliationEvent);
 
-      try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioModuleMetadata, currentContext))) {
-        kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_UPDATED, consortiaTenant.getConsortiumId().toString(), data);
-      }
+      kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_UPDATED, consortiaTenant.getConsortiumId().toString(), data);
     } catch (Exception e) {
       log.error("Exception occurred while updating primary affiliation", e);
     }

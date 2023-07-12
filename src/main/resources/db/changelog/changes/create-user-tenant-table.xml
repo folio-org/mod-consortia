@@ -55,10 +55,4 @@
       <column name="updated_date" type="timestamp without time zone"/>
     </addColumn>
   </changeSet>
-
-  <changeSet id="MODCON-38@@add-central-tenant-id-field" author="d.butramyou">
-    <addColumn tableName="user_tenant">
-      <column name="central_tenant_id" type="text"/>
-    </addColumn>
-  </changeSet>
 </databaseChangeLog>
