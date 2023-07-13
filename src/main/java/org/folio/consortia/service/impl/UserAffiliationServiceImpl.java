@@ -14,7 +14,6 @@ import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserAffiliationService;
 import org.folio.consortia.service.UserTenantService;
 import org.folio.spring.FolioExecutionContext;
-import org.folio.spring.FolioModuleMetadata;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -106,9 +105,9 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   }
 
   @Override
-  @SneakyThrows
   @Transactional
   public void deletePrimaryUserAffiliation(String eventPayload) {
+    String centralTenantId = folioExecutionContext.getTenantId();
     try {
       var userEvent = objectMapper.readValue(eventPayload, UserEvent.class);
       log.info("Received event for deleting primary affiliation for user: {} and tenant: {}", userEvent.getUserDto().getId(), userEvent.getTenantId());
