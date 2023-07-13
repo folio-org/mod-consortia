@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AllArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 
 @Service
@@ -31,11 +30,9 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   private final TenantService tenantService;
   private final KafkaService kafkaService;
   private final FolioExecutionContext folioExecutionContext;
-  private final FolioModuleMetadata folioModuleMetadata;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override
-  @SneakyThrows
   @Transactional
   public void createPrimaryUserAffiliation(String eventPayload) {
     String centralTenantId = folioExecutionContext.getTenantId();
@@ -72,7 +69,6 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   }
 
   @Override
-  @SneakyThrows
   @Transactional
   public void deletePrimaryUserAffiliation(String eventPayload) {
     try {
