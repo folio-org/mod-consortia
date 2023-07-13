@@ -77,7 +77,7 @@ class PublicationServiceImplTest extends BaseUnitTest {
 
     ResponseEntity<String> restTemplateResponse = new ResponseEntity<>(payload, HttpStatusCode.valueOf(201));
     when(httpRequestService.performRequest(anyString(), eq(HttpMethod.POST), any())).thenReturn(restTemplateResponse);
-    var response = publicationService.executeAsyncHttpRequest(pr, CENTRAL_TENANT_NAME, folioExecutionContext).join();
+    var response = publicationService.executeAsyncHttpRequest(pr, CENTRAL_TENANT_NAME, folioExecutionContext);
     Assertions.assertEquals(payload, response.getBody());
   }
   @Test
