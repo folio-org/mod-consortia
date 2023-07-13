@@ -188,6 +188,28 @@ class UserTenantServiceTest {
   }
 
   @Test
+  void shouldUpdateUsernameInPrimaryAffiliation() {
+    var userEvent = createUserEvent();
+    doNothing().when(userTenantRepository).setUsernameByUserIdAndTenantId(anyString(), any(), anyString());
+
+    userTenantService.updateUsernameInPrimaryUserTenantAffiliation(UUID.fromString(userEvent.getUserDto().getId()), "newUsername", userEvent.getTenantId());
+
+    verify(userTenantRepository, times(1)).setUsernameByUserIdAndTenantId(anyString(), any(), anyString());
+  }
+
+  @Test
+  void shouldThrowResourceNotFoundException() {
+    UUID userId = UUID.randomUUID();
+    String tenantId = UUID.randomUUID().toString();
+
+    when(userTenantRepository.findByUserIdAndTenantId(any(), anyString())).thenReturn(Optional.empty());
+
+    assertThrows(ResourceNotFoundException.class, () -> userTenantService.getByUserIdAndTenantId(userId, tenantId));
+
+    verify(userTenantRepository, times(1)).findByUserIdAndTenantId(any(), anyString());
+  }
+
+  @Test
   void shouldDeletePrimaryAffiliation() {
     var userEvent = createUserEvent();
     doNothing().when(userTenantRepository).deleteByUserIdAndIsPrimaryTrue(any());
@@ -213,7 +235,6 @@ class UserTenantServiceTest {
     doNothing().when(usersClient).updateUser(any(), any(User.class));
     when(userTenantRepository.save(userTenant)).thenReturn(userTenant);
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
-    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
     Map<String, Collection<String>> okapiHeaders = new HashMap<>();
     okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
@@ -237,7 +258,6 @@ class UserTenantServiceTest {
     when(userTenantRepository.save(userTenant)).thenReturn(userTenant);
     doReturn(folioExecutionContext).when(contextHelper).getSystemUserFolioExecutionContext(anyString());
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
-    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
     Map<String, Collection<String>> okapiHeaders = new HashMap<>();
     okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
@@ -261,7 +281,6 @@ class UserTenantServiceTest {
     doNothing().when(usersClient).updateUser(any(), any(User.class));
     when(userTenantRepository.save(userTenant)).thenReturn(userTenant);
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
-    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
     Map<String, Collection<String>> okapiHeaders = new HashMap<>();
     okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
@@ -288,7 +307,6 @@ class UserTenantServiceTest {
     doNothing().when(usersClient).saveUser(any());
     when(userTenantRepository.save(userTenant)).thenReturn(userTenant);
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
-    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
     Map<String, Collection<String>> okapiHeaders = new HashMap<>();
     okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
@@ -316,7 +334,6 @@ class UserTenantServiceTest {
     doNothing().when(usersClient).saveUser(any());
     when(userTenantRepository.save(userTenant)).thenReturn(userTenant);
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
-    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
     Map<String, Collection<String>> okapiHeaders = new HashMap<>();
     okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
@@ -338,7 +355,6 @@ class UserTenantServiceTest {
     userTenant3.setIsPrimary(false);
     when(userTenantRepository.getByUserIdAndIsPrimaryFalse(any())).thenReturn(List.of(userTenant1, userTenant2, userTenant3));
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
-    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
     Map<String, Collection<String>> okapiHeaders = new HashMap<>();
     okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
@@ -360,7 +376,6 @@ class UserTenantServiceTest {
     when(userTenantRepository.findByUserIdAndTenantId(userId, tenantId)).thenReturn(Optional.of(userTenant));
     doNothing().when(userTenantRepository).deleteByUserIdAndTenantId(userId, tenantId);
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
-    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
     Map<String, Collection<String>> okapiHeaders = new HashMap<>();
     okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
@@ -412,7 +427,6 @@ class UserTenantServiceTest {
     when(userTenantRepository.findByUserIdAndIsPrimary(any(), any())).thenReturn(Optional.empty());
     when(usersClient.getUsersByUserId(any())).thenReturn(createUserEntity(false));
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
-    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
     Map<String, Collection<String>> okapiHeaders = new HashMap<>();
     okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
@@ -444,7 +458,6 @@ class UserTenantServiceTest {
     when(userTenantRepository.findByUserIdAndTenantId(userId, tenantId)).thenReturn(Optional.of(userTenant));
     doNothing().when(userTenantRepository).deleteByUserIdAndTenantId(userId, tenantId);
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
-    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
     Map<String, Collection<String>> okapiHeaders = new HashMap<>();
     okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
@@ -467,7 +480,6 @@ class UserTenantServiceTest {
     doNothing().when(usersClient).updateUser(any(), any(User.class));
     when(userTenantRepository.save(userTenant)).thenReturn(userTenant);
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
-    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
     Map<String, Collection<String>> okapiHeaders = new HashMap<>();
     okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
@@ -491,7 +503,6 @@ class UserTenantServiceTest {
     doNothing().when(usersClient).updateUser(any(), any(User.class));
     when(userTenantRepository.save(userTenant)).thenReturn(userTenant);
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
-    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
     Map<String, Collection<String>> okapiHeaders = new HashMap<>();
     okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
@@ -513,7 +524,6 @@ class UserTenantServiceTest {
     when(userTenantRepository.findByUserIdAndIsPrimary(any(), any())).thenReturn(Optional.of(userTenant));
     when(userService.getById(any())).thenThrow(java.lang.IllegalStateException.class);
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
-    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
     Map<String, Collection<String>> okapiHeaders = new HashMap<>();
     okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
@@ -591,6 +601,7 @@ class UserTenantServiceTest {
   private UserEvent createUserEvent() {
     var userEvent = new UserEvent();
     userEvent.userDto(new User().id(UUID.randomUUID().toString()).username("userName"));
+    userEvent.setTenantId(UUID.randomUUID().toString());
     return userEvent;
   }
 

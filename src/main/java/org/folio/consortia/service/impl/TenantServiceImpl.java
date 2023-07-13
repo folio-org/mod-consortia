@@ -89,7 +89,6 @@ public class TenantServiceImpl implements TenantService {
   public Tenant save(UUID consortiumId, UUID adminUserId, Tenant tenantDto) {
     log.info("save:: Trying to save a tenant by consortiumId '{}', tenant object with id '{}' and isCentral={}", consortiumId,
         tenantDto.getId(), tenantDto.getIsCentral());
-    FolioExecutionContext currentTenantContext = (FolioExecutionContext) folioExecutionContext.getInstance();
 
     // validation part
     checkTenantNotExistsAndConsortiumExistsOrThrow(consortiumId, tenantDto.getId());
@@ -109,7 +108,7 @@ public class TenantServiceImpl implements TenantService {
     } else {
       checkAdminUserIdPresentOrThrow(adminUserId);
       centralTenantId = getCentralTenantId();
-      shadowAdminUser = userService.prepareShadowUser(adminUserId, currentTenantContext.getTenantId());
+      shadowAdminUser = userService.prepareShadowUser(adminUserId, folioExecutionContext.getTenantId());
       userTenantRepository.save(createUserTenantEntity(consortiumId, shadowAdminUser, tenantDto));
     }
 
@@ -117,10 +116,10 @@ public class TenantServiceImpl implements TenantService {
     try (var context = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(tenantDto.getId()))) {
       configurationClient.saveConfiguration(createConsortiaConfigurationBody(centralTenantId));
       if (!tenantDto.getIsCentral()) {
-        createUserTenantWithDummyUser(tenantDto.getId());
+        createUserTenantWithDummyUser(tenantDto.getId(), centralTenantId);
         createShadowAdminUserWithPermissions(shadowAdminUser); //NOSONAR
       }
-      syncPrimaryAffiliationClient.syncPrimaryAffiliations(consortiumId.toString(), tenantDto.getId());
+      syncPrimaryAffiliationClient.syncPrimaryAffiliations(consortiumId.toString(), tenantDto.getId(), centralTenantId);
     }
     log.info("save:: saved consortia configuration with centralTenantId={} by tenantId={} context", centralTenantId, tenantDto.getId());
     return savedTenant;
@@ -160,13 +159,15 @@ public class TenantServiceImpl implements TenantService {
     this tenant and will allow cross-tenant request.
 
     @param tenantId tenant id
+    @param centralTenantId central tenant id
   */
-  private UserTenant createUserTenantWithDummyUser(String tenantId) {
+  private UserTenant createUserTenantWithDummyUser(String tenantId, String centralTenantId) {
     UserTenant userTenant = new UserTenant();
     userTenant.setId(UUID.randomUUID());
     userTenant.setTenantId(tenantId);
     userTenant.setUserId(UUID.randomUUID());
     userTenant.setUsername(DUMMY_USERNAME);
+    userTenant.setCentralTenantId(centralTenantId);
 
     log.info("Creating userTenant with dummy user with id {}.", userTenant.getId());
     userTenantsClient.postUserTenant(userTenant);
