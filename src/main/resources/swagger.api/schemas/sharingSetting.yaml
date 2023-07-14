@@ -1,0 +1,30 @@
+SharingSetting:
+  description: "A JSON schema for the Sharing settings object"
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    url:
+      type: string
+    payload:
+      type: string
+  additionalProperties: false
+  required:
+    - id
+    - url
+
+SharingSettingResponse:
+  description: "A JSON schema for the Sharing settings object response for post request"
+  type: object
+  properties:
+    createSettingsPCId:
+      type: string
+      format: uuid
+    updateSettingsPCId:
+      type: string
+      format: uuid
+  additionalProperties: false
+  required:
+    - createSettingsPCId
+    - updateSettingsPCId
