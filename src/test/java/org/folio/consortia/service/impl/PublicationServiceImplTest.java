@@ -80,40 +80,6 @@ class PublicationServiceImplTest extends BaseUnitTest {
     var response = publicationService.executeAsyncHttpRequest(pr, CENTRAL_TENANT_NAME, folioExecutionContext);
     Assertions.assertEquals(payload, response.getBody());
   }
-  @Test
-  void executeAsyncHttpWithErrorResponse() throws JsonProcessingException {
-    var pr = getMockDataObject(PUBLICATION_REQUEST_SAMPLE, PublicationRequest.class);
-    var payload = objectMapper.writeValueAsString(pr.getPayload());
-    var publicationStatusEntity = getMockDataObject(PUBLICATION_STATUS_ENTITY_SAMPLE, PublicationStatusEntity.class);
-    publicationStatusEntity.setCreatedDate(LocalDateTime.now());
-
-    when(objectMapper.writeValueAsString(anyString())).thenReturn(RandomStringUtils.random(10));
-    when(publicationTenantRequestRepository.save(any(PublicationTenantRequestEntity.class))).thenReturn(new PublicationTenantRequestEntity());
-
-    ResponseEntity<String> restTemplateResponse = new ResponseEntity<>(payload, HttpStatusCode.valueOf(301));
-    when(httpRequestService.performRequest(anyString(), eq(HttpMethod.POST), any())).thenReturn(restTemplateResponse);
-
-    var future = publicationService.executeAsyncHttpRequest(pr, CENTRAL_TENANT_NAME, folioExecutionContext);
-
-    assertThrowsCause(HttpClientErrorException.class, future::join);
-  }
-
-  @Test
-  void executeAsyncHttpFailure() throws JsonProcessingException {
-    var pr = getMockDataObject(PUBLICATION_REQUEST_SAMPLE, PublicationRequest.class);
-    var publicationStatusEntity = getMockDataObject(PUBLICATION_STATUS_ENTITY_SAMPLE, PublicationStatusEntity.class);
-    publicationStatusEntity.setCreatedDate(LocalDateTime.now());
-
-    when(objectMapper.writeValueAsString(anyString())).thenReturn(RandomStringUtils.random(10));
-    when(publicationTenantRequestRepository.save(any(PublicationTenantRequestEntity.class))).thenReturn(new PublicationTenantRequestEntity());
-
-    when(httpRequestService.performRequest(anyString(), eq(HttpMethod.POST), any()))
-      .thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.getReasonPhrase()));
-
-    var future = publicationService.executeAsyncHttpRequest(pr, CENTRAL_TENANT_NAME, folioExecutionContext);
-
-    assertThrowsCause(HttpClientErrorException.class, future::join);
-  }
 
 
   @Test
@@ -126,7 +92,7 @@ class PublicationServiceImplTest extends BaseUnitTest {
     var payload = RandomStringUtils.random(10);
     ResponseEntity<String> restTemplateResponse = new ResponseEntity<>(payload, HttpStatusCode.valueOf(201));
 
-    publicationService.updatePublicationTenantRequest(restTemplateResponse, null, ptrEntity, folioExecutionContext);
+    publicationService.updateSucceedPublicationTenantRequest(restTemplateResponse, ptrEntity, folioExecutionContext);
     verify(publicationTenantRequestRepository).save(ptreCaptor.capture());
 
     var capturedPtre = ptreCaptor.getValue();
@@ -142,7 +108,7 @@ class PublicationServiceImplTest extends BaseUnitTest {
     when(publicationTenantRequestRepository.save(any(PublicationTenantRequestEntity.class))).thenReturn(new PublicationTenantRequestEntity());
 
     Throwable t = new CompletionException(new HttpClientErrorException(HttpStatusCode.valueOf(400), HttpStatus.BAD_REQUEST.getReasonPhrase()));
-    publicationService.updatePublicationTenantRequest(null, t, ptrEntity, folioExecutionContext);
+    publicationService.updateFailedPublicationTenantRequest(t, ptrEntity, folioExecutionContext);
     verify(publicationTenantRequestRepository).save(ptreCaptor.capture());
 
     var capturedPtre = ptreCaptor.getValue();
