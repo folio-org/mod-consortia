@@ -162,7 +162,7 @@ public class PublicationServiceImpl implements PublicationService {
     PublicationTenantRequestEntity savedPublicationTenantRequest) {
     PublicationTenantRequestEntity updatedPtre;
     try {
-      var response = executeAsyncHttpRequest(publicationRequest, tenantId, folioExecutionContext);
+      var response = executeHttpRequest(publicationRequest, tenantId, folioExecutionContext);
       updatedPtre = updateSucceedPublicationTenantRequest(response, savedPublicationTenantRequest, folioExecutionContext);
     } catch (Exception e) {
       updatedPtre = updateFailedPublicationTenantRequest(e, savedPublicationTenantRequest, folioExecutionContext);
@@ -179,7 +179,7 @@ public class PublicationServiceImpl implements PublicationService {
     }
   }
 
-  ResponseEntity<String> executeAsyncHttpRequest(PublicationRequest publicationRequest, String tenantId, FolioExecutionContext centralTenantContext) {
+  ResponseEntity<String> executeHttpRequest(PublicationRequest publicationRequest, String tenantId, FolioExecutionContext centralTenantContext) {
     try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioModuleMetadata, centralTenantContext))) {
       var response = httpRequestService.performRequest(publicationRequest.getUrl(), HttpMethod.POST, publicationRequest.getPayload());
       if (response.getStatusCode().is2xxSuccessful()) {

@@ -79,7 +79,7 @@ class PublicationServiceImplTest extends BaseUnitTest {
 
     ResponseEntity<String> restTemplateResponse = new ResponseEntity<>(payload, HttpStatusCode.valueOf(201));
     when(httpRequestService.performRequest(anyString(), eq(HttpMethod.POST), any())).thenReturn(restTemplateResponse);
-    var response = publicationService.executeAsyncHttpRequest(pr, CENTRAL_TENANT_NAME, folioExecutionContext);
+    var response = publicationService.executeHttpRequest(pr, CENTRAL_TENANT_NAME, folioExecutionContext);
     Assertions.assertEquals(payload, response.getBody());
   }
   @Test
@@ -92,7 +92,7 @@ class PublicationServiceImplTest extends BaseUnitTest {
     ResponseEntity<String> restTemplateResponse = new ResponseEntity<>(payload, HttpStatusCode.valueOf(301));
     when(httpRequestService.performRequest(anyString(), eq(HttpMethod.POST), any())).thenReturn(restTemplateResponse);
 
-    assertThrows(HttpClientErrorException.class, () -> publicationService.executeAsyncHttpRequest(pr, CENTRAL_TENANT_NAME, folioExecutionContext));
+    assertThrows(HttpClientErrorException.class, () -> publicationService.executeHttpRequest(pr, CENTRAL_TENANT_NAME, folioExecutionContext));
   }
 
   @Test
@@ -104,7 +104,7 @@ class PublicationServiceImplTest extends BaseUnitTest {
     doThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.getReasonPhrase()))
       .when(httpRequestService).performRequest(anyString(), eq(HttpMethod.POST), any());
 
-    assertThrows(HttpClientErrorException.class, () -> publicationService.executeAsyncHttpRequest(pr, CENTRAL_TENANT_NAME, folioExecutionContext));
+    assertThrows(HttpClientErrorException.class, () -> publicationService.executeHttpRequest(pr, CENTRAL_TENANT_NAME, folioExecutionContext));
   }
 
 
