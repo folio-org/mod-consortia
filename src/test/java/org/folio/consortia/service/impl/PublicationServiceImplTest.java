@@ -1,10 +1,12 @@
 package org.folio.consortia.service.impl;
 
 import static org.folio.consortia.utils.InputOutputTestUtils.getMockDataObject;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -79,6 +81,30 @@ class PublicationServiceImplTest extends BaseUnitTest {
     when(httpRequestService.performRequest(anyString(), eq(HttpMethod.POST), any())).thenReturn(restTemplateResponse);
     var response = publicationService.executeAsyncHttpRequest(pr, CENTRAL_TENANT_NAME, folioExecutionContext);
     Assertions.assertEquals(payload, response.getBody());
+  }
+  @Test
+  void executeAsyncHttpWithErrorResponse() throws JsonProcessingException {
+    var pr = getMockDataObject(PUBLICATION_REQUEST_SAMPLE, PublicationRequest.class);
+    var payload = objectMapper.writeValueAsString(pr.getPayload());
+    var publicationStatusEntity = getMockDataObject(PUBLICATION_STATUS_ENTITY_SAMPLE, PublicationStatusEntity.class);
+    publicationStatusEntity.setCreatedDate(LocalDateTime.now());
+
+    ResponseEntity<String> restTemplateResponse = new ResponseEntity<>(payload, HttpStatusCode.valueOf(301));
+    when(httpRequestService.performRequest(anyString(), eq(HttpMethod.POST), any())).thenReturn(restTemplateResponse);
+
+    assertThrows(HttpClientErrorException.class, () -> publicationService.executeAsyncHttpRequest(pr, CENTRAL_TENANT_NAME, folioExecutionContext));
+  }
+
+  @Test
+  void executeAsyncHttpFailure() throws JsonProcessingException {
+    var pr = getMockDataObject(PUBLICATION_REQUEST_SAMPLE, PublicationRequest.class);
+    var publicationStatusEntity = getMockDataObject(PUBLICATION_STATUS_ENTITY_SAMPLE, PublicationStatusEntity.class);
+    publicationStatusEntity.setCreatedDate(LocalDateTime.now());
+
+    doThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.getReasonPhrase()))
+      .when(httpRequestService).performRequest(anyString(), eq(HttpMethod.POST), any());
+
+    assertThrows(HttpClientErrorException.class, () -> publicationService.executeAsyncHttpRequest(pr, CENTRAL_TENANT_NAME, folioExecutionContext));
   }
 
 
