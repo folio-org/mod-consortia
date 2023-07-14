@@ -147,7 +147,7 @@ public class PublicationServiceImpl implements PublicationService {
 
     executor.shutdown();
     try {
-      if (executor.awaitTermination(60, TimeUnit.SECONDS)) {
+      if (executor.awaitTermination(300, TimeUnit.SECONDS)) {
         updatePublicationsStatus(futures, createdPublicationEntity, folioExecutionContext);
         executor.shutdownNow();
       }
