@@ -183,15 +183,15 @@ public class PublicationServiceImpl implements PublicationService {
     try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioModuleMetadata, centralTenantContext))) {
       var response = httpRequestService.performRequest(publicationRequest.getUrl(), HttpMethod.POST, publicationRequest.getPayload());
       if (response.getStatusCode().is2xxSuccessful()) {
-        log.info("executeAsyncTask:: successfully called {} on tenant {}", publicationRequest.getUrl(), tenantId);
+        log.info("executeHttpRequest:: successfully called {} on tenant {}", publicationRequest.getUrl(), tenantId);
       } else {
         var errMessage = response.getBody() != null ? response.getBody() : "Generic Error";
-        log.error("executeAsyncTask:: error making {} '{}' request on tenant {}", publicationRequest.getMethod(), publicationRequest.getUrl(), tenantId, new HttpException(errMessage));
+        log.error("executeHttpRequest:: error making {} '{}' request on tenant {}", publicationRequest.getMethod(), publicationRequest.getUrl(), tenantId, new HttpException(errMessage));
         throw new HttpClientErrorException(response.getStatusCode(), errMessage);
       }
       return response;
     } catch (HttpClientErrorException e) {
-      log.error("executeAsyncTask:: error making {} '{}' request on tenant {}", publicationRequest.getMethod(), publicationRequest.getUrl(), tenantId, new HttpException(e.getMessage()));
+      log.error("executeHttpRequest:: error making {} '{}' request on tenant {}", publicationRequest.getMethod(), publicationRequest.getUrl(), tenantId, e);
       throw new HttpClientErrorException(e.getStatusCode(), e.getMessage());
     }
   }
