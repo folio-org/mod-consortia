@@ -53,12 +53,15 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.web.client.RestTemplate;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import one.util.streamex.StreamEx;
 
+
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class PublicationControllerTest extends BaseIT {
   public static final String PUBLICATIONS_URL = "/consortia/%s/publications";
   public static final String GET_PUBLICATION_BY_ID_URL = "/consortia/%s/publications/%s";
@@ -186,10 +189,9 @@ public class PublicationControllerTest extends BaseIT {
 
   @ParameterizedTest
   @CsvSource(value = {"100, 12"})
-  void parallelTenantRequestsTest(int tenantsAmount, int chunkSize) throws InterruptedException, JsonProcessingException {
+  void parallelTenantRequestsTest(int tenantsAmount, int chunkSize) throws JsonProcessingException {
     var headers = defaultHeaders();
     var consortiumId = UUID.randomUUID();
-    var publicationString = getMockDataAsString("mockdata/publications/publication_request.json");
     var publicationStatusEntity = getMockDataObject("mockdata/publications/publication_status_entity.json",
         PublicationStatusEntity.class);
     publicationStatusEntity.setId(UUID.randomUUID());
@@ -247,7 +249,7 @@ public class PublicationControllerTest extends BaseIT {
       .sorted()
       .toList();
 
-    verify(restTemplate, times(listOfTenantNames.size())).exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class));
+    verify(restTemplate, times(listOfTenantNames.size())).exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class));
     // check if all 'x-okapi-tenant' values match with the initial list of expected tenant names
     Assertions.assertTrue(CollectionUtils.isEqualCollection(capturedTenantHeaders, listOfTenantNames));
   }

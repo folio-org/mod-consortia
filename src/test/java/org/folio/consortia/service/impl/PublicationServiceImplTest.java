@@ -96,7 +96,7 @@ class PublicationServiceImplTest extends BaseUnitTest {
   }
 
   @Test
-  void executeAsyncHttpFailure() throws JsonProcessingException {
+  void executeAsyncHttpFailure() {
     var pr = getMockDataObject(PUBLICATION_REQUEST_SAMPLE, PublicationRequest.class);
     var publicationStatusEntity = getMockDataObject(PUBLICATION_STATUS_ENTITY_SAMPLE, PublicationStatusEntity.class);
     publicationStatusEntity.setCreatedDate(LocalDateTime.now());
