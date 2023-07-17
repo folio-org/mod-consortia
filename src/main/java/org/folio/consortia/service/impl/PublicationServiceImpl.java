@@ -184,12 +184,12 @@ public class PublicationServiceImpl implements PublicationService {
       var response = httpRequestService.performRequest(publicationRequest.getUrl(), HttpMethod.POST, publicationRequest.getPayload());
       if (response.getStatusCode().is2xxSuccessful()) {
         log.info("executeHttpRequest:: successfully called {} on tenant {}", publicationRequest.getUrl(), tenantId);
+        return response;
       } else {
         var errMessage = response.getBody() != null ? response.getBody() : "Generic Error";
         log.error("executeHttpRequest:: error making {} '{}' request on tenant {}", publicationRequest.getMethod(), publicationRequest.getUrl(), tenantId, new HttpException(errMessage));
         throw new HttpClientErrorException(response.getStatusCode(), errMessage);
       }
-      return response;
     } catch (HttpClientErrorException e) {
       log.error("executeHttpRequest:: error making {} '{}' request on tenant {}", publicationRequest.getMethod(), publicationRequest.getUrl(), tenantId, e);
       throw new HttpClientErrorException(e.getStatusCode(), e.getMessage());
