@@ -245,7 +245,6 @@ public class PublicationControllerTest extends BaseIT {
     var capturedTenantHeaders = entityCaptor.getAllValues()
       .stream()
       .map(a -> a.getHeaders().get(XOkapiHeaders.TENANT).iterator().next())
-      .distinct()
       .sorted()
       .toList();
 
