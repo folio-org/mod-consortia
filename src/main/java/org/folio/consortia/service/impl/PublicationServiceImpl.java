@@ -293,4 +293,18 @@ public class PublicationServiceImpl implements PublicationService {
       .totalRecords(ptrEntities.getSize());
   }
 
+  @Override
+  public void deletePublicationResultById(UUID consortiumId, UUID publicationId) {
+    log.debug("deletePublicationResultById:: Trying to delete publication result by consortiumId: {} and publicationId id: {}", consortiumId, publicationId);
+
+    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
+    var publicationStatusEntity = publicationStatusRepository.findById(publicationId)
+      .orElseThrow(() -> new ResourceNotFoundException("publicationId", String.valueOf(publicationId)));
+
+    var ptrEntities = publicationTenantRequestRepository.findByPcStateId(publicationId, PageRequest.of(0, Integer.MAX_VALUE));
+
+    publicationStatusRepository.delete(publicationStatusEntity);
+    publicationTenantRequestRepository.deleteAll(ptrEntities);
+    log.info("deletePublicationResultById:: Deleted {} of {} expected records for publication {}", ptrEntities.getTotalElements(), publicationStatusEntity.getTotalRecords(), publicationId);
+  }
 }

@@ -176,6 +176,16 @@
         },
         {
           "methods": [
+            "DELETE"
+          ],
+          "pathPattern": "/consortia/{consortiumId}/publications/{publicationId}/results",
+          "permissionsRequired": [
+            "consortia.publications-results.item.delete"
+          ],
+          "modulePermissions": []
+        },
+        {
+          "methods": [
             "GET"
           ],
           "pathPattern": "/consortia/{consortiumId}/user-tenants",
@@ -326,7 +336,8 @@
         "consortia.sharing-instances.collection.get",
         "consortia.publications.item.post",
         "consortia.publications.item.get",
-        "consortia.publications-results.item.get"
+        "consortia.publications-results.item.get",
+        "consortia.publications-results.item.delete"
       ]
     },
     {
@@ -373,6 +384,11 @@
       "permissionName": "consortia.publications-results.item.get",
       "displayName": "publish coordinator results",
       "description": "publish coordinator results"
+    },
+    {
+      "permissionName": "consortia.publications-results.item.delete",
+      "displayName": "delete publish coordinator results",
+      "description": "Delete publish coordinator results"
     },
     {
       "permissionName": "consortia.user-tenants.collection.get",
