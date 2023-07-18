@@ -184,7 +184,7 @@ public class PublicationServiceImpl implements PublicationService {
 
   ResponseEntity<String> executeHttpRequest(PublicationRequest publicationRequest, String tenantId, FolioExecutionContext centralTenantContext) {
     try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioModuleMetadata, centralTenantContext))) {
-      var response = httpRequestService.performRequest(publicationRequest.getUrl(), HttpMethod.POST, publicationRequest.getPayload());
+      var response = httpRequestService.performRequest(publicationRequest.getUrl(), HttpMethod.valueOf(publicationRequest.getMethod()), publicationRequest.getPayload());
       if (response.getStatusCode().is2xxSuccessful()) {
         log.info("executeHttpRequest:: successfully called {} on tenant {}", publicationRequest.getUrl(), tenantId);
         return response;
