@@ -2,7 +2,6 @@ package org.folio.consortia.service.impl;
 
 import static org.folio.consortia.utils.InputOutputTestUtils.getMockDataObject;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
