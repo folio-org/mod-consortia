@@ -39,6 +39,7 @@ import org.folio.consortia.service.UserTenantService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.scope.FolioExecutionContextSetter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -70,7 +71,9 @@ public class PublicationServiceImpl implements PublicationService {
   private final PublicationTenantRequestRepository publicationTenantRequestRepository;
   private final ObjectMapper objectMapper;
   private final ConsortiumService consortiumService;
-  private static final int MAX_ACTIVE_THREADS = 5;
+
+  @Value("${folio.system.max-active-threads:5}")
+  private int maxActiveThreads;
 
   @Override
   @SneakyThrows
@@ -131,13 +134,13 @@ public class PublicationServiceImpl implements PublicationService {
   void processTenantRequests(PublicationRequest publicationRequest, PublicationStatusEntity createdPublicationEntity) {
     List<Future<PublicationTenantRequestEntity>> futures = new ArrayList<>();
 
-    ExecutorService executor = Executors.newFixedThreadPool(MAX_ACTIVE_THREADS);
+    ExecutorService executor = Executors.newFixedThreadPool(maxActiveThreads);
 
     for (String tenantId : publicationRequest.getTenants()) {
       try {
         PublicationTenantRequestEntity ptrEntity = buildPublicationRequestEntity(publicationRequest, createdPublicationEntity, tenantId);
         var savedPublicationTenantRequest = savePublicationTenantRequest(ptrEntity, folioExecutionContext);
-        var future = executor.submit(() -> updatePublicationTenantRequest(publicationRequest, tenantId, savedPublicationTenantRequest));
+        var future = executor.submit(() -> executeAndUpdatePublicationTenantRequest(publicationRequest, tenantId, savedPublicationTenantRequest));
         futures.add(future);
       } catch (RuntimeException | JsonProcessingException e) {
         log.error("processTenantRequests:: failed to save publication tenant request", e);
@@ -158,7 +161,7 @@ public class PublicationServiceImpl implements PublicationService {
 
   }
 
-  PublicationTenantRequestEntity updatePublicationTenantRequest(PublicationRequest publicationRequest, String tenantId,
+  PublicationTenantRequestEntity executeAndUpdatePublicationTenantRequest(PublicationRequest publicationRequest, String tenantId,
     PublicationTenantRequestEntity savedPublicationTenantRequest) {
     PublicationTenantRequestEntity updatedPtre;
     try {
