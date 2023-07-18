@@ -38,8 +38,8 @@ public class PublicationController implements org.folio.consortia.rest.resource.
   }
 
   @Override
-  public ResponseEntity<Void> deletePublicationResultById(UUID consortiumId, UUID publicationId) {
-    publishCoordinatorService.deletePublicationResultById(consortiumId, publicationId);
+  public ResponseEntity<Void> deletePublicationById(UUID consortiumId, UUID publicationId) {
+    publishCoordinatorService.deletePublicationById(consortiumId, publicationId);
     return ResponseEntity.status(NO_CONTENT).build();
   }
 }

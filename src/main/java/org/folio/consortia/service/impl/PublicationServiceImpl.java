@@ -42,6 +42,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -294,17 +295,17 @@ public class PublicationServiceImpl implements PublicationService {
   }
 
   @Override
-  public void deletePublicationResultById(UUID consortiumId, UUID publicationId) {
-    log.debug("deletePublicationResultById:: Trying to delete publication result by consortiumId: {} and publicationId id: {}", consortiumId, publicationId);
+  @Transactional
+  public void deletePublicationById(UUID consortiumId, UUID publicationId) {
+    log.debug("deletePublicationById:: Trying to delete publication by consortiumId: {} and publicationId id: {}", consortiumId, publicationId);
 
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    var publicationStatusEntity = publicationStatusRepository.findById(publicationId)
-      .orElseThrow(() -> new ResourceNotFoundException("publicationId", String.valueOf(publicationId)));
+    if (!publicationStatusRepository.existsById(publicationId)) {
+      throw new ResourceNotFoundException("publicationId", String.valueOf(publicationId));
+    }
 
-    var ptrEntities = publicationTenantRequestRepository.findByPcStateId(publicationId, PageRequest.of(0, Integer.MAX_VALUE));
-
-    publicationStatusRepository.delete(publicationStatusEntity);
-    publicationTenantRequestRepository.deleteAll(ptrEntities);
-    log.info("deletePublicationResultById:: Deleted {} of {} expected records for publication {}", ptrEntities.getTotalElements(), publicationStatusEntity.getTotalRecords(), publicationId);
+    publicationStatusRepository.deleteById(publicationId);
+    publicationTenantRequestRepository.deleteByPcStateId(publicationId);
+    log.info("deletePublicationById:: Deleted publication by consortiumId: {} and publicationId id: {}", consortiumId, publicationId);
   }
 }

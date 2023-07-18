@@ -14,5 +14,5 @@ public interface PublicationService {
 
   PublicationResultCollection getPublicationResults(UUID consortiumId, UUID publicationId);
 
-  void deletePublicationResultById(UUID consortiumId, UUID publicationId);
+  void deletePublicationById(UUID consortiumId, UUID publicationId);
 }

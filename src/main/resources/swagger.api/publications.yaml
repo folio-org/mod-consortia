@@ -54,8 +54,8 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     delete:
-      summary: Delete publication result by Id
-      operationId: deletePublicationResultById
+      summary: Delete publication by Id
+      operationId: deletePublicationById
       parameters:
         - $ref: "#/components/parameters/consortiumId"
         - $ref: "#/components/parameters/publicationId"
