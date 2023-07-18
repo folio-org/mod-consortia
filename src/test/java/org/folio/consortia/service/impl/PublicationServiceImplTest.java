@@ -31,6 +31,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
 
@@ -55,6 +56,8 @@ class PublicationServiceImplTest extends BaseUnitTest {
 
   @Test
   void createTenantRequestEntitiesSuccess() throws JsonProcessingException {
+    ReflectionTestUtils.setField(publicationService, "maxActiveThreads", 5);
+
     PublicationRequest pr = getMockDataObject(PUBLICATION_REQUEST_SAMPLE, PublicationRequest.class);
     var publicationStatusEntity = getMockDataObject(PUBLICATION_STATUS_ENTITY_SAMPLE, PublicationStatusEntity.class);
     publicationStatusEntity.setCreatedDate(LocalDateTime.now());
