@@ -334,8 +334,8 @@ public class PublicationServiceImpl implements PublicationService {
       throw new ResourceNotFoundException("publicationId", String.valueOf(publicationId));
     }
 
-    publicationStatusRepository.deleteById(publicationId);
     publicationTenantRequestRepository.deleteByPcStateId(publicationId);
+    publicationStatusRepository.deleteById(publicationId);
     log.info("deletePublicationById:: Deleted publication by consortiumId: {} and publicationId id: {}", consortiumId, publicationId);
   }
 }
