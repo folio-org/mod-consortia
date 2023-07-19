@@ -20,6 +20,7 @@ import lombok.ToString;
 public class SharingSettingEntity {
   @Id
   private UUID id;
+  private UUID settingId;
   private String tenantId;
 
   @Override
@@ -28,11 +29,13 @@ public class SharingSettingEntity {
       return true;
     if (!(o instanceof SharingSettingEntity that))
       return false;
-    return Objects.equals(id, that.id) && Objects.equals(tenantId, that.tenantId);
+    return Objects.equals(id, that.id)
+      && Objects.equals(settingId, that.settingId)
+      && Objects.equals(tenantId, that.tenantId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, tenantId);
+    return Objects.hash(id, settingId, tenantId);
   }
 }

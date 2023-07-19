@@ -6,10 +6,11 @@
 
   <changeSet id="MODCON-65@@Implement endpoint to save shared setting uuid in all tenants" author="azizbekxm">
 
-    <createTable tableName="sharing_instance">
+    <createTable tableName="sharing_setting">
       <column name="id" type="uuid">
         <constraints primaryKey="true" primaryKeyName="pk_shared_setting_id"/>
       </column>
+      <column name="setting_id" type="uuid"/>
       <column name="tenant_id" type="text"/>
       <column name="created_by" type="uuid"/>
       <column name="created_date" type="timestamp without time zone" defaultValueComputed="now()">
@@ -19,5 +20,8 @@
       <column name="updated_date" type="timestamp without time zone"/>
     </createTable>
 
+    <createIndex indexName="setting_id_idx" tableName="sharing_setting">
+      <column name="setting_id"/>
+    </createIndex>
   </changeSet>
 </databaseChangeLog>

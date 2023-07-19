@@ -1,14 +1,17 @@
-SharingSetting:
+SharingSettingRequest:
   description: "A JSON schema for the Sharing settings object"
   type: object
   properties:
-    id:
+    settingId:
+      description: id of sharing setting record
       type: string
       format: uuid
     url:
+      description: URL for publishing requests for consortia tenants
       type: string
     payload:
-      type: string
+      description: Http request body
+      type: object
   additionalProperties: false
   required:
     - id

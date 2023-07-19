@@ -4,9 +4,9 @@ info:
   description: "Sharing instance and setting integration API"
   version: 0.0.1
 servers:
-  - url: /consortia/{consortiumId}/
+  - url: /consortia/{consortiumId}/sharing
 paths:
-  /sharing/instances:
+  /instances:
     get:
       description: Sharing instances
       summary: Get list of sharing instances
@@ -48,7 +48,7 @@ paths:
           $ref: "#/components/responses/Conflict"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /sharing/instances/{actionId}:
+  /instances/{actionId}:
     get:
       summary: Get Sharing instance by action ID
       operationId: getSharingInstanceById
@@ -64,27 +64,6 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /sharing/settings:
-    post:
-      summary: start setting sharing
-      operationId: startSharingSetting
-      parameters:
-        - $ref: "#/components/parameters/consortiumId"
-      requestBody:
-        $ref: "#/components/requestBodies/SharingSettingBody"
-      responses:
-        "201":
-          $ref: "#/components/responses/SharingSettingResponse"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "409":
-          $ref: "#/components/responses/Conflict"
-        "422":
-          $ref: "#/components/responses/Conflict"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
 components:
   requestBodies:
     SharingInstanceBody:
@@ -94,13 +73,6 @@ components:
         application/json:
           schema:
             $ref: "schemas/sharingInstance.yaml#/SharingInstance"
-    SharingSettingBody:
-      description: Sharing settings object
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: "schemas/sharingSetting.yaml#/SharingSetting"
   responses:
     SharingInstance:
       description: Returns a sharing instance object object
@@ -114,12 +86,6 @@ components:
         application/json:
           schema:
             $ref: "schemas/sharingInstance.yaml#/SharingInstanceCollection"
-    SharingSettingResponse:
-      description: Returns a sharing instance object object
-      content:
-        application/json:
-          schema:
-            $ref: "schemas/sharingSetting.yaml#/SharingSettingResponse"
     NoContent:
       description: No content
     Conflict:

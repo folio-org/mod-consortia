@@ -7,7 +7,7 @@ import java.util.UUID;
 import org.folio.consortia.domain.dto.SharingInstance;
 import org.folio.consortia.domain.dto.SharingInstanceCollection;
 import org.folio.consortia.domain.dto.Status;
-import org.folio.consortia.rest.resource.SharingApi;
+import org.folio.consortia.rest.resource.InstancesApi;
 import org.folio.consortia.service.SharingInstanceService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -18,10 +18,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 @RestController
-@RequestMapping("/consortia/{consortiumId}")
+@RequestMapping("/consortia/{consortiumId}/sharing")
 @Log4j2
 @RequiredArgsConstructor
-public class SharingInstanceController implements SharingApi {
+public class SharingInstanceController implements InstancesApi {
 
   private final SharingInstanceService sharingInstanceService;
 

@@ -4,9 +4,9 @@ import static org.springframework.http.HttpStatus.CREATED;
 
 import java.util.UUID;
 
-import org.folio.consortia.domain.dto.SharingSetting;
+import org.folio.consortia.domain.dto.SharingSettingRequest;
 import org.folio.consortia.domain.dto.SharingSettingResponse;
-import org.folio.consortia.rest.resource.SharingApi;
+import org.folio.consortia.rest.resource.SettingsApi;
 import org.folio.consortia.service.SharingSettingService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,15 +16,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 @RestController
-@RequestMapping("/consortia/{consortiumId}")
+@RequestMapping("/consortia/{consortiumId}/sharing")
 @Log4j2
 @RequiredArgsConstructor
-public class SharingSettingController implements SharingApi {
+public class SharingSettingController implements  SettingsApi{
 
-  private final SharingSettingService sharingsettingService;
+  private final SharingSettingService sharingSettingService;
 
   @Override
-  public ResponseEntity<SharingSettingResponse> startSharingSetting(UUID consortiumId, SharingSetting sharingSetting) {
-    return ResponseEntity.status(CREATED).body(sharingsettingService.start(consortiumId, sharingSetting));
+  public ResponseEntity<SharingSettingResponse> startSharingSetting(UUID consortiumId, SharingSettingRequest sharingSettingRequest) {
+    return ResponseEntity.status(CREATED).body(sharingSettingService.start(consortiumId, sharingSettingRequest));
   }
 }
