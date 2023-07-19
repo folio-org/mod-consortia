@@ -47,6 +47,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -184,7 +185,7 @@ public class PublicationServiceImpl implements PublicationService {
 
   ResponseEntity<String> executeHttpRequest(PublicationRequest publicationRequest, String tenantId, FolioExecutionContext centralTenantContext) {
     try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioModuleMetadata, centralTenantContext))) {
-      var response = httpRequestService.performRequest(publicationRequest.getUrl(), HttpMethod.POST, publicationRequest.getPayload());
+      var response = httpRequestService.performRequest(publicationRequest.getUrl(), HttpMethod.valueOf(publicationRequest.getMethod()), publicationRequest.getPayload());
       if (response.getStatusCode().is2xxSuccessful()) {
         log.info("executeHttpRequest:: successfully called {} on tenant {}", publicationRequest.getUrl(), tenantId);
         return response;
@@ -320,7 +321,21 @@ public class PublicationServiceImpl implements PublicationService {
 
     return new PublicationResultCollection()
       .publicationResults(resultList)
-      .totalRecords(ptrEntities.getSize());
+      .totalRecords(resultList.size());
   }
 
+  @Override
+  @Transactional
+  public void deletePublicationById(UUID consortiumId, UUID publicationId) {
+    log.debug("deletePublicationById:: Trying to delete publication by consortiumId: {} and publicationId id: {}", consortiumId, publicationId);
+
+    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
+    if (!publicationStatusRepository.existsById(publicationId)) {
+      throw new ResourceNotFoundException("publicationId", String.valueOf(publicationId));
+    }
+
+    publicationTenantRequestRepository.deleteByPcStateId(publicationId);
+    publicationStatusRepository.deleteById(publicationId);
+    log.info("deletePublicationById:: Deleted publication by consortiumId: {} and publicationId id: {}", consortiumId, publicationId);
+  }
 }

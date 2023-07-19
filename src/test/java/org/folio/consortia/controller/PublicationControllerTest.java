@@ -15,6 +15,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -81,20 +82,34 @@ public class PublicationControllerTest extends BaseIT {
   @MockBean
   ConsortiumService consortiumService;
 
-  @Test
-  void publicationSuccessful() throws Exception {
+  @ParameterizedTest
+  @CsvSource(value = { "GET, 200", "POST, 201", "PUT, 204", "DELETE, 204" } )
+  void publicationSuccessful(String httpMethod, int responseCode) throws Exception {
     var headers = defaultHeaders();
     var consortiumId = UUID.randomUUID();
-    var publicationString = getMockDataAsString("mockdata/publications/publication_request.json");
+
+    var publicationRequest = getMockDataObject("mockdata/publications/publication_request.json", PublicationRequest.class);
+    publicationRequest.setMethod(httpMethod);
+    var publicationRequestAsString = writeValueAsString(publicationRequest);
+
     var publicationStatusEntity = getMockDataObject("mockdata/publications/publication_status_entity.json", PublicationStatusEntity.class);
     publicationStatusEntity.setId(UUID.randomUUID());
+
+    var ptre = createPublicationTenantRequestEntity(publicationStatusEntity, TENANT, PublicationStatus.IN_PROGRESS, 200);
+    ptre.setStatus(PublicationStatus.IN_PROGRESS);
+    ptre.setId(UUID.randomUUID());
 
     doNothing().when(tenantService).checkTenantsAndConsortiumExistsOrThrow(any(UUID.class), any());
     when(userTenantService.checkUserIfHasPrimaryAffiliationByUserId(any(UUID.class), any())).thenReturn(true);
     when(publicationStatusRepository.save(any())).thenReturn(publicationStatusEntity);
+    when(publicationTenantRequestRepository.save(any())).thenReturn(ptre);
+
+    ResponseEntity<String> restTemplateResponse = new ResponseEntity<>(new ObjectMapper().writeValueAsString(ptre), HttpStatusCode.valueOf(responseCode));
+    ArgumentCaptor<HttpEntity<Object>> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
+    when(restTemplate.exchange(anyString(), eq(HttpMethod.valueOf(httpMethod)), entityCaptor.capture(), eq(String.class))).thenReturn(restTemplateResponse);
 
     this.mockMvc.perform(post(String.format(PUBLICATIONS_URL, consortiumId)).headers(headers)
-      .content(publicationString))
+      .content(publicationRequestAsString))
       .andExpectAll(status().is2xxSuccessful());
   }
 
@@ -187,6 +202,20 @@ public class PublicationControllerTest extends BaseIT {
       );
   }
 
+  @Test
+  void deletePublicationByIdSuccessful() throws Exception {
+    var headers = defaultHeaders();
+    var consortiumId = UUID.randomUUID();
+    var publicationId = UUID.randomUUID();
+
+    doNothing().when(consortiumService).checkConsortiumExistsOrThrow(any(UUID.class));
+    when(publicationStatusRepository.existsById(publicationId)).thenReturn(true);
+    String url = String.format("/consortia/%s/publications/%s", consortiumId, publicationId);
+
+    this.mockMvc.perform(delete(url).headers(headers))
+      .andExpect(status().isNoContent());
+  }
+  
   @ParameterizedTest
   @CsvSource(value = {"100, 12"})
   void parallelTenantRequestsTest(int tenantsAmount, int chunkSize) throws JsonProcessingException {
