@@ -320,7 +320,7 @@ public class PublicationServiceImpl implements PublicationService {
 
     return new PublicationResultCollection()
       .publicationResults(resultList)
-      .totalRecords(ptrEntities.getSize());
+      .totalRecords(resultList.size());
   }
 
 }
