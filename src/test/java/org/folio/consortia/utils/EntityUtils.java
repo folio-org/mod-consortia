@@ -19,6 +19,7 @@ import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.entity.PublicationStatusEntity;
 import org.folio.consortia.domain.entity.PublicationTenantRequestEntity;
 import org.folio.consortia.domain.entity.SharingInstanceEntity;
+import org.folio.consortia.domain.entity.SharingSettingEntity;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;

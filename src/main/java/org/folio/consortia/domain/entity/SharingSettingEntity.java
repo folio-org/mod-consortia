@@ -3,6 +3,8 @@ package org.folio.consortia.domain.entity;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.folio.consortia.domain.entity.base.AuditableEntity;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -17,7 +19,7 @@ import lombok.ToString;
 @RequiredArgsConstructor
 @Entity
 @Table(name = "sharing_setting")
-public class SharingSettingEntity {
+public class SharingSettingEntity extends AuditableEntity {
   @Id
   private UUID id;
   private UUID settingId;

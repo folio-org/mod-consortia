@@ -22,6 +22,7 @@ import org.folio.consortia.domain.dto.PublicationResponse;
 import org.folio.consortia.domain.dto.SharingSettingRequest;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
+import org.folio.consortia.domain.entity.SharingSettingEntity;
 import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.SharingSettingRepository;
 import org.folio.consortia.service.impl.SharingSettingServiceImpl;
@@ -80,6 +81,7 @@ class SharingSettingServiceTest {
     when(publicationService.publishRequest(consortiumId, publicationRequestPut)).thenReturn(publicationResponsePut);
     when(tenantService.getAll(consortiumId)).thenReturn(tenantCollection);
     when(sharingSettingRepository.findTenantsBySettingId(sharingSettingRequest.getSettingId())).thenReturn(tenantAssociationsWithSetting);
+    when(sharingSettingRepository.save(any())).thenReturn(new SharingSettingEntity());
     when(folioExecutionContext.getTenantId()).thenReturn("mobius");
     doReturn(folioExecutionContext).when(contextHelper).getSystemUserFolioExecutionContext(anyString());
 

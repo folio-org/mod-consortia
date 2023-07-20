@@ -6,12 +6,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.folio.consortia.config.FolioExecutionContextHelper;
 import org.folio.consortia.domain.dto.PublicationRequest;
 import org.folio.consortia.domain.dto.SharingSettingRequest;
 import org.folio.consortia.domain.dto.SharingSettingResponse;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
+import org.folio.consortia.domain.entity.SharingSettingEntity;
 import org.folio.consortia.repository.SharingSettingRepository;
 import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.PublicationService;
@@ -19,7 +21,9 @@ import org.folio.consortia.service.SharingSettingService;
 import org.folio.consortia.service.TenantService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.scope.FolioExecutionContextSetter;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,38 +44,42 @@ public class SharingSettingServiceImpl implements SharingSettingService {
   private final FolioExecutionContext folioExecutionContext;
 
   @Override
+  @Transactional
   public SharingSettingResponse start(UUID consortiumId, SharingSettingRequest sharingSettingRequest) {
     log.debug("start:: Trying to share setting with consortiumId: {}, sharing settingId: {}", consortiumId, sharingSettingRequest.getSettingId());
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    Set<String> tenantsAssociationWithSetting = sharingSettingRepository.findTenantsBySettingId(sharingSettingRequest.getSettingId());
-    TenantCollection tenantCollection = tenantService.getAll(consortiumId);
+    Set<String> settingTenants = sharingSettingRepository.findTenantsBySettingId(sharingSettingRequest.getSettingId());
+    TenantCollection allTenants = tenantService.getAll(consortiumId);
 
-    PublicationRequest publicationRequestPostMethod = createPublicationRequestForSetting(sharingSettingRequest, "POST");
-    PublicationRequest publicationRequestPutMethod = createPublicationRequestForSetting(sharingSettingRequest, "PUT");
+    PublicationRequest publicationPostRequest = createPublicationRequestForSetting(sharingSettingRequest, HttpMethod.POST.toString());
+    PublicationRequest publicationPutRequest = createPublicationRequestForSetting(sharingSettingRequest, HttpMethod.PUT.toString());
 
     // By traverse through all tenants in db,
     // we add tenant to put method publication tenant list, if it exists in setting tenant associations
     // otherwise, we add it to post method publication tenant list
-    for (Tenant tenant : tenantCollection.getTenants()) {
-      if (tenantsAssociationWithSetting.contains(tenant.getId())) {
-        publicationRequestPutMethod.getTenants().add(tenant.getId());
+    for (Tenant tenant : allTenants.getTenants()) {
+      if (settingTenants.contains(tenant.getId())) {
+        publicationPutRequest.getTenants().add(tenant.getId());
+        log.info("start:: tenant={} added to publication update request ", tenant.getId());
       } else {
-        publicationRequestPostMethod.getTenants().add(tenant.getId());
+        publicationPostRequest.getTenants().add(tenant.getId());
+        log.info("start:: tenant={} added to publication create request", tenant.getId());
+        saveSharingSettingEntity(sharingSettingRequest, tenant.getId());
       }
     }
-    log.info("start:: tenants with size: {} successfully added to appropriate publication request", tenantCollection.getTotalRecords());
+    log.info("start:: tenants with size: {} successfully added to appropriate publication request", allTenants.getTotalRecords());
 
     ObjectMapper objectMapper = new ObjectMapper();
     JsonNode payload = objectMapper.convertValue(sharingSettingRequest.getPayload(), JsonNode.class);
     var updatedPayload = setSourceAsConsortium(payload);
-    publicationRequestPostMethod.setPayload(updatedPayload);
-    publicationRequestPutMethod.setPayload(updatedPayload);
-    log.info("start:: set source as a consortium");
+    publicationPostRequest.setPayload(updatedPayload);
+    publicationPutRequest.setPayload(updatedPayload);
+    log.info("start:: set source as '{}' in payload", updatedPayload.get("source"));
 
     // we create PC request with POST and PUT Http method to create settings as a consortia-system-user
     try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId()))) {
-      UUID createSettingsPcId = publishRequest(consortiumId, publicationRequestPostMethod);
-      UUID updateSettingsPcId = publishRequest(consortiumId, publicationRequestPutMethod);
+      UUID createSettingsPcId = publishRequest(consortiumId, publicationPostRequest);
+      UUID updateSettingsPcId = publishRequest(consortiumId, publicationPutRequest);
       return new SharingSettingResponse().createSettingsPCId(createSettingsPcId).updateSettingsPCId(updateSettingsPcId);
     }
   }
@@ -85,8 +93,18 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     return publicationRequest;
   }
 
+  private void saveSharingSettingEntity(SharingSettingRequest sharingSettingRequest, String tenantId) {
+    SharingSettingEntity sharingSettingEntity = new SharingSettingEntity();
+    sharingSettingEntity.setId(UUID.randomUUID());
+    sharingSettingEntity.setSettingId(sharingSettingRequest.getSettingId());
+    sharingSettingEntity.setTenantId(tenantId);
+    sharingSettingRepository.save(sharingSettingEntity);
+    log.info("start:: SharingSetting with settingId={}, tenant={} was successfully saved to db",
+      sharingSettingRequest.getSettingId(), tenantId);
+  }
+
   private UUID publishRequest(UUID consortiumId, PublicationRequest publicationRequest) {
-    if (!publicationRequest.getTenants().isEmpty()) {
+    if (CollectionUtils.isNotEmpty(publicationRequest.getTenants())) {
       return publicationService.publishRequest(consortiumId, publicationRequest).getId();
     }
     log.info("publishRequest:: Tenant list of publishing for http method: {} is empty", publicationRequest.getMethod());
