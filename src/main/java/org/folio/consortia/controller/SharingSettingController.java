@@ -13,13 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 
 @RestController
 @RequestMapping("/consortia/{consortiumId}/sharing")
-@Log4j2
 @RequiredArgsConstructor
-public class SharingSettingController implements  SettingsApi{
+public class SharingSettingController implements SettingsApi {
 
   private final SharingSettingService sharingSettingService;
 
