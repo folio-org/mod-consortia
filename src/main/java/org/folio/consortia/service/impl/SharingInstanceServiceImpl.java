@@ -1,8 +1,8 @@
 package org.folio.consortia.service.impl;
 
 import static org.folio.consortia.repository.SharingInstanceRepository.Specifications.constructSpecification;
-import static org.folio.consortia.utils.HelperUtils.CONSORTIUM_FOLIO;
-import static org.folio.consortia.utils.HelperUtils.CONSORTIUM_MARC;
+import static org.folio.consortia.utils.HelperUtils.CONSORTIUM_FOLIO_INSTANCE_SOURCE;
+import static org.folio.consortia.utils.HelperUtils.CONSORTIUM_MARC_INSTANCE_SOURCE;
 import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
 
 import java.util.Objects;
@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -80,11 +81,11 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
 
       try (var context = new FolioExecutionContextSetter(prepareContextForTenant(targetTenantId, folioModuleMetadata, folioExecutionContext))) {
         String source = switch (inventoryInstance.get("source").asText().toLowerCase()) {
-          case "folio" -> CONSORTIUM_FOLIO;
-          case "marc" -> CONSORTIUM_MARC;
+          case "folio" -> CONSORTIUM_FOLIO_INSTANCE_SOURCE;
+          case "marc" -> CONSORTIUM_MARC_INSTANCE_SOURCE;
           default -> throw new IllegalStateException("source is not recognized");
         };
-        var updatedInventoryInstance = ((ObjectNode) inventoryInstance).put("source", source);
+        var updatedInventoryInstance = ((ObjectNode) inventoryInstance).set("source", new TextNode(source));
         inventoryService.saveInstance(updatedInventoryInstance);
       } catch (Exception ex) {
         log.error("start:: error when posting instance with id: {}", sharingInstance.getInstanceIdentifier(), ex);
