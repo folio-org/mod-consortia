@@ -79,7 +79,7 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
       }
 
       try (var context = new FolioExecutionContextSetter(prepareContextForTenant(targetTenantId, folioModuleMetadata, folioExecutionContext))) {
-        String source = switch (inventoryInstance.get("source").asText()) {
+        String source = switch (inventoryInstance.get("source").asText().toLowerCase()) {
           case "folio" -> CONSORTIUM_FOLIO;
           case "marc" -> CONSORTIUM_MARC;
           default -> throw new IllegalStateException("source is not recognized");
