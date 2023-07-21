@@ -2,7 +2,9 @@ package org.folio.consortia.service.impl;
 
 import static org.folio.consortia.utils.HelperUtils.CONSORTIUM_WITH_LOWERCASE;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -57,8 +59,9 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     PublicationRequest publicationPutRequest = createPublicationRequestForSetting(sharingSettingRequest, HttpMethod.PUT.toString());
 
     // By traverse through all tenants in db,
-    // we add tenant to put method publication tenant list, if it exists in setting tenant associations
-    // otherwise, we add it to post method publication tenant list
+    // we will add tenant to put method publication tenant list, if it exists in setting tenant associations
+    // otherwise, we will add it to post method publication tenant list and save this association to sharing_tenant table
+    List<SharingSettingEntity> sharingSettingEntityList = new ArrayList<>();
     for (Tenant tenant : allTenants.getTenants()) {
       if (settingTenants.contains(tenant.getId())) {
         publicationPutRequest.getTenants().add(tenant.getId());
@@ -66,11 +69,14 @@ public class SharingSettingServiceImpl implements SharingSettingService {
       } else {
         publicationPostRequest.getTenants().add(tenant.getId());
         log.info("start:: tenant={} added to publication create request for setting={}", tenant.getId(), settingId);
-        saveSharingSettingEntity(sharingSettingRequest, tenant.getId());
+        sharingSettingEntityList.add(createSharingSettingEntityFromRequest(sharingSettingRequest, tenant.getId()));
       }
     }
     log.info("start:: tenants with size: {} successfully added to appropriate publication request for setting: {}",
       allTenants.getTotalRecords(), settingId);
+    sharingSettingRepository.saveAll(sharingSettingEntityList);
+    log.info("start:: The Sharing Settings for settingId '{}' and '{}' unique tenant(s) were successfully saved to the database",
+      sharingSettingRequest.getSettingId(), publicationPostRequest.getTenants().size());
 
     ObjectMapper objectMapper = new ObjectMapper();
     JsonNode payload = objectMapper.convertValue(sharingSettingRequest.getPayload(), JsonNode.class);
@@ -98,21 +104,19 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     return publicationRequest;
   }
 
-  private void saveSharingSettingEntity(SharingSettingRequest sharingSettingRequest, String tenantId) {
-    SharingSettingEntity sharingSettingEntity = new SharingSettingEntity();
-    sharingSettingEntity.setId(UUID.randomUUID());
-    sharingSettingEntity.setSettingId(sharingSettingRequest.getSettingId());
-    sharingSettingEntity.setTenantId(tenantId);
-    sharingSettingRepository.save(sharingSettingEntity);
-    log.info("start:: SharingSettingEntity with settingId={}, tenant={} was successfully saved to db",
-      sharingSettingRequest.getSettingId(), tenantId);
-  }
-
   private UUID publishRequest(UUID consortiumId, PublicationRequest publicationRequest) {
     if (CollectionUtils.isNotEmpty(publicationRequest.getTenants())) {
       return publicationService.publishRequest(consortiumId, publicationRequest).getId();
     }
     log.info("publishRequest:: Tenant list of publishing for http method: {} is empty", publicationRequest.getMethod());
     return null;
+  }
+
+  private SharingSettingEntity createSharingSettingEntityFromRequest(SharingSettingRequest sharingSettingRequest, String tenantId) {
+    SharingSettingEntity sharingSettingEntity = new SharingSettingEntity();
+    sharingSettingEntity.setId(UUID.randomUUID());
+    sharingSettingEntity.setSettingId(sharingSettingRequest.getSettingId());
+    sharingSettingEntity.setTenantId(tenantId);
+    return sharingSettingEntity;
   }
 }
