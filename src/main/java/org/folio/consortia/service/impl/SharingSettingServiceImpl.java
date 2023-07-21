@@ -46,6 +46,7 @@ public class SharingSettingServiceImpl implements SharingSettingService {
   private final FolioExecutionContextHelper contextHelper;
   private final PublicationService publicationService;
   private final FolioExecutionContext folioExecutionContext;
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override
   @Transactional
@@ -79,7 +80,6 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     log.info("start:: The Sharing Settings for settingId '{}' and '{}' unique tenant(s) were successfully saved to the database",
       sharingSettingRequest.getSettingId(), publicationPostRequest.getTenants().size());
 
-    ObjectMapper objectMapper = new ObjectMapper();
     JsonNode payload = objectMapper.convertValue(sharingSettingRequest.getPayload(), JsonNode.class);
     var updatedPayload = ((ObjectNode) payload).set("source", new TextNode(CONSORTIUM_SETTING_SOURCE));
     publicationPostRequest.setPayload(updatedPayload);
