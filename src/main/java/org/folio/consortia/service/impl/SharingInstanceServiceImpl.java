@@ -77,7 +77,7 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
       }
 
       try (var context = new FolioExecutionContextSetter(prepareContextForTenant(targetTenantId, folioModuleMetadata, folioExecutionContext))) {
-        var updatedInventoryInstance = setSourceAsConsortium(inventoryInstance);
+        var updatedInventoryInstance = setSourceAsConsortium(inventoryInstance, false);
         inventoryService.saveInstance(updatedInventoryInstance);
       } catch (Exception ex) {
         log.error("start:: error when posting instance with id: {}", sharingInstance.getInstanceIdentifier(), ex);

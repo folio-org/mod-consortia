@@ -46,9 +46,10 @@ public class SharingSettingServiceImpl implements SharingSettingService {
   @Override
   @Transactional
   public SharingSettingResponse start(UUID consortiumId, SharingSettingRequest sharingSettingRequest) {
-    log.debug("start:: Trying to share setting with consortiumId: {}, sharing settingId: {}", consortiumId, sharingSettingRequest.getSettingId());
+    UUID settingId = sharingSettingRequest.getSettingId();
+    log.debug("start:: Trying to share setting with consortiumId: {}, sharing settingId: {}", consortiumId, settingId);
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    Set<String> settingTenants = sharingSettingRepository.findTenantsBySettingId(sharingSettingRequest.getSettingId());
+    Set<String> settingTenants = sharingSettingRepository.findTenantsBySettingId(settingId);
     TenantCollection allTenants = tenantService.getAll(consortiumId);
 
     PublicationRequest publicationPostRequest = createPublicationRequestForSetting(sharingSettingRequest, HttpMethod.POST.toString());
@@ -60,27 +61,30 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     for (Tenant tenant : allTenants.getTenants()) {
       if (settingTenants.contains(tenant.getId())) {
         publicationPutRequest.getTenants().add(tenant.getId());
-        log.info("start:: tenant={} added to publication update request ", tenant.getId());
+        log.info("start:: tenant={} added to publication update request for setting={}", tenant.getId(), settingId);
       } else {
         publicationPostRequest.getTenants().add(tenant.getId());
-        log.info("start:: tenant={} added to publication create request", tenant.getId());
+        log.info("start:: tenant={} added to publication create request for setting={}", tenant.getId(), settingId);
         saveSharingSettingEntity(sharingSettingRequest, tenant.getId());
       }
     }
-    log.info("start:: tenants with size: {} successfully added to appropriate publication request", allTenants.getTotalRecords());
+    log.info("start:: tenants with size: {} successfully added to appropriate publication request for setting: {}",
+      allTenants.getTotalRecords(), settingId);
 
     ObjectMapper objectMapper = new ObjectMapper();
     JsonNode payload = objectMapper.convertValue(sharingSettingRequest.getPayload(), JsonNode.class);
-    var updatedPayload = setSourceAsConsortium(payload);
+    var updatedPayload = setSourceAsConsortium(payload, true);
     publicationPostRequest.setPayload(updatedPayload);
     publicationPutRequest.setPayload(updatedPayload);
-    log.info("start:: set source as '{}' in payload", updatedPayload.get("source"));
+    log.info("start:: set source as '{}' in payload of setting: {}", updatedPayload.get("source"), settingId);
 
     // we create PC request with POST and PUT Http method to create settings as a consortia-system-user
     try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId()))) {
       UUID createSettingsPcId = publishRequest(consortiumId, publicationPostRequest);
       UUID updateSettingsPcId = publishRequest(consortiumId, publicationPutRequest);
-      return new SharingSettingResponse().createSettingsPCId(createSettingsPcId).updateSettingsPCId(updateSettingsPcId);
+      return new SharingSettingResponse()
+        .createSettingsPCId(createSettingsPcId)
+        .updateSettingsPCId(updateSettingsPcId);
     }
   }
 
@@ -99,7 +103,7 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     sharingSettingEntity.setSettingId(sharingSettingRequest.getSettingId());
     sharingSettingEntity.setTenantId(tenantId);
     sharingSettingRepository.save(sharingSettingEntity);
-    log.info("start:: SharingSetting with settingId={}, tenant={} was successfully saved to db",
+    log.info("start:: SharingSettingEntity with settingId={}, tenant={} was successfully saved to db",
       sharingSettingRequest.getSettingId(), tenantId);
   }
 
