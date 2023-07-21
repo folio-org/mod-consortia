@@ -1,6 +1,6 @@
 package org.folio.consortia.service.impl;
 
-import static org.folio.consortia.utils.HelperUtils.setSourceAsConsortium;
+import static org.folio.consortia.utils.HelperUtils.CONSORTIUM_WITH_LOWERCASE;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -73,7 +74,7 @@ public class SharingSettingServiceImpl implements SharingSettingService {
 
     ObjectMapper objectMapper = new ObjectMapper();
     JsonNode payload = objectMapper.convertValue(sharingSettingRequest.getPayload(), JsonNode.class);
-    var updatedPayload = setSourceAsConsortium(payload, true);
+    var updatedPayload = ((ObjectNode) payload).put("source", CONSORTIUM_WITH_LOWERCASE);
     publicationPostRequest.setPayload(updatedPayload);
     publicationPutRequest.setPayload(updatedPayload);
     log.info("start:: set source as '{}' in payload of setting: {}", updatedPayload.get("source"), settingId);

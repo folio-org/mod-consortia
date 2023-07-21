@@ -66,10 +66,10 @@ class SharingSettingServiceTest {
 
     // "tenant1" exists in tenant setting association so that tenant1 is in PUT method publication,
     // "tenant2" is in POST method publication
-    var publicationRequestPut = createPublicationRequestForSetting(sharingSettingRequest, "PUT", "CONSORTIUM-MARC");
+    var publicationRequestPut = createPublicationRequestForSetting(sharingSettingRequest, "PUT");
     publicationRequestPut.setMethod("PUT");
     publicationRequestPut.setTenants(Set.of("tenant1"));
-    var publicationRequestPost = createPublicationRequestForSetting(sharingSettingRequest, "POST", "CONSORTIUM-MARC");
+    var publicationRequestPost = createPublicationRequestForSetting(sharingSettingRequest, "POST");
     publicationRequestPost.setMethod("POST");
     publicationRequestPost.setTenants(Set.of("tenant2"));
 

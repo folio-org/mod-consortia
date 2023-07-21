@@ -19,7 +19,6 @@ import org.folio.consortia.domain.entity.ConsortiumEntity;
 import org.folio.consortia.domain.entity.PublicationStatusEntity;
 import org.folio.consortia.domain.entity.PublicationTenantRequestEntity;
 import org.folio.consortia.domain.entity.SharingInstanceEntity;
-import org.folio.consortia.domain.entity.SharingSettingEntity;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
@@ -197,14 +196,14 @@ public class EntityUtils {
     return tenantCollection;
   }
 
-  public static PublicationRequest createPublicationRequestForSetting(SharingSettingRequest sharingSetting, String method, String source){
+  public static PublicationRequest createPublicationRequestForSetting(SharingSettingRequest sharingSetting, String method){
     PublicationRequest publicationRequest = new PublicationRequest();
     publicationRequest.setUrl(sharingSetting.getUrl());
     publicationRequest.setMethod(method);
     final ObjectMapper mapper = new ObjectMapper();
     final ObjectNode root = mapper.createObjectNode();
     root.set("name", mapper.convertValue("ORG-NAME", JsonNode.class));
-    root.set("source", mapper.convertValue(source, JsonNode.class));
+    root.set("source", mapper.convertValue("consortium", JsonNode.class));
     publicationRequest.setPayload(root);
     return publicationRequest;
   }
