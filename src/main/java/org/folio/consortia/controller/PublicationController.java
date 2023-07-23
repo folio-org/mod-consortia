@@ -1,5 +1,6 @@
 package org.folio.consortia.controller;
 
+import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 import java.util.UUID;
@@ -24,7 +25,7 @@ public class PublicationController implements org.folio.consortia.rest.resource.
 
   @Override
   public ResponseEntity<PublicationResponse> publishRequests(UUID consortiumId, PublicationRequest publicationRequest) {
-    return ResponseEntity.ok(publishCoordinatorService.publishRequest(consortiumId, publicationRequest));
+    return ResponseEntity.status(CREATED).body(publishCoordinatorService.publishRequest(consortiumId, publicationRequest));
   }
 
   @Override
