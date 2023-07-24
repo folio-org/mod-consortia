@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import static org.folio.consortia.messaging.listener.ConsortiaUserEventListener.USER_CREATED_LISTENER_ID;
 import static org.folio.consortia.messaging.listener.ConsortiaUserEventListener.USER_UPDATED_LISTENER_ID;
 import static org.folio.consortia.messaging.listener.ConsortiaUserEventListener.USER_DELETED_LISTENER_ID;
+import static org.folio.consortia.messaging.listener.ConsortiaSharingInstanceEventListener.CONSORTIUM_INSTANCE_SHARING_COMPLETE_LISTENER_ID;
 
 @Component
 @Log4j2
@@ -50,6 +51,8 @@ public class KafkaService {
     USER_CREATED("USER_CREATED"),
     USER_UPDATED("USER_UPDATED"),
     USER_DELETED("USER_DELETED"),
+    CONSORTIUM_INSTANCE_SHARING_INIT("CONSORTIUM_INSTANCE_SHARING_INIT"),
+    CONSORTIUM_INSTANCE_SHARING_COMPLETE("CONSORTIUM_INSTANCE_SHARING_COMPLETE"),
     CONSORTIUM_PRIMARY_AFFILIATION_CREATED("Default", "CONSORTIUM_PRIMARY_AFFILIATION_CREATED"),
     CONSORTIUM_PRIMARY_AFFILIATION_UPDATED("Default", "CONSORTIUM_PRIMARY_AFFILIATION_UPDATED"),
     CONSORTIUM_PRIMARY_AFFILIATION_DELETED("Default", "CONSORTIUM_PRIMARY_AFFILIATION_DELETED");
@@ -83,6 +86,7 @@ public class KafkaService {
     restartEventListener(USER_CREATED_LISTENER_ID);
     restartEventListener(USER_UPDATED_LISTENER_ID);
     restartEventListener(USER_DELETED_LISTENER_ID);
+    restartEventListener(CONSORTIUM_INSTANCE_SHARING_COMPLETE_LISTENER_ID);
   }
 
   private void restartEventListener(String listenerId) {
@@ -104,6 +108,7 @@ public class KafkaService {
     eventsNameStreamBuilder.add(ConsortiaOutputEventType.CONSORTIUM_PRIMARY_AFFILIATION_CREATED);
     eventsNameStreamBuilder.add(ConsortiaOutputEventType.CONSORTIUM_PRIMARY_AFFILIATION_UPDATED);
     eventsNameStreamBuilder.add(ConsortiaOutputEventType.CONSORTIUM_PRIMARY_AFFILIATION_DELETED);
+    eventsNameStreamBuilder.add(ConsortiaOutputEventType.CONSORTIUM_INSTANCE_SHARING_INIT);
     return eventsNameStreamBuilder.build()
       .map(Enum::name)
       .map(topic -> getTenantTopicName(topic, tenant))

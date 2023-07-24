@@ -8,7 +8,9 @@ import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTena
 import java.util.Objects;
 import java.util.UUID;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.folio.consortia.client.InventoryClient;
+import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.domain.dto.SharingInstance;
 import org.folio.consortia.domain.dto.SharingInstanceCollection;
 import org.folio.consortia.domain.dto.Status;
@@ -32,6 +34,7 @@ import com.fasterxml.jackson.databind.node.TextNode;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 
 @Service
@@ -48,6 +51,8 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
   private final InventoryService inventoryService;
   private final FolioModuleMetadata folioModuleMetadata;
   private final FolioExecutionContext folioExecutionContext;
+  private final ObjectMapper objectMapper = new ObjectMapper();
+  private final KafkaService kafkaService;
 
   @Override
   public SharingInstance getById(UUID consortiumId, UUID actionId) {
@@ -59,6 +64,7 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
   }
 
   @Override
+  @SneakyThrows
   @Transactional
   public SharingInstance start(UUID consortiumId, SharingInstance sharingInstance) {
     log.debug("start:: Trying to start instance sharing with instanceIdentifier: {}, consortiumId: {}", sharingInstance.getInstanceIdentifier(), consortiumId);
@@ -95,6 +101,9 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
       sharingInstance.setStatus(Status.COMPLETE);
     } else {
       sharingInstance.setStatus(Status.IN_PROGRESS);
+
+      String data = objectMapper.writeValueAsString(sharingInstance);
+      kafkaService.send(KafkaService.Topic.CONSORTIUM_INSTANCE_SHARING_INIT, String.valueOf(consortiumId), data);
     }
     SharingInstanceEntity savedSharingInstance = sharingInstanceRepository.save(toEntity(sharingInstance));
     log.info("start:: sharingInstance with id: {}, instanceId: {}, sourceTenantId: {}, targetTenantId: {} has been saved with status: {}",
@@ -116,6 +125,11 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
     result.setTotalRecords((int) sharingInstancePage.getTotalElements());
     log.info("getSharingInstances:: total number of matched sharingInstances: {}.", result.getTotalRecords());
     return result;
+  }
+
+  @Override
+  public void updateSharingInstance(String data) {
+
   }
 
   private void checkTenantsExistAndContainCentralTenantOrThrow(String sourceTenantId, String targetTenantId) {
