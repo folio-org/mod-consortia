@@ -13,7 +13,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -31,6 +34,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 class SharingSettingServiceTest {
@@ -52,9 +59,11 @@ class SharingSettingServiceTest {
   private FolioExecutionContext folioExecutionContext;
   @Mock
   private FolioExecutionContextHelper contextHelper;
+  @Mock
+  private ObjectMapper objectMapper;
 
   @Test
-  void shouldStartSharingSetting() {
+  void shouldStartSharingSetting() throws JsonProcessingException {
     UUID consortiumId = UUID.randomUUID();
     UUID createSettingsPcId = UUID.randomUUID();
     UUID updateSettingsPcId = UUID.randomUUID();
@@ -63,6 +72,9 @@ class SharingSettingServiceTest {
     Set<String> tenantAssociationsWithSetting = Set.of("tenant1");
     TenantCollection tenantCollection = createTenantCollection(List.of(tenant1, tenant2));
     var sharingSettingRequest = getMockDataObject(SHARING_SETTING_REQUEST_SAMPLE, SharingSettingRequest.class);
+    Map<String, String> payload = new LinkedHashMap<>();
+    payload.put("name", "ORG-NAME");
+    payload.put("source", "local");
 
     // "tenant1" exists in tenant setting association so that tenant1 is in PUT method publication,
     // "tenant2" is in POST method publication
@@ -84,6 +96,7 @@ class SharingSettingServiceTest {
     when(sharingSettingRepository.save(any())).thenReturn(new SharingSettingEntity());
     when(folioExecutionContext.getTenantId()).thenReturn("mobius");
     doReturn(folioExecutionContext).when(contextHelper).getSystemUserFolioExecutionContext(anyString());
+    when(objectMapper.convertValue(payload, JsonNode.class)).thenReturn(createJsonNode());
 
     var expectedResponse = createSharingSettingResponse(createSettingsPcId, updateSettingsPcId);
     var actualResponse = sharingSettingService.start(consortiumId, sharingSettingRequest);
@@ -92,5 +105,14 @@ class SharingSettingServiceTest {
     assertThat(actualResponse.getUpdateSettingsPCId()).isEqualTo(expectedResponse.getUpdateSettingsPCId());
 
     verify(publicationService, times(2)).publishRequest(any(), any());
+  }
+
+  public JsonNode createJsonNode() throws JsonProcessingException {
+    Map<String, String> payload = new HashMap<>();
+    payload.put("name", "ORG-NAME");
+    payload.put("source", "local");
+    ObjectMapper mapper = new ObjectMapper();
+    String json = mapper.writeValueAsString(payload);
+    return mapper.readTree(json);
   }
 }
