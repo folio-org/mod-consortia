@@ -46,7 +46,7 @@ public class SharingSettingServiceImpl implements SharingSettingService {
   private final FolioExecutionContextHelper contextHelper;
   private final PublicationService publicationService;
   private final FolioExecutionContext folioExecutionContext;
-  private final ObjectMapper objectMapper = new ObjectMapper();
+  private final ObjectMapper objectMapper;
 
   @Override
   @Transactional
