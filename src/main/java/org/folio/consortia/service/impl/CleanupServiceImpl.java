@@ -33,15 +33,17 @@ public class CleanupServiceImpl implements CleanupService {
     if (CollectionUtils.isNotEmpty(consortiumRepository.findAll())) {
       var beforeDate = LocalDateTime.now().minus(recordMaxAge , ChronoUnit.SECONDS);
       log.info("clearPublicationRecords:: Cleaning up publication records created before {} for tenant: {} ", beforeDate, folioExecutionContext.getTenantId());
-      int statusRecordsQuantity = publicationStatusRepository.deleteAllByCreatedDateBefore(beforeDate);
-      if (statusRecordsQuantity > 0 ) {
-        log.info("clearPublicationTables:: Successfully removed {} pc_state records from tenant '{}'", statusRecordsQuantity, folioExecutionContext.getTenantId());
-      }
 
       int tenantRequestQuantity = publicationTenantRequestRepository.deleteAllByCreatedDateBefore(beforeDate);
       if (tenantRequestQuantity > 0) {
         log.info("clearPublicationTables:: Successfully removed {} pc_tenant_request records from tenant '{}'", tenantRequestQuantity, folioExecutionContext.getTenantId());
       }
+
+      int statusRecordsQuantity = publicationStatusRepository.deleteAllByCreatedDateBefore(beforeDate);
+      if (statusRecordsQuantity > 0 ) {
+        log.info("clearPublicationTables:: Successfully removed {} pc_state records from tenant '{}'", statusRecordsQuantity, folioExecutionContext.getTenantId());
+      }
+
     }
     else {
       log.debug("clearPublicationTables:: Tenant '{}' is not part of consortia. Nothing to delete", folioExecutionContext.getTenantId());
