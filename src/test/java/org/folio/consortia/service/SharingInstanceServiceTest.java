@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.domain.dto.SharingInstance;
 import org.folio.consortia.domain.dto.Status;
 import org.folio.consortia.domain.entity.SharingInstanceEntity;
@@ -63,6 +64,10 @@ class SharingInstanceServiceTest {
   private FolioExecutionContext folioExecutionContext;
   @Mock
   private InventoryService inventoryService;
+  @Mock
+  private ObjectMapper objectMapper;
+  @Mock
+  private KafkaService kafkaService;
 
   static {
     headers.put(XOkapiHeaders.TENANT, List.of("mobius"));
@@ -86,15 +91,17 @@ class SharingInstanceServiceTest {
   }
 
   @Test
-  void shouldSaveSharingInstanceWhenSourceTenantNotEqualCentralTenant() {
+  void shouldSaveSharingInstanceWhenSourceTenantNotEqualCentralTenant() throws Exception{
     SharingInstance sharingInstance = createSharingInstance(instanceIdentifier, "college", "mobius");
     SharingInstanceEntity savedSharingInstance = createSharingInstanceEntity(instanceIdentifier, "college", "mobius");
+    String event = objectMapper.writeValueAsString(sharingInstance);
 
     when(consortiumRepository.existsById(any())).thenReturn(true);
     when(conversionService.convert(any(), any())).thenReturn(toDto(savedSharingInstance));
     doNothing().when(tenantService).checkTenantExistsOrThrow(anyString());
     when(tenantService.getCentralTenantId()).thenReturn("mobius");
     when(sharingInstanceRepository.save(any())).thenReturn(savedSharingInstance);
+    when(objectMapper.writeValueAsString(any())).thenReturn(event);
 
     var expectedSharingInstance = createSharingInstance(instanceIdentifier, "college", "mobius");
     var actualSharingInstance = sharingInstanceService.start(UUID.randomUUID(), sharingInstance);
@@ -103,6 +110,7 @@ class SharingInstanceServiceTest {
     assertThat(actualSharingInstance.getSourceTenantId()).isEqualTo(expectedSharingInstance.getSourceTenantId());
     assertThat(actualSharingInstance.getTargetTenantId()).isEqualTo(expectedSharingInstance.getTargetTenantId());
 
+    verify(kafkaService, times(1)).send(any(), anyString(), any());
     verify(sharingInstanceRepository, times(1)).save(any());
   }
 
