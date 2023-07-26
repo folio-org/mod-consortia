@@ -46,7 +46,7 @@ public class CleanupServiceImpl implements CleanupService {
 
     }
     else {
-      log.debug("clearPublicationTables:: Tenant '{}' is not part of consortia. Nothing to delete", folioExecutionContext.getTenantId());
+      log.debug("clearPublicationTables:: Tenant '{}' is not consortia central tenant. Nothing to delete", folioExecutionContext.getTenantId());
     }
   }
 }
