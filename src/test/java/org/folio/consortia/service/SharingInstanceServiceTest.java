@@ -9,8 +9,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
@@ -41,6 +43,7 @@ import org.springframework.core.convert.ConversionService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.data.jpa.domain.Specification;
 
 @SpringBootTest
 @EnableAutoConfiguration(exclude = BatchAutoConfiguration.class)
@@ -218,6 +221,39 @@ class SharingInstanceServiceTest {
 
     Assertions.assertThrows(IllegalArgumentException.class,
       () -> sharingInstanceService.start(CONSORTIUM_ID, sharingInstance));
+  }
+
+  @Test
+  void shouldNotPromoteSharingInstanceWhenTargetTenantDoesNotEqualCentralTenant() throws JsonProcessingException {
+    SharingInstance sharingInstance = createSharingInstance(instanceIdentifier, "mobius", "college");
+    String eventPayload = objectMapper.writeValueAsString(sharingInstance);
+
+    when(consortiumRepository.existsById(any())).thenReturn(true);
+    doNothing().when(tenantService).checkTenantExistsOrThrow(anyString());
+    when(tenantService.getCentralTenantId()).thenReturn("mobius");
+    when(objectMapper.readValue(anyString(), eq(SharingInstance.class))).thenReturn(sharingInstance);
+
+    sharingInstanceService.completePromotingLocalInstance(eventPayload);
+
+    verifyNoInteractions(sharingInstanceRepository);
+  }
+
+  @Test
+  void shouldNotPromoteSharingInstanceWhenSharingInstanceDoesNotExist() throws JsonProcessingException {
+    SharingInstance sharingInstance = createSharingInstance(instanceIdentifier, "college", "mobius");
+    String eventPayload = objectMapper.writeValueAsString(sharingInstance);
+    Specification<SharingInstanceEntity> specification =
+      SharingInstanceRepository.Specifications.constructSpecification(instanceIdentifier, "college", "mobius", null);
+
+    when(consortiumRepository.existsById(any())).thenReturn(true);
+    doNothing().when(tenantService).checkTenantExistsOrThrow(anyString());
+    when(tenantService.getCentralTenantId()).thenReturn("mobius");
+    when(objectMapper.readValue(anyString(), eq(SharingInstance.class))).thenReturn(sharingInstance);
+    when(sharingInstanceRepository.findOne(specification)).thenReturn(Optional.empty());
+
+    sharingInstanceService.completePromotingLocalInstance(eventPayload);
+
+    verifyNoInteractions(sharingInstanceRepository);
   }
 
   private SharingInstance toDto(SharingInstanceEntity entity) {

@@ -161,8 +161,9 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
       }
 
       promotedSharingInstance.setStatus(Status.COMPLETE);
+      sharingInstanceRepository.save(promotedSharingInstance);
       log.info("completePromotingLocalInstance:: status of sharingInstance with instanceIdentifier: {}, sourceTenantId: {}, targetTenantId: {} " +
-        "has been updated to: {}", promotingEvent.getInstanceIdentifier(), sourceTenantId, targetTenantId, promotingEvent.getStatus());
+        "has been updated to: {}", promotedSharingInstance.getInstanceId(), sourceTenantId, targetTenantId, promotedSharingInstance.getStatus());
     } catch (Exception e) {
       log.error("completePromotingLocalInstance:: exception occurred while promoting local sharing instance", e);
     }
