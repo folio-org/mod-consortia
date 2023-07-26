@@ -298,5 +298,8 @@ public class PublicationControllerTest extends BaseIT {
     this.mockMvc.perform(post(String.format(PUBLICATIONS_CLEANUP_URL)).headers(headers))
       .andExpectAll(status().is2xxSuccessful());
 
+    verify(publicationStatusRepository, times(1)).deleteAllByCreatedDateBefore(any());
+    verify(publicationTenantRequestRepository, times(1)).deleteAllByCreatedDateBefore(any());
+
   }
 }
