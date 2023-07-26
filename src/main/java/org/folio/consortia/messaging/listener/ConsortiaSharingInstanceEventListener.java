@@ -40,7 +40,7 @@ public class ConsortiaSharingInstanceEventListener {
     }
   }
 
-  public String getCentralTenantByIdByHeader(MessageHeaders messageHeaders) {
+  private String getCentralTenantByIdByHeader(MessageHeaders messageHeaders) {
     String requestedTenantId = getHeaderValue(messageHeaders, XOkapiHeaders.TENANT, null).get(0);
     // getting central tenant for this requested tenant from get central in its own schema
     try (var context = new FolioExecutionContextSetter(createFolioExecutionContext(
