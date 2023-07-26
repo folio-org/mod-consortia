@@ -140,7 +140,7 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
       String targetTenantId = promotingEvent.getTargetTenantId();
       checkTenantsExistAndContainCentralTenantOrThrow(sourceTenantId, targetTenantId);
 
-      if (Objects.equals(centralTenantId, targetTenantId)) {
+      if (!Objects.equals(centralTenantId, targetTenantId)) {
         log.warn("completePromotingLocalInstance:: promotion failed as targetTenantId: {} does not equal to centralTenantId: {}", targetTenantId, centralTenantId);
         return;
       }
@@ -158,9 +158,10 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
       if (ObjectUtils.isNotEmpty(promotingEvent.getError())) {
         promotedSharingInstance.setStatus(Status.ERROR);
         promotedSharingInstance.setError(promotingEvent.getError());
+      } else {
+        promotedSharingInstance.setStatus(Status.COMPLETE);
       }
 
-      promotedSharingInstance.setStatus(Status.COMPLETE);
       sharingInstanceRepository.save(promotedSharingInstance);
       log.info("completePromotingLocalInstance:: status of sharingInstance with instanceIdentifier: {}, sourceTenantId: {}, targetTenantId: {} " +
         "has been updated to: {}", promotedSharingInstance.getInstanceId(), sourceTenantId, targetTenantId, promotedSharingInstance.getStatus());
