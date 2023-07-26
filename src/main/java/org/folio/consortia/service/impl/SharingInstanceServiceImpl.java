@@ -51,7 +51,7 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
   private final InventoryService inventoryService;
   private final FolioModuleMetadata folioModuleMetadata;
   private final FolioExecutionContext folioExecutionContext;
-  private final ObjectMapper objectMapper = new ObjectMapper();
+  private final ObjectMapper objectMapper;
   private final KafkaService kafkaService;
 
   @Override
@@ -128,8 +128,25 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
   }
 
   @Override
-  public void updateSharingInstance(String data) {
+  @Transactional
+  public void completePromotingLocalInstance(String eventPayload) {
+    try {
+      var promotingEvent = objectMapper.readValue(eventPayload, SharingInstance.class);
+      var instanceId = promotingEvent.getInstanceIdentifier();
+      log.debug("completePromotingLocalInstance:: parameters instanceIdentifier: {}, sourceTenantId: {}, targetTenantId: {}, status: {}",
+        instanceId, promotingEvent.getSourceTenantId(), promotingEvent.getTargetTenantId(), promotingEvent.getStatus());
 
+      var specification = constructSpecification(instanceId, promotingEvent.getSourceTenantId(), promotingEvent.getTargetTenantId(), null);
+      var promotedSharingInstance = sharingInstanceRepository.findOne(specification).
+        orElseThrow(() -> new ResourceNotFoundException("instanceIdentifier", String.valueOf(instanceId)));
+
+      promotedSharingInstance.setStatus(promotingEvent.getStatus());
+      promotedSharingInstance.setError(promotingEvent.getError());
+      log.info("completePromotingLocalInstance:: status of sharingInstance with instanceIdentifier: {}, sourceTenantId: {}, targetTenantId: {} " +
+          "has been updated to status: {}", instanceId, promotingEvent.getSourceTenantId(), promotingEvent.getTargetTenantId(), promotingEvent.getStatus());
+    } catch (Exception e) {
+      log.error("Exception occurred while promoting local sharing instance", e);
+    }
   }
 
   private void checkTenantsExistAndContainCentralTenantOrThrow(String sourceTenantId, String targetTenantId) {

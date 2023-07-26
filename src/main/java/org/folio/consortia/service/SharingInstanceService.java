@@ -38,5 +38,5 @@ public interface SharingInstanceService {
   SharingInstanceCollection getSharingInstances(UUID consortiumId, UUID instanceIdentifier, String sourceTenantId,
       String targetTenantId, Status status, Integer offset, Integer limit);
 
-  void updateSharingInstance(String data);
+  void completePromotingLocalInstance(String promotingEvent);
 }

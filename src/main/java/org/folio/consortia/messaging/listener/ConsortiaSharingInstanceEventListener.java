@@ -36,12 +36,12 @@ public class ConsortiaSharingInstanceEventListener {
     String centralTenantId = getCentralTenantByIdByHeader(messageHeaders);
     if (StringUtils.isNotBlank(centralTenantId)) {
       runInFolioContext(createFolioExecutionContext(messageHeaders, folioMetadata, centralTenantId), () ->
-        sharingInstanceService.updateSharingInstance(data));
+        sharingInstanceService.completePromotingLocalInstance(data));
     }
   }
 
   public String getCentralTenantByIdByHeader(MessageHeaders messageHeaders) {
-    String requestedTenantId = getTenantIdFromKafkaHeaders(messageHeaders);
+    String requestedTenantId = getHeaderValue(messageHeaders, XOkapiHeaders.TENANT, null).get(0);
     // getting central tenant for this requested tenant from get central in its own schema
     try (var context = new FolioExecutionContextSetter(createFolioExecutionContext(
       messageHeaders, folioMetadata, requestedTenantId))) {
@@ -52,9 +52,5 @@ public class ConsortiaSharingInstanceEventListener {
     }
 
     return null;
-  }
-
-  private String getTenantIdFromKafkaHeaders(MessageHeaders messageHeaders) {
-    return getHeaderValue(messageHeaders, XOkapiHeaders.TENANT, null).get(0);
   }
 }
