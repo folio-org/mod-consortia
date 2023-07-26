@@ -10,9 +10,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
@@ -50,6 +50,7 @@ import org.springframework.data.jpa.domain.Specification;
 class SharingInstanceServiceTest {
 
   private static final UUID instanceIdentifier = UUID.fromString("5b157ec2-8134-4363-a7b1-c9531a7c6a54");
+  private static final String EVENT_PAYLOAD = "{\"instanceIdentifier\":\"5b157ec2-8134-4363-a7b1-c9531a7c6a54\",\"sourceTenantId\":\"college\",\"targetTenantId\":\"mobius\"}";
   private static final Map<String, Collection<String>> headers = new HashMap<>();
   @InjectMocks
   private SharingInstanceServiceImpl sharingInstanceService;
@@ -202,6 +203,41 @@ class SharingInstanceServiceTest {
     verify(sharingInstanceRepository, times(1)).save(any());
   }
 
+  @Test
+  void shouldPromoteSharingInstanceWithCompleteStatus() throws JsonProcessingException {
+    SharingInstance sharingInstance = createSharingInstance(instanceIdentifier, "college", "mobius");
+    SharingInstanceEntity sharingInstanceEntity = new SharingInstanceEntity();
+
+    when(tenantService.getCentralTenantId()).thenReturn("mobius");
+    doNothing().when(tenantService).checkTenantExistsOrThrow(anyString());
+    when(objectMapper.readValue(anyString(), eq(SharingInstance.class))).thenReturn(sharingInstance);
+    when(sharingInstanceRepository.findOne(any(Specification.class))).thenReturn(Optional.of(sharingInstanceEntity));
+
+    sharingInstanceService.completePromotingLocalInstance(EVENT_PAYLOAD);
+
+    assertThat(sharingInstanceEntity.getError()).isNull();
+    assertThat(sharingInstanceEntity.getStatus()).isEqualTo(Status.COMPLETE);
+    verify(sharingInstanceRepository, times(1)).save(any());
+  }
+
+  @Test
+  void shouldPromoteSharingInstanceWithErrorStatus() throws JsonProcessingException {
+    SharingInstance sharingInstance = createSharingInstance(instanceIdentifier, "college", "mobius");
+    sharingInstance.setError("Promotion failed");
+    SharingInstanceEntity sharingInstanceEntity = new SharingInstanceEntity();
+
+    when(tenantService.getCentralTenantId()).thenReturn("mobius");
+    doNothing().when(tenantService).checkTenantExistsOrThrow(anyString());
+    when(objectMapper.readValue(anyString(), eq(SharingInstance.class))).thenReturn(sharingInstance);
+    when(sharingInstanceRepository.findOne(any(Specification.class))).thenReturn(Optional.of(sharingInstanceEntity));
+
+    sharingInstanceService.completePromotingLocalInstance(EVENT_PAYLOAD);
+
+    assertThat(sharingInstanceEntity.getError()).isNotEmpty();
+    assertThat(sharingInstanceEntity.getStatus()).isEqualTo(Status.ERROR);
+    verify(sharingInstanceRepository, times(1)).save(any());
+  }
+
   /* Negative cases */
   @Test
   void shouldThrowResourceNotFoundExceptionWhenTryingToGetSharingInstanceById() {
@@ -225,35 +261,31 @@ class SharingInstanceServiceTest {
 
   @Test
   void shouldNotPromoteSharingInstanceWhenTargetTenantDoesNotEqualCentralTenant() throws JsonProcessingException {
-    SharingInstance sharingInstance = createSharingInstance(instanceIdentifier, "mobius", "college");
-    String eventPayload = objectMapper.writeValueAsString(sharingInstance);
+    SharingInstance sharingInstance = createSharingInstance(instanceIdentifier, "college", "mobius");
 
-    when(consortiumRepository.existsById(any())).thenReturn(true);
+    when(tenantService.getCentralTenantId()).thenReturn("college");
     doNothing().when(tenantService).checkTenantExistsOrThrow(anyString());
-    when(tenantService.getCentralTenantId()).thenReturn("mobius");
     when(objectMapper.readValue(anyString(), eq(SharingInstance.class))).thenReturn(sharingInstance);
 
-    sharingInstanceService.completePromotingLocalInstance(eventPayload);
+    // call the method and verify there was no call to repository
+    sharingInstanceService.completePromotingLocalInstance(EVENT_PAYLOAD);
 
-    verifyNoInteractions(sharingInstanceRepository);
+    verify(sharingInstanceRepository, never()).save(any());
   }
 
   @Test
   void shouldNotPromoteSharingInstanceWhenSharingInstanceDoesNotExist() throws JsonProcessingException {
     SharingInstance sharingInstance = createSharingInstance(instanceIdentifier, "college", "mobius");
-    String eventPayload = objectMapper.writeValueAsString(sharingInstance);
-    Specification<SharingInstanceEntity> specification =
-      SharingInstanceRepository.Specifications.constructSpecification(instanceIdentifier, "college", "mobius", null);
 
-    when(consortiumRepository.existsById(any())).thenReturn(true);
-    doNothing().when(tenantService).checkTenantExistsOrThrow(anyString());
     when(tenantService.getCentralTenantId()).thenReturn("mobius");
+    doNothing().when(tenantService).checkTenantExistsOrThrow(anyString());
+    when(sharingInstanceRepository.findOne(any(Specification.class))).thenReturn(Optional.empty());
     when(objectMapper.readValue(anyString(), eq(SharingInstance.class))).thenReturn(sharingInstance);
-    when(sharingInstanceRepository.findOne(specification)).thenReturn(Optional.empty());
 
-    sharingInstanceService.completePromotingLocalInstance(eventPayload);
+    // call the method and verify there was no call to repository
+    sharingInstanceService.completePromotingLocalInstance(EVENT_PAYLOAD);
 
-    verifyNoInteractions(sharingInstanceRepository);
+    verify(sharingInstanceRepository, never()).save(any());
   }
 
   private SharingInstance toDto(SharingInstanceEntity entity) {
