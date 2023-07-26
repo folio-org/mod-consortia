@@ -23,7 +23,7 @@ import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.messaging.MessageHeaders;
 
 @SpringBootTest
-public class ConsortiaSharingInstanceEventListenerTest {
+class ConsortiaSharingInstanceEventListenerTest {
 
   private static final String CONSORTIUM_INSTANCE_SHARING_COMPLETE_EVENT_SAMPLE = getMockDataAsString("mockdata/kafka/consortium_instance_sharing_complete_request.json");
 

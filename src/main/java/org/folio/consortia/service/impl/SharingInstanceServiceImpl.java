@@ -8,7 +8,7 @@ import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTena
 import java.util.Objects;
 import java.util.UUID;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.ObjectUtils;
 import org.folio.consortia.client.InventoryClient;
 import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.domain.dto.SharingInstance;
@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -130,22 +131,40 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
   @Override
   @Transactional
   public void completePromotingLocalInstance(String eventPayload) {
+    log.debug("completePromotingLocalInstance:: parameters eventPayload: {}", eventPayload);
     try {
       var promotingEvent = objectMapper.readValue(eventPayload, SharingInstance.class);
-      var instanceId = promotingEvent.getInstanceIdentifier();
-      log.debug("completePromotingLocalInstance:: parameters instanceIdentifier: {}, sourceTenantId: {}, targetTenantId: {}, status: {}",
-        instanceId, promotingEvent.getSourceTenantId(), promotingEvent.getTargetTenantId(), promotingEvent.getStatus());
 
-      var specification = constructSpecification(instanceId, promotingEvent.getSourceTenantId(), promotingEvent.getTargetTenantId(), null);
-      var promotedSharingInstance = sharingInstanceRepository.findOne(specification).
-        orElseThrow(() -> new ResourceNotFoundException("instanceIdentifier", String.valueOf(instanceId)));
+      String centralTenantId = tenantService.getCentralTenantId();
+      String sourceTenantId = promotingEvent.getSourceTenantId();
+      String targetTenantId = promotingEvent.getTargetTenantId();
+      checkTenantsExistAndContainCentralTenantOrThrow(sourceTenantId, targetTenantId);
 
-      promotedSharingInstance.setStatus(promotingEvent.getStatus());
-      promotedSharingInstance.setError(promotingEvent.getError());
+      if (Objects.equals(centralTenantId, targetTenantId)) {
+        log.warn("completePromotingLocalInstance:: promotion failed as targetTenantId: {} does not equal to centralTenantId: {}", targetTenantId, centralTenantId);
+        return;
+      }
+
+      var specification = constructSpecification(promotingEvent.getInstanceIdentifier(), sourceTenantId, targetTenantId, null);
+      var optionalSharingInstance = sharingInstanceRepository.findOne(specification);
+
+      if (optionalSharingInstance.isEmpty()) {
+        log.warn("completePromotingLocalInstance:: sharingInstance with instanceIdentifier: {}, sourceTenantId: {}, targetTenantId: {} does not exist",
+          promotingEvent.getInstanceIdentifier(), sourceTenantId, targetTenantId);
+        return;
+      }
+
+      var promotedSharingInstance = optionalSharingInstance.get();
+      if (ObjectUtils.isNotEmpty(promotingEvent.getError())) {
+        promotedSharingInstance.setStatus(Status.ERROR);
+        promotedSharingInstance.setError(promotingEvent.getError());
+      }
+
+      promotedSharingInstance.setStatus(Status.COMPLETE);
       log.info("completePromotingLocalInstance:: status of sharingInstance with instanceIdentifier: {}, sourceTenantId: {}, targetTenantId: {} " +
-          "has been updated to status: {}", instanceId, promotingEvent.getSourceTenantId(), promotingEvent.getTargetTenantId(), promotingEvent.getStatus());
+        "has been updated to: {}", promotingEvent.getInstanceIdentifier(), sourceTenantId, targetTenantId, promotingEvent.getStatus());
     } catch (Exception e) {
-      log.error("Exception occurred while promoting local sharing instance", e);
+      log.error("completePromotingLocalInstance:: exception occurred while promoting local sharing instance", e);
     }
   }
 
