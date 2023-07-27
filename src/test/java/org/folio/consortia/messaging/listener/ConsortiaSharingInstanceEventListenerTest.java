@@ -33,19 +33,23 @@ class ConsortiaSharingInstanceEventListenerTest {
   private SharingInstanceService sharingInstanceService;
   @Mock
   private ConsortiaConfigurationService configurationService;
+  @Mock
+  private EventListenerUtils listenerUtils;
 
   @Test
   void shouldCompleteInstanceSharingWhenConfigurationExists() {
-    when(configurationService.getCentralTenantId(TENANT)).thenReturn(TENANT);
-    eventListener.handleConsortiumInstanceSharingCompleting(CONSORTIUM_INSTANCE_SHARING_COMPLETE_EVENT_SAMPLE, getMessageHeaders());
+    MessageHeaders messageHeaders = getMessageHeaders();
+    when(listenerUtils.getCentralTenantByIdByHeader(messageHeaders)).thenReturn(TENANT);
+    eventListener.handleConsortiumInstanceSharingCompleting(CONSORTIUM_INSTANCE_SHARING_COMPLETE_EVENT_SAMPLE, messageHeaders);
     verify(sharingInstanceService).completePromotingLocalInstance(anyString());
   }
 
   @Test
   void shouldThrowErrorWhenBusinessExceptionThrown() {
-    when(configurationService.getCentralTenantId(TENANT)).thenThrow(new RuntimeException("Operation failed"));
+    MessageHeaders messageHeaders = getMessageHeaders();
+    when(listenerUtils.getCentralTenantByIdByHeader(messageHeaders)).thenThrow(new RuntimeException("Operation failed"));
     assertThrows(java.lang.RuntimeException.class,
-      () -> eventListener.handleConsortiumInstanceSharingCompleting(CONSORTIUM_INSTANCE_SHARING_COMPLETE_EVENT_SAMPLE, getMessageHeaders()));
+      () -> eventListener.handleConsortiumInstanceSharingCompleting(CONSORTIUM_INSTANCE_SHARING_COMPLETE_EVENT_SAMPLE, messageHeaders));
   }
 
   @Test

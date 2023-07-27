@@ -44,7 +44,6 @@ import lombok.extern.log4j.Log4j2;
 public class SharingInstanceServiceImpl implements SharingInstanceService {
   private static final String GET_INSTANCE_EXCEPTION_MSG = "Failed to get inventory instance with reason: %s";
   private static final String POST_INSTANCE_EXCEPTION_MSG = "Failed to post inventory instance with reason: %s";
-
   private final SharingInstanceRepository sharingInstanceRepository;
   private final ConsortiumService consortiumService;
   private final TenantService tenantService;
@@ -141,7 +140,9 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
       checkTenantsExistAndContainCentralTenantOrThrow(sourceTenantId, targetTenantId);
 
       if (ObjectUtils.notEqual(centralTenantId, targetTenantId)) {
-        log.warn("completePromotingLocalInstance:: promotion failed as targetTenantId: {} does not equal to centralTenantId: {}", targetTenantId, centralTenantId);
+        String massage = String.format("promotion failed as targetTenantId: %s does not equal to centralTenantId: %s", targetTenantId, centralTenantId);
+        log.warn("completePromotingLocalInstance:: " + massage);
+        saveInstanceWithErrorMsg(promotingEvent, massage);
         return;
       }
 
@@ -149,8 +150,10 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
       var optionalSharingInstance = sharingInstanceRepository.findOne(specification);
 
       if (optionalSharingInstance.isEmpty()) {
-        log.warn("completePromotingLocalInstance:: sharingInstance with instanceIdentifier: {}, sourceTenantId: {}, targetTenantId: {} does not exist",
+        String massage = String.format("sharingInstance with instanceIdentifier: %s, sourceTenantId: %s, targetTenantId: %s does not exist",
           promotingEvent.getInstanceIdentifier(), sourceTenantId, targetTenantId);
+        log.warn("completePromotingLocalInstance:: " + massage);
+        saveInstanceWithErrorMsg(promotingEvent, massage);
         return;
       }
 
@@ -167,7 +170,15 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
         "has been updated to: {}", promotedSharingInstance.getInstanceId(), sourceTenantId, targetTenantId, promotedSharingInstance.getStatus());
     } catch (Exception e) {
       log.error("completePromotingLocalInstance:: exception occurred while promoting local sharing instance", e);
+      saveInstanceWithErrorMsg(new SharingInstance(), e.getMessage());
     }
+  }
+
+  private void saveInstanceWithErrorMsg(SharingInstance sharingInstance, String errorMsg) {
+    SharingInstanceEntity sharingInstanceEntity = toEntity(sharingInstance);
+    sharingInstanceEntity.setStatus(Status.ERROR);
+    sharingInstanceEntity.setError(errorMsg);
+    sharingInstanceRepository.save(sharingInstanceEntity);
   }
 
   private void checkTenantsExistAndContainCentralTenantOrThrow(String sourceTenantId, String targetTenantId) {
