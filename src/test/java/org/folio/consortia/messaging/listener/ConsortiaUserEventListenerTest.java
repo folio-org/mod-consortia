@@ -82,7 +82,7 @@ class ConsortiaUserEventListenerTest {
     when(eventListenerHelper.getCentralTenantByIdByHeader(messageHeaders)).
       thenThrow(new BadSqlGrammarException("table 'consortia_configuration' not found", "", new SQLException()));
     assertThrows(org.springframework.jdbc.BadSqlGrammarException.class,
-      () -> eventListener.handleUserCreating(USER_CREATED_EVENT_SAMPLE, getMessageHeaders()));
+      () -> eventListener.handleUserCreating(USER_CREATED_EVENT_SAMPLE, messageHeaders));
     verifyNoInteractions(userAffiliationService);
   }
 
