@@ -1,9 +1,14 @@
 package org.folio.consortia.config.kafka;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import static org.folio.consortia.messaging.listener.ConsortiaUserEventListener.USER_CREATED_LISTENER_ID;
+import static org.folio.consortia.messaging.listener.ConsortiaUserEventListener.USER_UPDATED_LISTENER_ID;
+import static org.folio.consortia.messaging.listener.ConsortiaUserEventListener.USER_DELETED_LISTENER_ID;
+import static org.folio.consortia.messaging.listener.ConsortiaSharingInstanceEventListener.CONSORTIUM_INSTANCE_SHARING_COMPLETE_LISTENER_ID;
+
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.stream.Stream;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -21,14 +26,10 @@ import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.stream.Stream;
-
-import static org.folio.consortia.messaging.listener.ConsortiaUserEventListener.USER_CREATED_LISTENER_ID;
-import static org.folio.consortia.messaging.listener.ConsortiaUserEventListener.USER_UPDATED_LISTENER_ID;
-import static org.folio.consortia.messaging.listener.ConsortiaUserEventListener.USER_DELETED_LISTENER_ID;
-import static org.folio.consortia.messaging.listener.ConsortiaSharingInstanceEventListener.CONSORTIUM_INSTANCE_SHARING_COMPLETE_LISTENER_ID;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @Component
 @Log4j2
