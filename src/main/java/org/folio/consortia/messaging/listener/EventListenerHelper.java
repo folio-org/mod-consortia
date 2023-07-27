@@ -17,21 +17,19 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @Component
 @RequiredArgsConstructor
-public class EventListenerUtils {
+public class EventListenerHelper {
   private final ConsortiaConfigurationService configurationService;
   private final FolioModuleMetadata folioMetadata;
 
   protected String getCentralTenantByIdByHeader(MessageHeaders messageHeaders) {
     String requestedTenantId = getHeaderValue(messageHeaders, XOkapiHeaders.TENANT, null).get(0);
-    // getting central tenant for this requested tenant from get central in its own schema
-    try (var ignored = new FolioExecutionContextSetter(createFolioExecutionContext(
-      messageHeaders, folioMetadata, requestedTenantId))) {
+    // getting central tenant from its own table by using appropriate context
+    try (var ignored = new FolioExecutionContextSetter(createFolioExecutionContext(messageHeaders, folioMetadata, requestedTenantId))) {
       return configurationService.getCentralTenantId(requestedTenantId);
     } catch (InvalidDataAccessResourceUsageException e) {
       log.info("Table consortia_configuration is not exists, because tenant: {} is not in consortium, DB message: {}, skipping...",
         requestedTenantId, e.getMessage());
     }
-
     return null;
   }
 }

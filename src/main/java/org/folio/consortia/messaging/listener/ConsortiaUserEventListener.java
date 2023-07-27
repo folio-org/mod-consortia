@@ -23,7 +23,7 @@ public class ConsortiaUserEventListener {
   public static final String USER_DELETED_LISTENER_ID = "user-deleted-listener-id";
   private final UserAffiliationService userAffiliationService;
   private final FolioModuleMetadata folioMetadata;
-  private final EventListenerUtils listenerUtils;
+  private final EventListenerHelper eventListenerHelper;
 
   @KafkaListener(
     id = USER_CREATED_LISTENER_ID,
@@ -32,7 +32,7 @@ public class ConsortiaUserEventListener {
     containerFactory = "kafkaListenerContainerFactory")
   public void handleUserCreating(String data, MessageHeaders messageHeaders) {
     // to create affiliation in central tenant schema
-    String centralTenantId = listenerUtils.getCentralTenantByIdByHeader(messageHeaders);
+    String centralTenantId = eventListenerHelper.getCentralTenantByIdByHeader(messageHeaders);
     if (StringUtils.isNotBlank(centralTenantId)) {
       runInFolioContext(createFolioExecutionContext(messageHeaders, folioMetadata, centralTenantId), () ->
         userAffiliationService.createPrimaryUserAffiliation(data));
@@ -46,7 +46,7 @@ public class ConsortiaUserEventListener {
     containerFactory = "kafkaListenerContainerFactory")
   public void handleUserUpdating(String data, MessageHeaders messageHeaders) {
     // to update affiliation in central tenant schema
-    String centralTenantId = listenerUtils.getCentralTenantByIdByHeader(messageHeaders);
+    String centralTenantId = eventListenerHelper.getCentralTenantByIdByHeader(messageHeaders);
     if (StringUtils.isNotBlank(centralTenantId)) {
       runInFolioContext(createFolioExecutionContext(messageHeaders, folioMetadata, centralTenantId), () ->
         userAffiliationService.updatePrimaryUserAffiliation(data));
@@ -60,7 +60,7 @@ public class ConsortiaUserEventListener {
     containerFactory = "kafkaListenerContainerFactory")
   public void handleUserDeleting(String data, MessageHeaders messageHeaders) {
     // to delete affiliation from central tenant schema
-    String centralTenantId = listenerUtils.getCentralTenantByIdByHeader(messageHeaders);
+    String centralTenantId = eventListenerHelper.getCentralTenantByIdByHeader(messageHeaders);
     if (StringUtils.isNotBlank(centralTenantId)) {
       runInFolioContext(createFolioExecutionContext(messageHeaders, folioMetadata, centralTenantId), () ->
         userAffiliationService.deletePrimaryUserAffiliation(data));

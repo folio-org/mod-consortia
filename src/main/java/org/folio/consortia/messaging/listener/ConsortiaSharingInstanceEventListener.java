@@ -21,7 +21,7 @@ public class ConsortiaSharingInstanceEventListener {
   public static final String CONSORTIUM_INSTANCE_SHARING_COMPLETE_LISTENER_ID = "consortium-instance-sharing-complete-listener-id";
   private final SharingInstanceService sharingInstanceService;
   private final FolioModuleMetadata folioMetadata;
-  private final EventListenerUtils listenerUtils;
+  private final EventListenerHelper eventListenerHelper;
 
   @KafkaListener(
     id = CONSORTIUM_INSTANCE_SHARING_COMPLETE_LISTENER_ID,
@@ -29,7 +29,7 @@ public class ConsortiaSharingInstanceEventListener {
     concurrency = "#{folioKafkaProperties.listener['consortium-instance-sharing-complete'].concurrency}",
     containerFactory = "kafkaListenerContainerFactory")
   public void handleConsortiumInstanceSharingCompleting(String data, MessageHeaders messageHeaders) {
-    String centralTenantId = listenerUtils.getCentralTenantByIdByHeader(messageHeaders);
+    String centralTenantId = eventListenerHelper.getCentralTenantByIdByHeader(messageHeaders);
     if (StringUtils.isNotBlank(centralTenantId)) {
       runInFolioContext(createFolioExecutionContext(messageHeaders, folioMetadata, centralTenantId), () ->
         sharingInstanceService.completePromotingLocalInstance(data));

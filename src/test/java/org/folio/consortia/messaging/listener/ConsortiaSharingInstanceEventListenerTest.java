@@ -12,7 +12,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.folio.consortia.service.ConsortiaConfigurationService;
 import org.folio.consortia.service.SharingInstanceService;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.junit.jupiter.api.Test;
@@ -32,14 +31,12 @@ class ConsortiaSharingInstanceEventListenerTest {
   @Mock
   private SharingInstanceService sharingInstanceService;
   @Mock
-  private ConsortiaConfigurationService configurationService;
-  @Mock
-  private EventListenerUtils listenerUtils;
+  private EventListenerHelper eventListenerHelper;
 
   @Test
   void shouldCompleteInstanceSharingWhenConfigurationExists() {
     MessageHeaders messageHeaders = getMessageHeaders();
-    when(listenerUtils.getCentralTenantByIdByHeader(messageHeaders)).thenReturn(TENANT);
+    when(eventListenerHelper.getCentralTenantByIdByHeader(messageHeaders)).thenReturn(TENANT);
     eventListener.handleConsortiumInstanceSharingCompleting(CONSORTIUM_INSTANCE_SHARING_COMPLETE_EVENT_SAMPLE, messageHeaders);
     verify(sharingInstanceService).completePromotingLocalInstance(anyString());
   }
@@ -47,16 +44,18 @@ class ConsortiaSharingInstanceEventListenerTest {
   @Test
   void shouldThrowErrorWhenBusinessExceptionThrown() {
     MessageHeaders messageHeaders = getMessageHeaders();
-    when(listenerUtils.getCentralTenantByIdByHeader(messageHeaders)).thenThrow(new RuntimeException("Operation failed"));
+    when(eventListenerHelper.getCentralTenantByIdByHeader(messageHeaders)).thenThrow(new RuntimeException("Operation failed"));
     assertThrows(java.lang.RuntimeException.class,
       () -> eventListener.handleConsortiumInstanceSharingCompleting(CONSORTIUM_INSTANCE_SHARING_COMPLETE_EVENT_SAMPLE, messageHeaders));
   }
 
   @Test
   void shouldNotThrowErrorWhenCouldNotGetCentralTenantId() {
-    when(configurationService.getCentralTenantId(TENANT))
-      .thenThrow(new BadSqlGrammarException("table 'consortia_configuration' not found", "", new SQLException()));
-    eventListener.handleConsortiumInstanceSharingCompleting(CONSORTIUM_INSTANCE_SHARING_COMPLETE_EVENT_SAMPLE, getMessageHeaders());
+    MessageHeaders messageHeaders = getMessageHeaders();
+    when(eventListenerHelper.getCentralTenantByIdByHeader(messageHeaders)).
+      thenThrow(new BadSqlGrammarException("table 'consortia_configuration' not found", "", new SQLException()));
+    assertThrows(org.springframework.jdbc.BadSqlGrammarException.class,
+      () -> eventListener.handleConsortiumInstanceSharingCompleting(CONSORTIUM_INSTANCE_SHARING_COMPLETE_EVENT_SAMPLE, messageHeaders));
     verifyNoInteractions(sharingInstanceService);
   }
 

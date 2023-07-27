@@ -29,9 +29,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -139,25 +139,24 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
       String targetTenantId = promotingEvent.getTargetTenantId();
       checkTenantsExistAndContainCentralTenantOrThrow(sourceTenantId, targetTenantId);
 
-      if (ObjectUtils.notEqual(centralTenantId, targetTenantId)) {
-        String massage = String.format("promotion failed as targetTenantId: %s does not equal to centralTenantId: %s", targetTenantId, centralTenantId);
-        log.warn("completePromotingLocalInstance:: " + massage);
-        saveInstanceWithErrorMsg(promotingEvent, massage);
-        return;
-      }
-
       var specification = constructSpecification(promotingEvent.getInstanceIdentifier(), sourceTenantId, targetTenantId, null);
       var optionalSharingInstance = sharingInstanceRepository.findOne(specification);
 
       if (optionalSharingInstance.isEmpty()) {
-        String massage = String.format("sharingInstance with instanceIdentifier: %s, sourceTenantId: %s, targetTenantId: %s does not exist",
-          promotingEvent.getInstanceIdentifier(), sourceTenantId, targetTenantId);
-        log.warn("completePromotingLocalInstance:: " + massage);
-        saveInstanceWithErrorMsg(promotingEvent, massage);
+        log.warn("completePromotingLocalInstance:: sharingInstance with instanceIdentifier: {}, sourceTenantId: {}, targetTenantId: {} does not exist", promotingEvent.getInstanceIdentifier(), sourceTenantId, targetTenantId);
         return;
       }
 
       var promotedSharingInstance = optionalSharingInstance.get();
+      if (ObjectUtils.notEqual(centralTenantId, targetTenantId)) {
+        String massage = String.format("promotion failed as targetTenantId: %s does not equal to centralTenantId: %s", targetTenantId, centralTenantId);
+        log.warn("completePromotingLocalInstance:: " + massage);
+        promotedSharingInstance.setStatus(Status.ERROR);
+        promotedSharingInstance.setError(massage);
+        sharingInstanceRepository.save(promotedSharingInstance);
+        return;
+      }
+
       if (ObjectUtils.isNotEmpty(promotingEvent.getError())) {
         promotedSharingInstance.setStatus(Status.ERROR);
         promotedSharingInstance.setError(promotingEvent.getError());
@@ -170,15 +169,7 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
         "has been updated to: {}", promotedSharingInstance.getInstanceId(), sourceTenantId, targetTenantId, promotedSharingInstance.getStatus());
     } catch (Exception e) {
       log.error("completePromotingLocalInstance:: exception occurred while promoting local sharing instance", e);
-      saveInstanceWithErrorMsg(new SharingInstance(), e.getMessage());
     }
-  }
-
-  private void saveInstanceWithErrorMsg(SharingInstance sharingInstance, String errorMsg) {
-    SharingInstanceEntity sharingInstanceEntity = toEntity(sharingInstance);
-    sharingInstanceEntity.setStatus(Status.ERROR);
-    sharingInstanceEntity.setError(errorMsg);
-    sharingInstanceRepository.save(sharingInstanceEntity);
   }
 
   private void checkTenantsExistAndContainCentralTenantOrThrow(String sourceTenantId, String targetTenantId) {
