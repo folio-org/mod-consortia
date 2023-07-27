@@ -18,7 +18,7 @@ import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.messaging.MessageHeaders;
 
 @SpringBootTest
-public class EventListenerHelperTest {
+class EventListenerHelperTest {
   @InjectMocks
   private EventListenerHelper eventListenerHelper;
   @Mock

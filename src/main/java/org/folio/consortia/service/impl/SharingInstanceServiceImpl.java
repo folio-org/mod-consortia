@@ -139,24 +139,21 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
       String targetTenantId = promotingEvent.getTargetTenantId();
       checkTenantsExistAndContainCentralTenantOrThrow(sourceTenantId, targetTenantId);
 
+      if (ObjectUtils.notEqual(centralTenantId, targetTenantId)) {
+        log.warn("completePromotingLocalInstance:: promotion failed as targetTenantId: {} does not equal to centralTenantId: {}", targetTenantId, centralTenantId);
+        return;
+      }
+
       var specification = constructSpecification(promotingEvent.getInstanceIdentifier(), sourceTenantId, targetTenantId, null);
       var optionalSharingInstance = sharingInstanceRepository.findOne(specification);
 
       if (optionalSharingInstance.isEmpty()) {
-        log.warn("completePromotingLocalInstance:: sharingInstance with instanceIdentifier: {}, sourceTenantId: {}, targetTenantId: {} does not exist", promotingEvent.getInstanceIdentifier(), sourceTenantId, targetTenantId);
+        log.warn("completePromotingLocalInstance:: sharingInstance with instanceIdentifier: {}, sourceTenantId: {}, targetTenantId: {} does not exist",
+          promotingEvent.getInstanceIdentifier(), sourceTenantId, targetTenantId);
         return;
       }
 
       var promotedSharingInstance = optionalSharingInstance.get();
-      if (ObjectUtils.notEqual(centralTenantId, targetTenantId)) {
-        String massage = String.format("promotion failed as targetTenantId: %s does not equal to centralTenantId: %s", targetTenantId, centralTenantId);
-        log.warn("completePromotingLocalInstance:: " + massage);
-        promotedSharingInstance.setStatus(Status.ERROR);
-        promotedSharingInstance.setError(massage);
-        sharingInstanceRepository.save(promotedSharingInstance);
-        return;
-      }
-
       if (ObjectUtils.isNotEmpty(promotingEvent.getError())) {
         promotedSharingInstance.setStatus(Status.ERROR);
         promotedSharingInstance.setError(promotingEvent.getError());
