@@ -29,7 +29,7 @@ import lombok.extern.log4j.Log4j2;
 public class UserServiceImpl implements UserService {
   public static final String PATRON_GROUP = null;
   private static final String USER_ID = "userId";
-  private static final String USER_TYPE = "shadow";
+  private static final String SHADOW_USER_TYPE = "shadow";
 
   private final UsersClient usersClient;
   private final FolioExecutionContext folioExecutionContext;
@@ -100,7 +100,7 @@ public class UserServiceImpl implements UserService {
           personal.setPreferredContactTypeId(userPersonal.getPreferredContactTypeId());
           user.setPersonal(personal);
         }
-        user.setType(USER_TYPE);
+        user.setType(SHADOW_USER_TYPE);
         user.setActive(true);
       } else {
         log.warn("Could not find real user with id: {} in his home tenant: {}", userId.toString(), tenantId);
