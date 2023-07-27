@@ -105,10 +105,11 @@ public class KafkaService {
     for (ConsortiaInputEventType consEventType : ConsortiaInputEventType.values()) {
       eventsNameStreamBuilder.add(consEventType);
     }
-    eventsNameStreamBuilder.add(ConsortiaOutputEventType.CONSORTIUM_PRIMARY_AFFILIATION_CREATED);
-    eventsNameStreamBuilder.add(ConsortiaOutputEventType.CONSORTIUM_PRIMARY_AFFILIATION_UPDATED);
-    eventsNameStreamBuilder.add(ConsortiaOutputEventType.CONSORTIUM_PRIMARY_AFFILIATION_DELETED);
-    eventsNameStreamBuilder.add(ConsortiaOutputEventType.CONSORTIUM_INSTANCE_SHARING_INIT);
+
+    for (ConsortiaOutputEventType consEventType : ConsortiaOutputEventType.values()) {
+      eventsNameStreamBuilder.add(consEventType);
+    }
+
     return eventsNameStreamBuilder.build()
       .map(Enum::name)
       .map(topic -> getTenantTopicName(topic, tenant))
