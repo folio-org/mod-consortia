@@ -76,7 +76,7 @@ class UserServiceTest {
     Mockito.when(usersClient.getUsersByUserId(any())).thenReturn(createUserEntity(true));
     User user = userService.prepareShadowUser(UUID.randomUUID(), "diku");
     Assertions.assertEquals("shadow", user.getType());
-    Assertions.assertEquals("diku", user.getCustomFields().get("TenantId"));
+    Assertions.assertEquals("diku", user.getCustomFields().get("tenantId"));
     Assertions.assertEquals(true, user.getActive());
   }
 
