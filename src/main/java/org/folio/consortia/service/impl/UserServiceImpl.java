@@ -2,13 +2,14 @@ package org.folio.consortia.service.impl;
 
 import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.folio.consortia.client.UsersClient;
-import org.folio.consortia.domain.dto.Personal;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.exception.ConsortiumClientException;
 import org.folio.consortia.exception.ResourceNotFoundException;
@@ -35,6 +36,9 @@ public class UserServiceImpl implements UserService {
   private final FolioExecutionContext folioExecutionContext;
   private final FolioModuleMetadata folioModuleMetadata;
   private static final Integer RANDOM_STRING_COUNT = 5;
+  private static final String TENANT_ID_KEY = "tenantId";
+  private static Map<String, Object> CUSTOM_FIELDS = new HashMap<>();
+
 
   @Override
   public User createUser(User user) {
@@ -91,17 +95,11 @@ public class UserServiceImpl implements UserService {
         user.setId(userId.toString());
         user.setPatronGroup(PATRON_GROUP);
         user.setUsername(userOptional.getUsername() + HelperUtils.randomString(RANDOM_STRING_COUNT));
-        var userPersonal = userOptional.getPersonal();
-        if (Objects.nonNull(userPersonal)) {
-          Personal personal = new Personal();
-          personal.setLastName(userPersonal.getLastName());
-          personal.setFirstName(userPersonal.getFirstName());
-          personal.setEmail(userPersonal.getEmail());
-          personal.setPreferredContactTypeId(userPersonal.getPreferredContactTypeId());
-          user.setPersonal(personal);
-        }
         user.setType(SHADOW_USER_TYPE);
         user.setActive(true);
+
+        CUSTOM_FIELDS.put(TENANT_ID_KEY, tenantId);
+        user.setCustomFields(CUSTOM_FIELDS);
       } else {
         log.warn("Could not find real user with id: {} in his home tenant: {}", userId.toString(), tenantId);
         throw new ResourceNotFoundException(USER_ID, userId.toString());
