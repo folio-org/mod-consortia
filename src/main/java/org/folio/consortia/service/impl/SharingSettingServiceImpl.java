@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -40,6 +41,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @RequiredArgsConstructor
 public class SharingSettingServiceImpl implements SharingSettingService {
+  private static final String URL_PATTERN = "^/[A-Za-z0-9-]++(?:/[A-Za-z0-9-]++)*+$";
 
   private final SharingSettingRepository sharingSettingRepository;
   private final TenantService tenantService;
@@ -124,6 +126,7 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     PublicationRequest publicationRequest = new PublicationRequest();
     publicationRequest.setMethod(httpMethod);
     String url = sharingSettingRequest.getUrl();
+    isValidUrl(url);
     if (httpMethod.equals(HttpMethod.PUT.toString())) {
       url += "/" + getPayloadId(sharingSettingRequest.getPayload());
     }
@@ -131,6 +134,13 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     publicationRequest.setPayload(sharingSettingRequest.getPayload());
     publicationRequest.setTenants(new HashSet<>());
     return publicationRequest;
+  }
+
+  private void isValidUrl(String url) {
+    Pattern pattern = Pattern.compile(URL_PATTERN);
+    if(!pattern.matcher(url).matches()) {
+      throw new IllegalArgumentException("Invalid URL format: URL start with '/' and contains any words");
+    }
   }
 
   private SharingSettingEntity createSharingSettingEntityFromRequest(SharingSettingRequest sharingSettingRequest, String tenantId) {

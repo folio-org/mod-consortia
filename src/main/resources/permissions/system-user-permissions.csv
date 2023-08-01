@@ -36,8 +36,8 @@ inventory-storage.modes-of-issuance.item.post
 inventory-storage.modes-of-issuance.item.put
 inventory-storage.instance-statuses.item.post
 inventory-storage.instance-statuses.item.put
-instance-note-types.item.post
-instance-note-types.item.put
+inventory-storage.instance-note-types.item.post
+inventory-storage.instance-note-types.item.put
 inventory-storage.instance-formats.item.post
 inventory-storage.instance-formats.item.put
 inventory-storage.contributor-types.item.post

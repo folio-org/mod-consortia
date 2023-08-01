@@ -130,7 +130,8 @@ public class TenantServiceImpl implements TenantService {
       shadowAdminUser = userService.prepareShadowUser(adminUserId, folioExecutionContext.getTenantId());
       userTenantRepository.save(createUserTenantEntity(consortiumId, shadowAdminUser, tenantDto));
       // creating shadow user of consortia system user of central tenant with same permissions.
-      var centralSystemUser = userService.getByUsername(systemUserUsername).orElseThrow(() ->  new ResourceNotFoundException("systemUserUsername", systemUserUsername));
+      var centralSystemUser = userService.getByUsername(systemUserUsername)
+        .orElseThrow(() ->  new ResourceNotFoundException("systemUserUsername", systemUserUsername));
       shadowSystemUser = userService.prepareShadowUser(UUID.fromString(centralSystemUser.getId()), folioExecutionContext.getTenantId());
     }
 
