@@ -53,7 +53,7 @@ public class TenantServiceImpl implements TenantService {
       + "Please remove the user association before attempting to delete the tenant.";
   private static final String DUMMY_USERNAME = "dummy_user";
   @Value("${folio.system.username}")
-  private String username;
+  private String systemUserUsername;
 
   private final TenantRepository tenantRepository;
   private final UserTenantRepository userTenantRepository;
@@ -130,8 +130,8 @@ public class TenantServiceImpl implements TenantService {
       shadowAdminUser = userService.prepareShadowUser(adminUserId, folioExecutionContext.getTenantId());
       userTenantRepository.save(createUserTenantEntity(consortiumId, shadowAdminUser, tenantDto));
       // creating shadow user of consortia system user of central tenant with same permissions.
-      var centralUser = userService.getByUsername(username).orElseThrow(() ->  new ResourceNotFoundException("username", username));
-      shadowSystemUser = userService.prepareShadowUser(UUID.fromString(centralUser.getId()), folioExecutionContext.getTenantId());
+      var centralSystemUser = userService.getByUsername(systemUserUsername).orElseThrow(() ->  new ResourceNotFoundException("systemUserUsername", systemUserUsername));
+      shadowSystemUser = userService.prepareShadowUser(UUID.fromString(centralSystemUser.getId()), folioExecutionContext.getTenantId());
     }
 
     // switch to context of the desired tenant and apply all necessary setup

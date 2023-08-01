@@ -7,11 +7,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.folio.consortia.config.FolioExecutionContextHelper;
 import org.folio.consortia.domain.dto.PublicationRequest;
 import org.folio.consortia.domain.dto.SharingSettingRequest;
@@ -110,7 +108,7 @@ public class SharingSettingServiceImpl implements SharingSettingService {
   }
 
   private void checkEqualsOfPayloadIdWithSettingId(SharingSettingRequest sharingSettingRequest) {
-    String sharingSettingId =String.valueOf(sharingSettingRequest.getSettingId());
+    String sharingSettingId = String.valueOf(sharingSettingRequest.getSettingId());
     String payloadId = getPayloadId(sharingSettingRequest.getPayload());
     if (ObjectUtils.notEqual(sharingSettingId, payloadId)) {
       throw new IllegalArgumentException("id in payload is not equal to settingId");
@@ -126,20 +124,10 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     PublicationRequest publicationRequest = new PublicationRequest();
     publicationRequest.setMethod(httpMethod);
     String url = sharingSettingRequest.getUrl();
-    String[] parts = url.split("/");
-    String lastPart =  parts[parts.length - 1];
-    Pattern uuidRegex = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
     if (httpMethod.equals(HttpMethod.PUT.toString())) {
-      if (!uuidRegex.matcher(lastPart).matches()) {
-        url += "/" + getPayloadId(sharingSettingRequest.getPayload());
-      }
-      publicationRequest.setUrl(url);
-    } else {
-      if (uuidRegex.matcher(lastPart).matches()) {
-        url = StringUtils.removeEnd(url, lastPart);
-      }
-      publicationRequest.setUrl(url);
+      url += "/" + getPayloadId(sharingSettingRequest.getPayload());
     }
+    publicationRequest.setUrl(url);
     publicationRequest.setPayload(sharingSettingRequest.getPayload());
     publicationRequest.setTenants(new HashSet<>());
     return publicationRequest;

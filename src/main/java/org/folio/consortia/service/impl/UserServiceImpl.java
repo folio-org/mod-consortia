@@ -13,6 +13,7 @@ import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.exception.ConsortiumClientException;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.UserService;
+import org.folio.consortia.utils.HelperUtils;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.scope.FolioExecutionContextSetter;
@@ -32,6 +33,7 @@ public class UserServiceImpl implements UserService {
   private final UsersClient usersClient;
   private final FolioExecutionContext folioExecutionContext;
   private final FolioModuleMetadata folioModuleMetadata;
+  private static final Integer RANDOM_STRING_COUNT = 5;
 
   @Override
   public User createUser(User user) {
@@ -87,7 +89,7 @@ public class UserServiceImpl implements UserService {
       if (Objects.nonNull(userOptional.getId())) {
         user.setId(userId.toString());
         user.setPatronGroup(PATRON_GROUP);
-        user.setUsername("shadow-" + userOptional.getUsername());
+        user.setUsername(String.format("shadow-%s-%s", userOptional.getUsername(), HelperUtils.randomString(RANDOM_STRING_COUNT)));
         var userPersonal = userOptional.getPersonal();
         if (Objects.nonNull(userPersonal)) {
           Personal personal = new Personal();
