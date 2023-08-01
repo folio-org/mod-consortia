@@ -12,3 +12,6 @@ perms.users.get
 user-tenants.item.post
 consortia.sync-primary-affiliations.item.post
 consortia.create-primary-affiliations.item.post
+inventory-storage.instances.item.put
+departments.item.post
+departments.item.put
