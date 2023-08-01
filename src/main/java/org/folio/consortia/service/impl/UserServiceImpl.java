@@ -2,9 +2,7 @@ package org.folio.consortia.service.impl;
 
 import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,7 +26,6 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-  public static final String PATRON_GROUP = null;
   private static final String USER_ID = "userId";
   private static final String SHADOW_USER_TYPE = "shadow";
 
@@ -36,9 +33,6 @@ public class UserServiceImpl implements UserService {
   private final FolioExecutionContext folioExecutionContext;
   private final FolioModuleMetadata folioModuleMetadata;
   private static final Integer RANDOM_STRING_COUNT = 5;
-  private static final String TENANT_ID_KEY = "tenantId";
-  private static Map<String, Object> CUSTOM_FIELDS = new HashMap<>();
-
 
   @Override
   public User createUser(User user) {
@@ -93,13 +87,9 @@ public class UserServiceImpl implements UserService {
 
       if (Objects.nonNull(userOptional.getId())) {
         user.setId(userId.toString());
-        user.setPatronGroup(PATRON_GROUP);
-        user.setUsername(userOptional.getUsername() + HelperUtils.randomString(RANDOM_STRING_COUNT));
+        user.setUsername(String.format("shadow-%s-%s", userOptional.getUsername(), HelperUtils.randomString(RANDOM_STRING_COUNT)));
         user.setType(SHADOW_USER_TYPE);
         user.setActive(true);
-
-        CUSTOM_FIELDS.put(TENANT_ID_KEY, tenantId);
-        user.setCustomFields(CUSTOM_FIELDS);
       } else {
         log.warn("Could not find real user with id: {} in his home tenant: {}", userId.toString(), tenantId);
         throw new ResourceNotFoundException(USER_ID, userId.toString());
