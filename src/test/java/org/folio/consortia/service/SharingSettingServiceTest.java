@@ -153,6 +153,11 @@ class SharingSettingServiceTest {
     sharingSettingRequest.setUrl("/");
     assertThrows(java.lang.IllegalArgumentException.class, () -> sharingSettingService.start(consortiumId, sharingSettingRequest));
     verify(publicationService, times(0)).publishRequest(any(), any());
+
+    // Third invalid url case
+    sharingSettingRequest.setUrl("/user- a");
+    assertThrows(java.lang.IllegalArgumentException.class, () -> sharingSettingService.start(consortiumId, sharingSettingRequest));
+    verify(publicationService, times(0)).publishRequest(any(), any());
   }
 
   public JsonNode createJsonNode() throws JsonProcessingException {
