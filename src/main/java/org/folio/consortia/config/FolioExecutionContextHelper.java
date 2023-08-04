@@ -24,7 +24,7 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 public class FolioExecutionContextHelper {
 
-  private static final String AUTHTOKEN_REFRESH_CACHE_HEADER = "Authtoken-Refresh-Cache";
+  public static final String AUTHTOKEN_REFRESH_CACHE_HEADER = "Authtoken-Refresh-Cache";
 
   private final FolioModuleMetadata folioModuleMetadata;
   private final FolioExecutionContext folioExecutionContext;
