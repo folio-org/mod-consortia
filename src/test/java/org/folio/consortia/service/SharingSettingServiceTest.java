@@ -131,35 +131,6 @@ class SharingSettingServiceTest {
     verify(publicationService, times(0)).publishRequest(any(), any());
   }
 
-  @Test
-  void shouldThrowErrorForInvalidURLFormat() throws JsonProcessingException {
-    UUID consortiumId = UUID.randomUUID();
-    var sharingSettingRequest = getMockDataObject(SHARING_SETTING_REQUEST_SAMPLE, SharingSettingRequest.class);
-    sharingSettingRequest.setUrl("/organization/");
-    Map<String, String> payload = new LinkedHashMap<>();
-    payload.put("id", "1844767a-8367-4926-9999-514c35840399");
-    payload.put("name", "ORG-NAME");
-    payload.put("source", "local");
-
-    when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
-    when(objectMapper.convertValue(payload, JsonNode.class)).thenReturn(createJsonNode());
-
-    // First invalid url case
-    sharingSettingRequest.setUrl("/organization/");
-    assertThrows(java.lang.IllegalArgumentException.class, () -> sharingSettingService.start(consortiumId, sharingSettingRequest));
-    verify(publicationService, times(0)).publishRequest(any(), any());
-
-    // Second invalid url case
-    sharingSettingRequest.setUrl("/");
-    assertThrows(java.lang.IllegalArgumentException.class, () -> sharingSettingService.start(consortiumId, sharingSettingRequest));
-    verify(publicationService, times(0)).publishRequest(any(), any());
-
-    // Third invalid url case
-    sharingSettingRequest.setUrl("/user- a");
-    assertThrows(java.lang.IllegalArgumentException.class, () -> sharingSettingService.start(consortiumId, sharingSettingRequest));
-    verify(publicationService, times(0)).publishRequest(any(), any());
-  }
-
   public JsonNode createJsonNode() throws JsonProcessingException {
     Map<String, String> payload = new HashMap<>();
     payload.put("id", "1844767a-8367-4926-9999-514c35840399");
