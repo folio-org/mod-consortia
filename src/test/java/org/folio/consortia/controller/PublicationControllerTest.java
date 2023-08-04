@@ -282,7 +282,7 @@ public class PublicationControllerTest extends BaseIT {
       .sorted()
       .toList();
 
-    verify(restTemplate, times(listOfTenantNames.size())).exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Object.class));
+    verify(restTemplate, times(listOfTenantNames.size())).exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class));
     // check if all 'x-okapi-tenant' values match with the initial list of expected tenant names
     Assertions.assertTrue(CollectionUtils.isEqualCollection(capturedTenantHeaders, listOfTenantNames));
   }
