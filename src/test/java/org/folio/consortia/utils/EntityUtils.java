@@ -9,6 +9,7 @@ import org.folio.consortia.domain.dto.Consortium;
 import org.folio.consortia.domain.dto.PublicationRequest;
 import org.folio.consortia.domain.dto.PublicationStatus;
 import org.folio.consortia.domain.dto.SharingInstance;
+import org.folio.consortia.domain.dto.SharingSettingDeleteResponse;
 import org.folio.consortia.domain.dto.SharingSettingRequest;
 import org.folio.consortia.domain.dto.SharingSettingResponse;
 import org.folio.consortia.domain.dto.Tenant;
@@ -188,6 +189,10 @@ public class EntityUtils {
 
   public static SharingSettingResponse createSharingSettingResponse(UUID createSettingsPcId, UUID updateSettingsPcId) {
     return new SharingSettingResponse().createSettingsPCId(createSettingsPcId).updateSettingsPCId(updateSettingsPcId);
+  }
+
+  public static SharingSettingDeleteResponse createSharingSettingResponseForDelete(UUID pcId) {
+    return new SharingSettingDeleteResponse().pcId(pcId);
   }
 
   public static TenantCollection createTenantCollection(List<Tenant> tenants) {

@@ -12,11 +12,13 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.folio.consortia.config.FolioExecutionContextHelper;
 import org.folio.consortia.domain.dto.PublicationRequest;
+import org.folio.consortia.domain.dto.SharingSettingDeleteResponse;
 import org.folio.consortia.domain.dto.SharingSettingRequest;
 import org.folio.consortia.domain.dto.SharingSettingResponse;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
 import org.folio.consortia.domain.entity.SharingSettingEntity;
+import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.SharingSettingRepository;
 import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.PublicationService;
@@ -34,13 +36,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 
 @Service
 @Log4j2
 @RequiredArgsConstructor
 public class SharingSettingServiceImpl implements SharingSettingService {
-
   private final SharingSettingRepository sharingSettingRepository;
   private final TenantService tenantService;
   private final ConsortiumService consortiumService;
@@ -99,6 +101,46 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     }
   }
 
+  @Override
+  @Transactional
+  @SneakyThrows
+  public SharingSettingDeleteResponse delete(UUID consortiumId, UUID settingId, SharingSettingRequest sharingSettingRequest) {
+    log.debug("start:: Trying to delete sharing setting with consortiumId: {}, sharing settingId: {}", consortiumId, settingId);
+    validateSharingSettingRequestOrThrow(settingId, sharingSettingRequest);
+    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
+    Set<String> settingTenants = sharingSettingRepository.findTenantsBySettingId(settingId);
+    TenantCollection allTenants = tenantService.getAll(consortiumId);
+    PublicationRequest publicationDeleteRequest = createPublicationRequestForSetting(sharingSettingRequest, HttpMethod.DELETE.toString());
+
+    // By traverse through all tenants in db,
+    // we will add tenant to delete request publication tenant list, if it exists in setting tenant associations
+    for (Tenant tenant : allTenants.getTenants()) {
+      if (settingTenants.contains(tenant.getId())) {
+        publicationDeleteRequest.getTenants().add(tenant.getId());
+        log.info("start:: tenant={} added to publication delete request for setting={}", tenant.getId(), settingId);
+      }
+    }
+    log.info("start:: tenants with size: {} successfully added to appropriate publication request for setting: {}", allTenants.getTotalRecords(), settingId);
+    sharingSettingRepository.deleteBySettingId(settingId);
+    log.info("start:: The Sharing Settings for settingId '{}' and '{}' unique tenant(s) were successfully deleted from the database", sharingSettingRequest.getSettingId(), publicationDeleteRequest.getTenants().size());
+
+    // we create PC request with POST and PUT Http method to create settings as a consortia-system-user
+    try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId()))) {
+      UUID pcId = publishRequest(consortiumId, publicationDeleteRequest);
+      return new SharingSettingDeleteResponse()
+        .pcId(pcId);
+    }
+  }
+
+  private void validateSharingSettingRequestOrThrow(UUID settingId, SharingSettingRequest sharingSettingRequest) {
+    if (ObjectUtils.notEqual(sharingSettingRequest.getSettingId(), settingId)) {
+      throw new IllegalArgumentException("id in path is not equal with settingId in payload");
+    }
+    if (!sharingSettingRepository.existsBySettingId(settingId)) {
+      throw new ResourceNotFoundException("settingId", String.valueOf(settingId));
+    }
+  }
+
   private UUID publishRequest(UUID consortiumId, PublicationRequest publicationRequest) {
     if (CollectionUtils.isNotEmpty(publicationRequest.getTenants())) {
       return publicationService.publishRequest(consortiumId, publicationRequest).getId();
@@ -123,7 +165,11 @@ public class SharingSettingServiceImpl implements SharingSettingService {
   private PublicationRequest createPublicationRequestForSetting(SharingSettingRequest sharingSettingRequest, String httpMethod) {
     PublicationRequest publicationRequest = new PublicationRequest();
     publicationRequest.setMethod(httpMethod);
-    publicationRequest.setUrl(sharingSettingRequest.getUrl());
+    String url = sharingSettingRequest.getUrl();
+    if (httpMethod.equals(HttpMethod.PUT.toString()) || httpMethod.equals(HttpMethod.DELETE.toString())) {
+      url += "/" + sharingSettingRequest.getSettingId();
+    }
+    publicationRequest.setUrl(url);
     publicationRequest.setPayload(sharingSettingRequest.getPayload());
     publicationRequest.setTenants(new HashSet<>());
     return publicationRequest;

@@ -35,7 +35,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
     var absUrl = folioExecutionContext.getOkapiUrl() + url;
     log.debug("performRequest:: folio context header TENANT = {}" , folioExecutionContext.getOkapiHeaders().get(XOkapiHeaders.TENANT).iterator().next());
 
-    var responseEntity = restTemplate.exchange(absUrl, httpMethod, httpEntity, Object.class);
+    var responseEntity = restTemplate.exchange(absUrl, httpMethod, httpEntity, String.class);
 
     return new PublicationHttpResponse(objectMapper.writeValueAsString(responseEntity.getBody()), responseEntity.getStatusCode());
   }
