@@ -132,6 +132,7 @@ class SharingSettingServiceTest {
     var publicationResponse = new PublicationResponse().id(pcId);
 
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
+    when(sharingSettingRepository.existsBySettingId(settingId)).thenReturn(true);
     when(publicationService.publishRequest(consortiumId, publicationRequestDelete)).thenReturn(publicationResponse);
     when(tenantService.getAll(consortiumId)).thenReturn(tenantCollection);
     when(sharingSettingRepository.findTenantsBySettingId(sharingSettingRequest.getSettingId())).thenReturn(tenantAssociationsWithSetting);

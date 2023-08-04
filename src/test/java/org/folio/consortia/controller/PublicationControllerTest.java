@@ -248,10 +248,10 @@ public class PublicationControllerTest extends BaseIT {
       .map(val -> "tenant_" + val)
       .toList();
 
-    ResponseEntity<Object> restTemplateResponse = new ResponseEntity<>(ptreAsString, HttpStatusCode.valueOf(201));
+    ResponseEntity<String> restTemplateResponse = new ResponseEntity<>(ptreAsString, HttpStatusCode.valueOf(201));
 
     ArgumentCaptor<HttpEntity<Object>> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
-    when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), entityCaptor.capture(), eq(Object.class))).thenReturn(restTemplateResponse);
+    when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), entityCaptor.capture(), eq(String.class))).thenReturn(restTemplateResponse);
 
     // split list of tenants into chunks and make parallel API calls
     StreamEx.ofSubLists(listOfTenantNames, chunkSize)

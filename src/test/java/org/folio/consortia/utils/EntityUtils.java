@@ -23,6 +23,8 @@ import org.folio.consortia.domain.entity.PublicationTenantRequestEntity;
 import org.folio.consortia.domain.entity.SharingInstanceEntity;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
+import org.springframework.http.HttpMethod;
+import org.testcontainers.shaded.org.apache.commons.lang3.ObjectUtils;
 import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -206,12 +208,15 @@ public class EntityUtils {
     PublicationRequest publicationRequest = new PublicationRequest();
     publicationRequest.setUrl(sharingSetting.getUrl());
     publicationRequest.setMethod(method);
-    final ObjectMapper mapper = new ObjectMapper();
-    final ObjectNode root = mapper.createObjectNode();
-    root.set("id", mapper.convertValue("1844767a-8367-4926-9999-514c35840399", JsonNode.class));
-    root.set("name", mapper.convertValue("ORG-NAME", JsonNode.class));
-    root.set("source", mapper.convertValue("consortium", JsonNode.class));
-    publicationRequest.setPayload(root);
+    // we don't need payload for delete request
+    if (ObjectUtils.notEqual(method, HttpMethod.DELETE.toString())) {
+      final ObjectMapper mapper = new ObjectMapper();
+      final ObjectNode root = mapper.createObjectNode();
+      root.set("id", mapper.convertValue("1844767a-8367-4926-9999-514c35840399", JsonNode.class));
+      root.set("name", mapper.convertValue("ORG-NAME", JsonNode.class));
+      root.set("source", mapper.convertValue("consortium", JsonNode.class));
+      publicationRequest.setPayload(root);
+    }
     return publicationRequest;
   }
 
