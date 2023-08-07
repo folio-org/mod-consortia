@@ -64,6 +64,7 @@ class ConsortiaUserEventListenerTest {
   void shouldUpdatePrimaryAffiliationWhenConfigurationExists() {
     MessageHeaders messageHeaders = getMessageHeaders();
     when(eventListenerHelper.getCentralTenantByIdByHeader(messageHeaders)).thenReturn(TENANT);
+    doReturn(folioExecutionContext).when(contextHelper).getSystemUserFolioExecutionContext(anyString());
     eventListener.handleUserUpdating(USER_UPDATED_EVENT_SAMPLE, messageHeaders);
     verify(userAffiliationService).updatePrimaryUserAffiliation(anyString());
   }
@@ -72,6 +73,7 @@ class ConsortiaUserEventListenerTest {
   void shouldDeletePrimaryAffiliationWhenConfigurationExists() {
     MessageHeaders messageHeaders = getMessageHeaders();
     when(eventListenerHelper.getCentralTenantByIdByHeader(messageHeaders)).thenReturn(TENANT);
+    doReturn(folioExecutionContext).when(contextHelper).getSystemUserFolioExecutionContext(anyString());
     eventListener.handleUserDeleting(USER_DELETED_EVENT_SAMPLE, messageHeaders);
     verify(userAffiliationService).deletePrimaryUserAffiliation(anyString());
   }

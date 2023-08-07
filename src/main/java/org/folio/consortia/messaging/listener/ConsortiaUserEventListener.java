@@ -1,6 +1,5 @@
 package org.folio.consortia.messaging.listener;
 
-import static org.folio.consortia.utils.TenantContextUtils.createFolioExecutionContext;
 import static org.folio.consortia.utils.TenantContextUtils.runInFolioContext;
 
 import org.apache.commons.lang3.StringUtils;
@@ -50,7 +49,7 @@ public class ConsortiaUserEventListener {
     // to update affiliation in central tenant schema
     String centralTenantId = eventListenerHelper.getCentralTenantByIdByHeader(messageHeaders);
     if (StringUtils.isNotBlank(centralTenantId)) {
-      runInFolioContext(createFolioExecutionContext(messageHeaders, folioMetadata, centralTenantId), () ->
+      runInFolioContext(contextHelper.getSystemUserFolioExecutionContext(centralTenantId), () ->
         userAffiliationService.updatePrimaryUserAffiliation(data));
     }
   }
@@ -64,7 +63,7 @@ public class ConsortiaUserEventListener {
     // to delete affiliation from central tenant schema
     String centralTenantId = eventListenerHelper.getCentralTenantByIdByHeader(messageHeaders);
     if (StringUtils.isNotBlank(centralTenantId)) {
-      runInFolioContext(createFolioExecutionContext(messageHeaders, folioMetadata, centralTenantId), () ->
+      runInFolioContext(contextHelper.getSystemUserFolioExecutionContext(centralTenantId), () ->
         userAffiliationService.deletePrimaryUserAffiliation(data));
     }
   }
