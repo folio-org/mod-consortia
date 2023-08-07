@@ -4,7 +4,6 @@ import static org.folio.consortia.support.BaseIT.TENANT;
 import static org.folio.consortia.utils.InputOutputTestUtils.getMockDataAsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -13,11 +12,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.folio.consortia.config.FolioExecutionContextHelper;
-import org.folio.consortia.security.AuthService;
-import org.folio.consortia.security.SecurityManagerService;
 import org.folio.consortia.service.SharingInstanceService;
-import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.junit.jupiter.api.Test;
@@ -40,20 +35,11 @@ class ConsortiaSharingInstanceEventListenerTest {
   private EventListenerHelper eventListenerHelper;
   @Mock
   FolioModuleMetadata folioModuleMetadata;
-  @Mock
-  FolioExecutionContext folioExecutionContext = new FolioExecutionContext() {};
-  @Mock
-  AuthService authService;
-  @Mock
-  SecurityManagerService securityManagerService;
-  @Mock
-  FolioExecutionContextHelper contextHelper = new FolioExecutionContextHelper(folioModuleMetadata, folioExecutionContext, authService, securityManagerService);
 
   @Test
   void shouldCompleteInstanceSharingWhenConfigurationExists() {
     MessageHeaders messageHeaders = getMessageHeaders();
     when(eventListenerHelper.getCentralTenantByIdByHeader(messageHeaders)).thenReturn(TENANT);
-    doReturn(folioExecutionContext).when(contextHelper).getSystemUserFolioExecutionContext(anyString());
     eventListener.handleConsortiumInstanceSharingCompleting(CONSORTIUM_INSTANCE_SHARING_COMPLETE_EVENT_SAMPLE, messageHeaders);
     verify(sharingInstanceService).completePromotingLocalInstance(anyString());
   }
