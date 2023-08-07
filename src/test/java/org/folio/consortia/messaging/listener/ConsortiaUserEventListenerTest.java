@@ -51,8 +51,6 @@ class ConsortiaUserEventListenerTest {
   @Mock
   FolioExecutionContextHelper contextHelper = new FolioExecutionContextHelper(folioModuleMetadata, folioExecutionContext, authService, securityManagerService);
 
-
-
   @Test
   void shouldCreatePrimaryAffiliationWhenConfigurationExists() {
     MessageHeaders messageHeaders = getMessageHeaders();
