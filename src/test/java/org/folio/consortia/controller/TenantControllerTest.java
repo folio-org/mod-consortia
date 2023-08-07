@@ -6,9 +6,11 @@ import static org.folio.consortia.exception.ResourceNotFoundException.NOT_FOUND_
 import static org.folio.consortia.utils.EntityUtils.createConsortiaConfiguration;
 import static org.folio.consortia.utils.EntityUtils.createTenant;
 import static org.folio.consortia.utils.EntityUtils.createTenantEntity;
+import static org.folio.consortia.utils.EntityUtils.createUser;
 import static org.folio.consortia.utils.EntityUtils.createUserTenantEntity;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -143,8 +145,8 @@ class TenantControllerTest extends BaseIT {
     permissionUser.setPermissions(List.of("test.permission"));
     PermissionUserCollection permissionUserCollection = new PermissionUserCollection();
     permissionUserCollection.setPermissionUsers(List.of(permissionUser));
-    User user = new User();
-    user.setId(userId);
+    User adminUser = createUser("diku_admin");
+    User systemUser = createUser("consortia-system-user");
 
     var tenantEntity = new TenantEntity();
     tenantEntity.setConsortiumId(centralTenant.getConsortiumId());
@@ -156,9 +158,11 @@ class TenantControllerTest extends BaseIT {
           .withHeader(XOkapiHeaders.TOKEN, TOKEN)));
 
     doNothing().when(userTenantsClient).postUserTenant(any());
-    when(userService.prepareShadowUser(any(), any())).thenReturn(user);
-    when(userService.getById(any())).thenReturn(user);
-    doReturn(folioExecutionContext).when(contextHelper).getSystemUserFolioExecutionContext(anyString());
+    when(userService.getByUsername("consortia-system-user")).thenReturn(Optional.of(systemUser));
+    when(userService.prepareShadowUser(UUID.fromString(adminUser.getId()), TENANT)).thenReturn(adminUser);
+    when(userService.prepareShadowUser(UUID.fromString(systemUser.getId()), TENANT)).thenReturn(systemUser);
+    when(userService.getById(any())).thenReturn(adminUser);
+    doReturn(folioExecutionContext).when(contextHelper).getSystemUserFolioExecutionContext(anyString(), anyMap());
     doReturn(new User()).when(usersClient).getUsersByUserId(any());
     doReturn(permissionUserCollection).when(permissionsClient).get(anyString());
     doNothing().when(permissionsClient).addPermission(anyString(), any());
@@ -169,7 +173,7 @@ class TenantControllerTest extends BaseIT {
     doNothing().when(syncPrimaryAffiliationClient).syncPrimaryAffiliations(anyString(), anyString(), anyString());    doNothing().when(configurationClient).saveConfiguration(createConsortiaConfiguration(CENTRAL_TENANT_ID));
 
     this.mockMvc.perform(
-        post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants?adminUserId=111841e3-e6fb-4191-9fd8-5674a5107c34")
+        post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants?adminUserId=" + adminUser.getId())
           .headers(headers).content(contentString))
       .andExpect(status().isCreated());
   }
