@@ -14,7 +14,7 @@ SharingSettingRequest:
       type: object
   additionalProperties: false
   required:
-    - id
+    - settingId
     - url
 
 SharingSettingResponse:

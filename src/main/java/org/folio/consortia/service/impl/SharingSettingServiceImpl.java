@@ -134,7 +134,7 @@ public class SharingSettingServiceImpl implements SharingSettingService {
 
   private void validateSharingSettingRequestOrThrow(UUID settingId, SharingSettingRequest sharingSettingRequest) {
     if (ObjectUtils.notEqual(sharingSettingRequest.getSettingId(), settingId)) {
-      throw new IllegalArgumentException("id in path is not equal with settingId in payload");
+      throw new IllegalArgumentException("Mismatch id in path to settingId in request body");
     }
     if (!sharingSettingRepository.existsBySettingId(settingId)) {
       throw new ResourceNotFoundException("settingId", String.valueOf(settingId));
@@ -153,7 +153,7 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     String sharingSettingId = String.valueOf(sharingSettingRequest.getSettingId());
     String payloadId = getPayloadId(sharingSettingRequest.getPayload());
     if (ObjectUtils.notEqual(sharingSettingId, payloadId)) {
-      throw new IllegalArgumentException("id in payload is not equal to settingId");
+      throw new IllegalArgumentException("Mismatch id in payload with settingId");
     }
   }
 
