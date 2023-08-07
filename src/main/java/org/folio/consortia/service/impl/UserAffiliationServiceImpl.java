@@ -155,7 +155,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
     try {
       return objectMapper.readValue(eventPayload, UserEvent.class);
     } catch (Exception e) {
-      log.error("createPrimaryUserAffiliation:: Could not parse input payload", e);
+      log.error("Could not parse input payload for processing user event", e);
       return null;
     }
   }
