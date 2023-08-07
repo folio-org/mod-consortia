@@ -44,16 +44,13 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       log.warn("Skipping create primary event affiliation because input event: {} could not be parsed", eventPayload);
       return;
     }
-    log.info("Received event for creating primary affiliation for userId: {} and tenant: {}",
-      userEvent.getUserDto().getId(), userEvent.getTenantId());
 
     try {
       var consortiaTenant = tenantService.getByTenantId(userEvent.getTenantId());
-      if (consortiaTenant == null) {
+      if (Objects.isNull(consortiaTenant)) {
         log.warn(TENANT_NOT_EXISTS_IN_CONSORTIA, userEvent.getTenantId());
         return;
       }
-
 
       boolean isPrimaryAffiliationExists = userTenantService
         .checkUserIfHasPrimaryAffiliationByUserId(consortiaTenant.getConsortiumId(), userEvent.getUserDto().getId());
@@ -83,17 +80,14 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   public void updatePrimaryUserAffiliation(String eventPayload) {
     String centralTenantId = folioExecutionContext.getTenantId();
     UserEvent userEvent = parseUserEvent(eventPayload);
-
     if (Objects.isNull(userEvent)) {
       log.warn("Skipping update primary affiliation event because input event: {} could not parsed", eventPayload);
       return;
     }
-    log.info("Received event for updating primary affiliation for userId: {} and tenant: {}",
-      userEvent.getUserDto().getId(), userEvent.getTenantId());
 
     try {
       var consortiaTenant = tenantService.getByTenantId(userEvent.getTenantId());
-      if (consortiaTenant == null) {
+      if (Objects.isNull(consortiaTenant)) {
         log.warn(TENANT_NOT_EXISTS_IN_CONSORTIA, userEvent.getTenantId());
         return;
       }
@@ -127,12 +121,10 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       log.warn("Skipping delete primary affiliation event because input event: {} could not parsed", eventPayload);
       return;
     }
-    log.info("Received event for deleting primary affiliation for userId: {} and tenant: {}",
-      userEvent.getUserDto().getId(), userEvent.getTenantId());
 
     try {
       var consortiaTenant = tenantService.getByTenantId(userEvent.getTenantId());
-      if (consortiaTenant == null) {
+      if (Objects.isNull(consortiaTenant)) {
         log.warn(TENANT_NOT_EXISTS_IN_CONSORTIA, userEvent.getTenantId());
         return;
       }
@@ -153,7 +145,10 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
 
   private UserEvent parseUserEvent(String eventPayload) {
     try {
-      return objectMapper.readValue(eventPayload, UserEvent.class);
+      var userEvent = objectMapper.readValue(eventPayload, UserEvent.class);
+      log.info("Received {} event for userId: {} and tenant: {}",
+        userEvent.getAction(), userEvent.getUserDto().getId(), userEvent.getTenantId());
+      return userEvent;
     } catch (Exception e) {
       log.error("Could not parse input payload for processing user event", e);
       return null;
