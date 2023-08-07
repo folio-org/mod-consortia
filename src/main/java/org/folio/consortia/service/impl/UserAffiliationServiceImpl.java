@@ -1,5 +1,6 @@
 package org.folio.consortia.service.impl;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -38,10 +39,15 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   @Transactional
   public void createPrimaryUserAffiliation(String eventPayload) {
     String centralTenantId = folioExecutionContext.getTenantId();
-    try {
-      var userEvent = objectMapper.readValue(eventPayload, UserEvent.class);
-      log.info("Received event for creating primary affiliation for user: {} and tenant: {}", userEvent.getUserDto().getId(), userEvent.getTenantId());
+    UserEvent userEvent = parseUserEvent(eventPayload);
+    if (Objects.isNull(userEvent)) {
+      log.warn("Skipping create primary event affiliation because input event: {} could not be parsed", eventPayload);
+      return;
+    }
+    log.info("Received event for creating primary affiliation for userId: {} and tenant: {}",
+      userEvent.getUserDto().getId(), userEvent.getTenantId());
 
+    try {
       var consortiaTenant = tenantService.getByTenantId(userEvent.getTenantId());
       if (consortiaTenant == null) {
         log.warn(TENANT_NOT_EXISTS_IN_CONSORTIA, userEvent.getTenantId());
@@ -67,7 +73,8 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_CREATED, consortiaTenant.getConsortiumId().toString(), data);
       log.info("Primary affiliation has been set for the user: {}", userEvent.getUserDto().getId());
     } catch (Exception e) {
-      log.error("Exception occurred while creating primary affiliation", e);
+      log.error("Exception occurred while creating primary affiliation for userId: {}, tenant: {} and error message: {}",
+        userEvent.getUserDto().getId(), userEvent.getTenantId(), e.getMessage(), e);
     }
   }
 
@@ -75,10 +82,16 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   @Transactional
   public void updatePrimaryUserAffiliation(String eventPayload) {
     String centralTenantId = folioExecutionContext.getTenantId();
-    try {
-      var userEvent = objectMapper.readValue(eventPayload, UserEvent.class);
-      log.info("Received event for update primary affiliation for user: {} and tenant: {}", userEvent.getUserDto().getId(), userEvent.getTenantId());
+    UserEvent userEvent = parseUserEvent(eventPayload);
 
+    if (Objects.isNull(userEvent)) {
+      log.warn("Skipping update primary affiliation event because input event: {} could not parsed", eventPayload);
+      return;
+    }
+    log.info("Received event for updating primary affiliation for userId: {} and tenant: {}",
+      userEvent.getUserDto().getId(), userEvent.getTenantId());
+
+    try {
       var consortiaTenant = tenantService.getByTenantId(userEvent.getTenantId());
       if (consortiaTenant == null) {
         log.warn(TENANT_NOT_EXISTS_IN_CONSORTIA, userEvent.getTenantId());
@@ -100,7 +113,8 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
 
       kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_UPDATED, consortiaTenant.getConsortiumId().toString(), data);
     } catch (Exception e) {
-      log.error("Exception occurred while updating primary affiliation", e);
+      log.error("Exception occurred while updating primary affiliation for userId: {}, tenant: {} and error message: {}",
+        userEvent.getUserDto().getId(), userEvent.getTenantId(), e.getMessage(), e);
     }
   }
 
@@ -108,10 +122,15 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   @Transactional
   public void deletePrimaryUserAffiliation(String eventPayload) {
     String centralTenantId = folioExecutionContext.getTenantId();
-    try {
-      var userEvent = objectMapper.readValue(eventPayload, UserEvent.class);
-      log.info("Received event for deleting primary affiliation for user: {} and tenant: {}", userEvent.getUserDto().getId(), userEvent.getTenantId());
+    UserEvent userEvent = parseUserEvent(eventPayload);
+    if (Objects.isNull(userEvent)) {
+      log.warn("Skipping delete primary affiliation event because input event: {} could not parsed", eventPayload);
+      return;
+    }
+    log.info("Received event for deleting primary affiliation for userId: {} and tenant: {}",
+      userEvent.getUserDto().getId(), userEvent.getTenantId());
 
+    try {
       var consortiaTenant = tenantService.getByTenantId(userEvent.getTenantId());
       if (consortiaTenant == null) {
         log.warn(TENANT_NOT_EXISTS_IN_CONSORTIA, userEvent.getTenantId());
@@ -127,7 +146,17 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_DELETED, consortiaTenant.getConsortiumId().toString(), data);
       log.info("Primary affiliation has been deleted for the user: {}", userEvent.getUserDto().getId());
     } catch (Exception e) {
-      log.error("Exception occurred while deleting primary affiliation", e);
+      log.error("Exception occurred while deleting primary affiliation for userId: {}, tenant: {} and error message: {}",
+        userEvent.getUserDto().getId(), userEvent.getTenantId(), e.getMessage(), e);
+    }
+  }
+
+  private UserEvent parseUserEvent(String eventPayload) {
+    try {
+      return objectMapper.readValue(eventPayload, UserEvent.class);
+    } catch (Exception e) {
+      log.error("createPrimaryUserAffiliation:: Could not parse input payload", e);
+      return null;
     }
   }
 
