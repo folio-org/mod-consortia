@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.folio.consortia.service.SharingInstanceService;
-import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -33,8 +32,6 @@ class ConsortiaSharingInstanceEventListenerTest {
   private SharingInstanceService sharingInstanceService;
   @Mock
   private EventListenerHelper eventListenerHelper;
-  @Mock
-  FolioModuleMetadata folioModuleMetadata;
 
   @Test
   void shouldCompleteInstanceSharingWhenConfigurationExists() {
