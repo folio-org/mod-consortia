@@ -136,14 +136,12 @@ class SharingSettingServiceTest {
     when(publicationService.publishRequest(consortiumId, publicationRequestDelete)).thenReturn(publicationResponse);
     when(tenantService.getAll(consortiumId)).thenReturn(tenantCollection);
     when(sharingSettingRepository.findTenantsBySettingId(sharingSettingRequest.getSettingId())).thenReturn(tenantAssociationsWithSetting);
-    when(sharingSettingRepository.save(any())).thenReturn(new SharingSettingEntity());
     when(folioExecutionContext.getTenantId()).thenReturn("mobius");
     doReturn(folioExecutionContext).when(contextHelper).getSystemUserFolioExecutionContext(anyString());
 
     var expectedResponse = createSharingSettingResponseForDelete(pcId);
     var actualResponse = sharingSettingService.delete(consortiumId, settingId, sharingSettingRequest);
 
-    assertThat(actualResponse.getPcId()).isEqualTo(expectedResponse.getPcId());
     assertThat(actualResponse.getPcId()).isEqualTo(expectedResponse.getPcId());
 
     verify(publicationService, times(1)).publishRequest(any(), any());
