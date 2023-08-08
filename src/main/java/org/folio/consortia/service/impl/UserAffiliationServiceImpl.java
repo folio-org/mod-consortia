@@ -29,7 +29,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @AllArgsConstructor
 public class UserAffiliationServiceImpl implements UserAffiliationService {
-  private static final String EVENT_PAYLOAD_COULD_NOT_BE_PARSED = "Skipping user affiliation event because input payload: {} could not parsed";
+  private static final String EVENT_PAYLOAD_COULD_NOT_BE_PARSED = "Skipping user affiliation event because input payload: {} could not be parsed";
   private static final String TENANT_NOT_EXISTS_IN_CONSORTIA = "Tenant {} not exists in consortia";
 
   private final UserTenantService userTenantService;
