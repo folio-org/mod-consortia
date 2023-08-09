@@ -85,7 +85,7 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
           log.info("syncPrimaryAffiliationService:: primary affiliation already exists for tenant/user: {}/{}", tenantId, user.getUsername());
         } else {
           userTenantService.createPrimaryUserTenantAffiliation(consortiumId, tenantEntity, user.getId(), user.getUsername());
-          if (eventListenerHelper.shouldCreateCentralTenantAffiliation(centralTenantId, tenantEntity.getId(), user.getUsername())) {
+          if (eventListenerHelper.shouldCreateCentralUserTenantAffiliation(centralTenantId, tenantEntity.getId(), user.getUsername())) {
             log.info("syncPrimaryAffiliationService:: going to create affiliation in central: {} tenant for userId: {}, username: {}", centralTenantId, user.getId(), user.getUsername());
             userTenantService.save(consortiumId, createUserTenant(centralTenantId, user), true);
           }

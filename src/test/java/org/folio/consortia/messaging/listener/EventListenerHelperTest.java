@@ -48,21 +48,21 @@ class EventListenerHelperTest {
   void shouldCreateAffiliationInCentralTenant() {
     ReflectionTestUtils.setField(eventListenerHelper, "systemUserUsername", "consortia-system-user");
 
-    assertTrue(eventListenerHelper.shouldCreateCentralTenantAffiliation("central", "university", "user1"));
+    assertTrue(eventListenerHelper.shouldCreateCentralUserTenantAffiliation("central", "university", "user1"));
   }
 
   @Test
   void shouldNotCreateAffiliationInCentralTenantBecauseTenantsEquals() {
     ReflectionTestUtils.setField(eventListenerHelper, "systemUserUsername", "consortia-system-user");
 
-    assertFalse(eventListenerHelper.shouldCreateCentralTenantAffiliation("central", "central", "user1"));
+    assertFalse(eventListenerHelper.shouldCreateCentralUserTenantAffiliation("central", "central", "user1"));
   }
 
   @Test
   void shouldNotCreateAffiliationInCentralTenantBecauseSystemUser() {
     ReflectionTestUtils.setField(eventListenerHelper, "systemUserUsername", "consortia-system-user");
 
-    assertFalse(eventListenerHelper.shouldCreateCentralTenantAffiliation("central", "university", "consortia-system-user"));
+    assertFalse(eventListenerHelper.shouldCreateCentralUserTenantAffiliation("central", "university", "consortia-system-user"));
   }
 
   private MessageHeaders getMessageHeaders() {

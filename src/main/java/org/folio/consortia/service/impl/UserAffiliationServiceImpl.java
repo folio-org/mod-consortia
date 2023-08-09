@@ -61,7 +61,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
         String userId = userEvent.getUserDto().getId();
         String username = userEvent.getUserDto().getUsername();
         userTenantService.createPrimaryUserTenantAffiliation(consortiaTenant.getConsortiumId(), consortiaTenant, userId, username);
-        if (eventListenerHelper.shouldCreateCentralTenantAffiliation(centralTenantId, consortiaTenant.getId(), username)) {
+        if (eventListenerHelper.shouldCreateCentralUserTenantAffiliation(centralTenantId, consortiaTenant.getId(), username)) {
           log.info("Going to create affiliation in central: {} tenant for userId: {}, username: {}", centralTenantId, userId, username);
           userTenantService.save(consortiaTenant.getConsortiumId(), createUserTenant(centralTenantId, userEvent), false);
         }
