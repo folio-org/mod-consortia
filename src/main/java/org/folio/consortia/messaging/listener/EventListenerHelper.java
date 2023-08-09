@@ -40,6 +40,6 @@ public class EventListenerHelper {
   public boolean shouldCreateCentralUserTenantAffiliation(String centralTenantId,
                                                           String tenantId,
                                                           String username) {
-    return ObjectUtils.notEqual(centralTenantId, tenantId) && !systemUserUsername.equals(username);
+    return ObjectUtils.notEqual(centralTenantId, tenantId) && ObjectUtils.notEqual(systemUserUsername, username);
   }
 }
