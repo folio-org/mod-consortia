@@ -2,7 +2,9 @@ package org.folio.consortia.messaging.listener;
 
 import static org.folio.consortia.support.BaseIT.TENANT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
@@ -16,6 +18,7 @@ import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.messaging.MessageHeaders;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @SpringBootTest
 class EventListenerHelperTest {
@@ -39,6 +42,27 @@ class EventListenerHelperTest {
       .thenThrow(new InvalidDataAccessResourceUsageException("Couldn't save object to db"));
     var actual = eventListenerHelper.getCentralTenantByIdByHeader(messageHeaders);
     assertNull(actual);
+  }
+
+  @Test
+  void shouldCreateAffiliationInCentralTenant() {
+    ReflectionTestUtils.setField(eventListenerHelper, "systemUserUsername", "consortia-system-user");
+
+    assertTrue(eventListenerHelper.shouldCreateCentralTenantAffiliation("central", "university", "user1"));
+  }
+
+  @Test
+  void shouldNotCreateAffiliationInCentralTenantBecauseTenantsEquals() {
+    ReflectionTestUtils.setField(eventListenerHelper, "systemUserUsername", "consortia-system-user");
+
+    assertFalse(eventListenerHelper.shouldCreateCentralTenantAffiliation("central", "central", "user1"));
+  }
+
+  @Test
+  void shouldNotCreateAffiliationInCentralTenantBecauseSystemUser() {
+    ReflectionTestUtils.setField(eventListenerHelper, "systemUserUsername", "consortia-system-user");
+
+    assertFalse(eventListenerHelper.shouldCreateCentralTenantAffiliation("central", "university", "consortia-system-user"));
   }
 
   private MessageHeaders getMessageHeaders() {

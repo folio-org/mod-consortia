@@ -6,7 +6,6 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.folio.consortia.client.SyncPrimaryAffiliationClient;
 import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.domain.dto.PrimaryAffiliationEvent;
@@ -16,6 +15,7 @@ import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
+import org.folio.consortia.messaging.listener.EventListenerHelper;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.SyncPrimaryAffiliationService;
 import org.folio.consortia.service.TenantService;
@@ -42,6 +42,7 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
   private final ObjectMapper objectMapper = new ObjectMapper();
   private final KafkaService kafkaService;
   private final SyncPrimaryAffiliationClient syncPrimaryAffiliationClient;
+  private final EventListenerHelper eventListenerHelper;
 
   @Override
   public void syncPrimaryAffiliations(UUID consortiumId, String tenantId, String centralTenantId) {
@@ -70,30 +71,32 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
   @Override
   public void createPrimaryUserAffiliations(UUID consortiumId, String centralTenantId,
     SyncPrimaryAffiliationBody syncPrimaryAffiliationBody) {
-    log.info("Start creating user primary affiliation for tenant {}", syncPrimaryAffiliationBody.getTenantId());
+    log.info("syncPrimaryAffiliationService:: start creating user primary affiliation for tenant {}", syncPrimaryAffiliationBody.getTenantId());
     var tenantId = syncPrimaryAffiliationBody.getTenantId();
     var userList = syncPrimaryAffiliationBody.getUsers();
     TenantEntity tenantEntity = tenantService.getByTenantId(tenantId);
     IntStream.range(0, userList.size()).sequential().forEach(idx -> {
       var user = userList.get(idx);
       try {
-        log.info("Processing users: {} of {}", idx + 1, userList.size());
+        log.info("syncPrimaryAffiliationService:: processing users: {} of {}", idx + 1, userList.size());
         Page<UserTenantEntity> userTenantPage = userTenantRepository.findByUserId(UUID.fromString(user.getId()), PageRequest.of(0, 1));
 
         if (userTenantPage.getTotalElements() > 0) {
-          log.info("Primary affiliation already exists for tenant/user: {}/{}", tenantId, user.getUsername());
+          log.info("syncPrimaryAffiliationService:: primary affiliation already exists for tenant/user: {}/{}", tenantId, user.getUsername());
         } else {
           userTenantService.createPrimaryUserTenantAffiliation(consortiumId, tenantEntity, user.getId(), user.getUsername());
-          if (ObjectUtils.notEqual(centralTenantId, tenantEntity.getId())) {
+          if (eventListenerHelper.shouldCreateCentralTenantAffiliation(centralTenantId, tenantEntity.getId(), user.getUsername())) {
+            log.info("syncPrimaryAffiliationService:: going to create affiliation in central: {} tenant for userId: {}, username: {}", centralTenantId, user.getId(), user.getUsername());
             userTenantService.save(consortiumId, createUserTenant(centralTenantId, user), true);
           }
           sendCreatePrimaryAffiliationEvent(tenantEntity, user, centralTenantId);
+          log.info("syncPrimaryAffiliationService:: successfully created primary affiliations for userid: {}, tenant: {}", user.getId(), tenantId);
         }
       } catch (Exception e) {
-        log.error("Failed to create primary affiliations for userid: {}, tenant: {} and error message: {}", user.getId(), tenantId, e.getMessage(), e);
+        log.error("syncPrimaryAffiliationService:: failed to create primary affiliations for userid: {}, tenant: {} and error message: {}", user.getId(), tenantId, e.getMessage(), e);
       }
     });
-    log.info("Successfully created primary affiliations for tenant {}", tenantId);
+    log.info("syncPrimaryAffiliationService:: successfully created primary affiliations for tenant {}", tenantId);
   }
 
   @SneakyThrows

@@ -119,8 +119,10 @@ public class UserTenantServiceImpl implements UserTenantService {
 
     User shadowUser = userService.prepareShadowUser(userTenantDto.getUserId(), userTenant.get().getTenant().getId());
     if (isSystemUserContextRequired) {
+      log.info("Going to create or update shadow user {} with system user context in tenant: {}", userTenantDto.getUserId(), userTenantDto.getTenantId());
       createOrUpdateShadowUserWithSystemUserContext(userTenantDto.getUserId(), shadowUser, userTenantDto);
     } else {
+      log.info("Going to create or update shadow user {} with currently logged in user context in tenant: {}", userTenantDto.getUserId(), userTenantDto.getTenantId());
       createOrUpdateShadowUserWithRequestedContext(userTenantDto.getUserId(), shadowUser, userTenantDto, folioExecutionContext);
     }
 

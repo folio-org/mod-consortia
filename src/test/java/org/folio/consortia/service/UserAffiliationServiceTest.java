@@ -20,9 +20,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.folio.consortia.config.kafka.KafkaService;
-import org.folio.consortia.domain.dto.UserTenant;
-import org.folio.consortia.domain.dto.UserTenantCollection;
 import org.folio.consortia.domain.entity.UserTenantEntity;
+import org.folio.consortia.messaging.listener.EventListenerHelper;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.service.impl.UserAffiliationServiceImpl;
 import org.folio.spring.DefaultFolioExecutionContext;
@@ -59,6 +58,8 @@ class UserAffiliationServiceTest {
   @Mock
   FolioExecutionContext folioExecutionContext;
   AutoCloseable mockitoMocks;
+  @Mock
+  EventListenerHelper eventListenerHelper;
 
   @BeforeEach
   public void beforeEach() {

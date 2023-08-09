@@ -24,6 +24,7 @@ import org.folio.consortia.domain.dto.UserCollection;
 import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
+import org.folio.consortia.messaging.listener.EventListenerHelper;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.ConsortiaConfigurationService;
@@ -60,7 +61,8 @@ class SyncPrimaryAffiliationServiceImplTest {
   private ConsortiaConfigurationService consortiaConfigurationService;
   @Mock
   private SyncPrimaryAffiliationClient syncClient;
-
+  @Mock
+  private EventListenerHelper eventListenerHelper;
   @Mock
   UserService userService;
   @Mock

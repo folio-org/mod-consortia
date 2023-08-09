@@ -13,6 +13,7 @@ import org.folio.consortia.domain.dto.UserEvent;
 import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
+import org.folio.consortia.messaging.listener.EventListenerHelper;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserAffiliationService;
 import org.folio.consortia.service.UserTenantService;
@@ -36,6 +37,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   private final TenantService tenantService;
   private final KafkaService kafkaService;
   private final FolioExecutionContext folioExecutionContext;
+  private final EventListenerHelper eventListenerHelper;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override
@@ -56,8 +58,11 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
         log.warn("Primary affiliation already exists for tenant/user: {}/{}", userEvent.getTenantId(), userEvent.getUserDto().getUsername());
         return;
       } else {
-        userTenantService.createPrimaryUserTenantAffiliation(consortiaTenant.getConsortiumId(), consortiaTenant, userEvent.getUserDto().getId(), userEvent.getUserDto().getUsername());
-        if (ObjectUtils.notEqual(centralTenantId, consortiaTenant.getId())) {
+        String userId = userEvent.getUserDto().getId();
+        String username = userEvent.getUserDto().getUsername();
+        userTenantService.createPrimaryUserTenantAffiliation(consortiaTenant.getConsortiumId(), consortiaTenant, userId, username);
+        if (eventListenerHelper.shouldCreateCentralTenantAffiliation(centralTenantId, consortiaTenant.getId(), username)) {
+          log.info("Going to create affiliation in central: {} tenant for userId: {}, username: {}", centralTenantId, userId, username);
           userTenantService.save(consortiaTenant.getConsortiumId(), createUserTenant(centralTenantId, userEvent), false);
         }
       }
