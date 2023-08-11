@@ -5,6 +5,8 @@ import java.sql.ResultSet;
 import org.apache.commons.lang3.BooleanUtils;
 import org.folio.consortia.config.FolioExecutionContextHelper;
 import org.folio.consortia.config.kafka.KafkaService;
+import org.folio.consortia.domain.dto.CustomField;
+import org.folio.consortia.domain.dto.Type;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.liquibase.FolioSpringLiquibase;
 import org.folio.spring.service.TenantService;
@@ -15,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 import lombok.extern.log4j.Log4j2;
 
+import static org.folio.consortia.utils.TenantContextUtils.runInFolioContext;
+
 @Log4j2
 @Service
 @Primary
@@ -23,14 +27,23 @@ public class FolioTenantService extends TenantService {
   private static final String EXIST_SQL = "SELECT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?)";
 
   private final KafkaService kafkaService;
+  private final CustomFieldService customFieldService;
+  private final FolioExecutionContext folioExecutionContext;
   private final FolioExecutionContextHelper contextHelper;
+
+  private static final Boolean VISIBLE = false;
+  public static final String CUSTOM_FIELD_NAME = "originalTenantId";
+  private static final String ENTITY_TYPE = "user";
+  private static final String HELP_TEXT = "id of tenant where user created originally";
 
   public FolioTenantService(JdbcTemplate jdbcTemplate,
                             KafkaService kafkaService,
                             FolioExecutionContext context,
-                            FolioSpringLiquibase folioSpringLiquibase, FolioExecutionContextHelper contextHelper) {
+                            FolioSpringLiquibase folioSpringLiquibase, CustomFieldService customFieldService, FolioExecutionContext folioExecutionContext, FolioExecutionContextHelper contextHelper) {
     super(jdbcTemplate, context, folioSpringLiquibase);
     this.kafkaService = kafkaService;
+    this.customFieldService = customFieldService;
+    this.folioExecutionContext = folioExecutionContext;
     this.contextHelper = contextHelper;
   }
 
@@ -39,6 +52,8 @@ public class FolioTenantService extends TenantService {
     try {
       contextHelper.registerTenant();
       kafkaService.createKafkaTopics();
+      runInFolioContext(contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId()), () ->
+        customFieldService.createCustomField(createCustomFieldObject()));
     } catch (Exception e) {
       log.error(e.getMessage(), e);
       throw e;
@@ -58,5 +73,14 @@ public class FolioTenantService extends TenantService {
         getSchemaName()
       )
     );
+  }
+
+  private CustomField createCustomFieldObject() {
+    return CustomField.builder()
+      .name(CUSTOM_FIELD_NAME)
+      .entityType(ENTITY_TYPE)
+      .helpText(HELP_TEXT)
+      .type(Type.TEXTBOX_LONG)
+      .visible(VISIBLE).build();
   }
 }

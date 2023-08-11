@@ -1,8 +1,10 @@
 package org.folio.consortia.service.impl;
 
+import static org.folio.consortia.service.FolioTenantService.CUSTOM_FIELD_NAME;
 import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -89,6 +91,7 @@ public class UserServiceImpl implements UserService {
         user.setId(userId.toString());
         user.setUsername(String.format("%s_%s", userOptional.getUsername(), HelperUtils.randomString(RANDOM_STRING_COUNT)));
         user.setType(SHADOW_USER_TYPE);
+        user.setCustomFields(Map.of(CUSTOM_FIELD_NAME, tenantId));
         user.setActive(true);
       } else {
         log.warn("Could not find real user with id: {} in his home tenant: {}", userId.toString(), tenantId);

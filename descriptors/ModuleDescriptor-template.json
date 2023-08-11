@@ -11,6 +11,10 @@
       "version": "2.0"
     },
     {
+      "id": "custom-fields",
+      "version": "2.0"
+    },
+    {
       "id": "users",
       "version": "16.0"
     },
@@ -322,7 +326,8 @@
             "login.item.post",
             "perms.users.get",
             "perms.users.item.post",
-            "perms.users.assign.immutable"
+            "perms.users.assign.immutable",
+            "custom.fields.all"
           ]
         },
         {
