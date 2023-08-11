@@ -91,8 +91,8 @@ public class UserServiceImpl implements UserService {
         user.setId(userId.toString());
         user.setUsername(String.format("%s_%s", userOptional.getUsername(), HelperUtils.randomString(RANDOM_STRING_COUNT)));
         user.setType(SHADOW_USER_TYPE);
-        user.setCustomFields(Map.of(CUSTOM_FIELD_NAME, tenantId));
         user.setActive(true);
+        user.setCustomFields(Map.of(CUSTOM_FIELD_NAME, tenantId));
       } else {
         log.warn("Could not find real user with id: {} in his home tenant: {}", userId.toString(), tenantId);
         throw new ResourceNotFoundException(USER_ID, userId.toString());
