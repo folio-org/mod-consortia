@@ -246,11 +246,8 @@ public class PublicationServiceImpl implements PublicationService {
     publicationStatusEntity.setId(UUID.randomUUID());
     publicationStatusEntity.setStatus(PublicationStatus.IN_PROGRESS);
     publicationStatusEntity.setTotalRecords(totalRecords);
-
-    var savedPSE = publicationStatusRepository.save(publicationStatusEntity);
-
-    log.info("Created publication record {}", savedPSE.getId());
-    return savedPSE;
+    log.info("Created publication record {}", publicationStatusEntity.getId());
+    return publicationStatusEntity;
   }
 
   private void updatePublicationsStatus(List<Future<PublicationTenantRequestEntity>> futures, PublicationStatusEntity publicationStatusEntity, FolioExecutionContext centralTenantContext) {
