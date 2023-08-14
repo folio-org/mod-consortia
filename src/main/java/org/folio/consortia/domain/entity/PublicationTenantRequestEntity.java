@@ -31,7 +31,7 @@ public class PublicationTenantRequestEntity extends AuditableEntity {
   @Id
   private UUID id;
 
-  @ManyToOne(cascade = CascadeType.ALL)
+  @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
   @JoinColumn(name = "pc_id", referencedColumnName = "id")
   private PublicationStatusEntity pcState;
 
