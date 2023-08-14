@@ -12,7 +12,7 @@
     },
     {
       "id": "custom-fields",
-      "version": "2.1"
+      "version": "2.0"
     },
     {
       "id": "users",
@@ -327,7 +327,7 @@
             "perms.users.get",
             "perms.users.item.post",
             "perms.users.assign.immutable",
-            "custom.fields.all"
+            "custom.fields.item.post"
           ]
         },
         {

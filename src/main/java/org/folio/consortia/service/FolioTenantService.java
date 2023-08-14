@@ -1,6 +1,7 @@
 package org.folio.consortia.service;
 
 import java.sql.ResultSet;
+import java.util.Objects;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.folio.consortia.config.FolioExecutionContextHelper;
@@ -31,7 +32,7 @@ public class FolioTenantService extends TenantService {
   private final FolioExecutionContext folioExecutionContext;
   private final FolioExecutionContextHelper contextHelper;
 
-  private static final Boolean VISIBLE = false;
+  private static final Boolean IS_VISIBLE = false;
   public static final String CUSTOM_FIELD_NAME = "originalTenantId";
   private static final String ENTITY_TYPE = "user";
   private static final String HELP_TEXT = "id of tenant where user created originally";
@@ -52,8 +53,11 @@ public class FolioTenantService extends TenantService {
     try {
       contextHelper.registerTenant();
       kafkaService.createKafkaTopics();
-      runInFolioContext(contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId()), () ->
-        customFieldService.createCustomField(createCustomFieldObject()));
+      var context = contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId());
+      if (Objects.nonNull(context)) {
+        runInFolioContext(context, () ->
+          customFieldService.createCustomField(createCustomFieldObject()));
+      }
     } catch (Exception e) {
       log.error(e.getMessage(), e);
       throw e;
@@ -81,6 +85,6 @@ public class FolioTenantService extends TenantService {
       .entityType(ENTITY_TYPE)
       .helpText(HELP_TEXT)
       .type(Type.TEXTBOX_LONG)
-      .visible(VISIBLE).build();
+      .visible(IS_VISIBLE).build();
   }
 }
