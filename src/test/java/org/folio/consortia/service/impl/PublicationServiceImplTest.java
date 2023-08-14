@@ -121,6 +121,8 @@ class PublicationServiceImplTest extends BaseUnitTest {
   @Test
   void updatePublicationTenantRequestOnSuccess() {
     PublicationTenantRequestEntity ptrEntity = new PublicationTenantRequestEntity();
+    var pse = getMockDataObject(PUBLICATION_STATUS_ENTITY_SAMPLE, PublicationStatusEntity.class);
+    ptrEntity.setPcState(pse);
     ptrEntity.setStatus(PublicationStatus.IN_PROGRESS);
     when(publicationTenantRequestRepository.save(any(PublicationTenantRequestEntity.class))).thenReturn(new PublicationTenantRequestEntity());
     when(publicationStatusRepository.save(any(PublicationStatusEntity.class))).thenReturn(new PublicationStatusEntity());
@@ -140,6 +142,8 @@ class PublicationServiceImplTest extends BaseUnitTest {
   @Test
   void updatePublicationTenantRequestOnFailure() {
     PublicationTenantRequestEntity ptrEntity = new PublicationTenantRequestEntity();
+    var pse = getMockDataObject(PUBLICATION_STATUS_ENTITY_SAMPLE, PublicationStatusEntity.class);
+    ptrEntity.setPcState(pse);
     ptrEntity.setStatus(PublicationStatus.IN_PROGRESS);
     when(publicationTenantRequestRepository.save(any(PublicationTenantRequestEntity.class))).thenReturn(new PublicationTenantRequestEntity());
 
