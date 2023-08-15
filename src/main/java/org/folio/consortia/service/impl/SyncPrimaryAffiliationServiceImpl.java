@@ -3,6 +3,8 @@ package org.folio.consortia.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -12,6 +14,7 @@ import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.domain.dto.PrimaryAffiliationEvent;
 import org.folio.consortia.domain.dto.SyncPrimaryAffiliationBody;
 import org.folio.consortia.domain.dto.SyncUser;
+import org.folio.consortia.domain.dto.TenantDetails.SetupStatusEnum;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.entity.TenantEntity;
@@ -45,16 +48,24 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
 
   @Override
   public void syncPrimaryAffiliations(UUID consortiumId, String tenantId, String centralTenantId) {
-    log.info("Start syncing user primary affiliations for tenant {}", tenantId);
-    List<User> users = new ArrayList<>();
     try {
-      users = userService.getUsersByQuery("cql.allRecords=1", 0, Integer.MAX_VALUE);
+      log.info("Start syncing user primary affiliations for tenant {}", tenantId);
+      List<User> users = new ArrayList<>();
+      try {
+        users = userService.getUsersByQuery("cql.allRecords=1", 0, Integer.MAX_VALUE);
+      } catch (Exception e) {
+        log.error("syncPrimaryAffiliations:: failed to retrieve '{}' users", tenantId, e);
+        tenantService.updateTenantSetupStatus(tenantId, centralTenantId, SetupStatusEnum.FAILED);
+      }
+
+      if (CollectionUtils.isNotEmpty(users)) {
+        SyncPrimaryAffiliationBody spab = buildSyncPrimaryAffiliationBody(tenantId, users);
+        syncPrimaryAffiliationClient.savePrimaryAffiliations(spab, consortiumId.toString(), tenantId, centralTenantId);
+      }
     } catch (Exception e) {
-      log.error("syncPrimaryAffiliations:: failed to retrieve '{}' users", tenantId, e);
-    }
-    if (CollectionUtils.isNotEmpty(users)) {
-      SyncPrimaryAffiliationBody spab = buildSyncPrimaryAffiliationBody(tenantId, users);
-      syncPrimaryAffiliationClient.savePrimaryAffiliations(spab, consortiumId.toString(), tenantId, centralTenantId);
+      log.error("syncPrimaryAffiliations:: error syncing user primary affiliations", e);
+      tenantService.updateTenantSetupStatus(tenantId, centralTenantId, SetupStatusEnum.FAILED);
+      throw e;
     }
   }
 
@@ -70,30 +81,46 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
   @Override
   public void createPrimaryUserAffiliations(UUID consortiumId, String centralTenantId,
     SyncPrimaryAffiliationBody syncPrimaryAffiliationBody) {
-    log.info("Start creating user primary affiliation for tenant {}", syncPrimaryAffiliationBody.getTenantId());
-    var tenantId = syncPrimaryAffiliationBody.getTenantId();
-    var userList = syncPrimaryAffiliationBody.getUsers();
-    TenantEntity tenantEntity = tenantService.getByTenantId(tenantId);
-    IntStream.range(0, userList.size()).sequential().forEach(idx -> {
-      var user = userList.get(idx);
-      try {
-        log.info("Processing users: {} of {}", idx + 1, userList.size());
-        Page<UserTenantEntity> userTenantPage = userTenantRepository.findByUserId(UUID.fromString(user.getId()), PageRequest.of(0, 1));
+    try {
+      log.info("Start creating user primary affiliation for tenant {}", syncPrimaryAffiliationBody.getTenantId());
+      var tenantId = syncPrimaryAffiliationBody.getTenantId();
+      var userList = syncPrimaryAffiliationBody.getUsers();
+      TenantEntity tenantEntity = tenantService.getByTenantId(tenantId);
 
-        if (userTenantPage.getTotalElements() > 0) {
-          log.info("Primary affiliation already exists for tenant/user: {}/{}", tenantId, user.getUsername());
-        } else {
-          userTenantService.createPrimaryUserTenantAffiliation(consortiumId, tenantEntity, user.getId(), user.getUsername());
-          if (ObjectUtils.notEqual(centralTenantId, tenantEntity.getId())) {
-            userTenantService.save(consortiumId, createUserTenant(centralTenantId, user), true);
+      var affiliatedUsersCount = new AtomicInteger(0);
+      var hasFailedAffiliations = new AtomicBoolean(false);
+      IntStream.range(0, userList.size()).sequential().forEach(idx -> {
+        var user = userList.get(idx);
+        try {
+          log.info("createPrimaryUserAffiliations:: Processing users: {} of {}", idx + 1, userList.size());
+          Page<UserTenantEntity> userTenantPage = userTenantRepository.findByUserId(UUID.fromString(user.getId()), PageRequest.of(0, 1));
+
+          if (userTenantPage.getTotalElements() > 0) {
+            log.info("createPrimaryUserAffiliations:: Primary affiliation already exists for tenant/user: {}/{}",
+              tenantId, user.getUsername());
+          } else {
+            userTenantService.createPrimaryUserTenantAffiliation(consortiumId, tenantEntity, user.getId(), user.getUsername());
+            if (ObjectUtils.notEqual(centralTenantId, tenantEntity.getId())) {
+              userTenantService.save(consortiumId, createUserTenant(centralTenantId, user), true);
+            }
+            sendCreatePrimaryAffiliationEvent(tenantEntity, user, centralTenantId);
           }
-          sendCreatePrimaryAffiliationEvent(tenantEntity, user, centralTenantId);
+          affiliatedUsersCount.getAndIncrement();
+        } catch (Exception e) {
+          hasFailedAffiliations.set(true);
+          log.error("createPrimaryUserAffiliations:: Failed to create primary affiliations for userid: {}, tenant: {}" +
+            " and error message: {}", user.getId(), tenantId, e.getMessage(), e);
         }
-      } catch (Exception e) {
-        log.error("Failed to create primary affiliations for userid: {}, tenant: {} and error message: {}", user.getId(), tenantId, e.getMessage(), e);
-      }
-    });
-    log.info("Successfully created primary affiliations for tenant {}", tenantId);
+      });
+      tenantService.updateTenantSetupStatus(tenantId, centralTenantId, hasFailedAffiliations.get()
+        ? SetupStatusEnum.COMPLETED_WITH_ERRORS : SetupStatusEnum.COMPLETED);
+      log.info("createPrimaryUserAffiliations:: Successfully created {} of {} primary affiliations for tenant {}",
+        affiliatedUsersCount.get(), userList.size(), tenantId);
+    } catch (Exception e) {
+      log.error("createPrimaryUserAffiliations:: error creating user primary affiliations", e);
+      tenantService.updateTenantSetupStatus(syncPrimaryAffiliationBody.getTenantId(), centralTenantId, SetupStatusEnum.FAILED);
+      throw e;
+    }
   }
 
   @SneakyThrows

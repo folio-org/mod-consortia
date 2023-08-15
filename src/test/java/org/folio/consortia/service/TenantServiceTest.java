@@ -2,6 +2,7 @@ package org.folio.consortia.service;
 
 import static org.folio.consortia.utils.EntityUtils.createConsortiaConfiguration;
 import static org.folio.consortia.utils.EntityUtils.createTenant;
+import static org.folio.consortia.utils.EntityUtils.createTenantDetailsEntity;
 import static org.folio.consortia.utils.EntityUtils.createTenantEntity;
 import static org.folio.consortia.utils.EntityUtils.createUser;
 import static org.folio.consortia.utils.InputOutputTestUtils.getMockDataAsString;
@@ -39,9 +40,11 @@ import org.folio.consortia.domain.dto.PermissionUserCollection;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.dto.UserCollection;
+import org.folio.consortia.domain.entity.TenantDetailsEntity;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.repository.ConsortiumRepository;
+import org.folio.consortia.repository.TenantDetailsRepository;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.impl.TenantServiceImpl;
@@ -75,6 +78,8 @@ class TenantServiceTest {
   private TenantServiceImpl tenantService;
   @Mock
   private TenantRepository tenantRepository;
+  @Mock
+  private TenantDetailsRepository tenantDetailsRepository;
   @Mock
   private UserTenantRepository userTenantRepository;
   @Mock
@@ -154,7 +159,7 @@ class TenantServiceTest {
   @Test
   void shouldSaveNotCentralTenantWithNewUserAndPermissions() {
     UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
-    TenantEntity localTenantEntity = createTenantEntity("ABC1", "TestName1");
+    TenantDetailsEntity localTenantDetailsEntity = createTenantDetailsEntity("ABC1", "TestName1");
     Tenant tenant = createTenant("TestID", "Test");
     TenantEntity centralTenant = createTenantEntity("diku", "diku");
     PermissionUserCollection permissionUserCollection = new PermissionUserCollection();
@@ -172,10 +177,10 @@ class TenantServiceTest {
     when(permissionsClient.create(any())).thenReturn(PermissionUser.of(UUID.randomUUID().toString(), adminUser.getId(), List.of("users.collection.get")));
     when(tenantRepository.existsById(any())).thenReturn(false);
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
-    when(tenantRepository.save(any(TenantEntity.class))).thenReturn(localTenantEntity);
+    when(tenantDetailsRepository.save(any(TenantDetailsEntity.class))).thenReturn(localTenantDetailsEntity);
     doNothing().when(configurationClient).saveConfiguration(createConsortiaConfiguration(CENTRAL_TENANT_ID));
     doNothing().when(userTenantsClient).postUserTenant(any());
-    when(conversionService.convert(localTenantEntity, Tenant.class)).thenReturn(tenant);
+    when(conversionService.convert(localTenantDetailsEntity, Tenant.class)).thenReturn(tenant);
     doReturn(folioExecutionContext).when(contextHelper).getSystemUserFolioExecutionContext(anyString(), anyMap());
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
 
@@ -195,7 +200,7 @@ class TenantServiceTest {
   @Test
   void shouldSaveCentralTenantWithExistingAndPermissions() throws JsonProcessingException {
     UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
-    TenantEntity tenantEntity1 = createTenantEntity("ABC1", "TestName1");
+    TenantDetailsEntity tenantDetailsEntity = createTenantDetailsEntity("ABC1", "TestName1");
     Tenant tenant = createTenant("TestID", "Test", true);
     TenantEntity centralTenant = createTenantEntity("diku", "diku");
     PermissionUser permissionUser = new PermissionUser();
@@ -213,10 +218,10 @@ class TenantServiceTest {
     doNothing().when(permissionsClient).addPermission(any(), any());
     when(tenantRepository.existsById(any())).thenReturn(false);
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
-    when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
+    when(tenantDetailsRepository.save(any(TenantDetailsEntity.class))).thenReturn(tenantDetailsEntity);
     doNothing().when(configurationClient).saveConfiguration(createConsortiaConfiguration(CENTRAL_TENANT_ID));
     doNothing().when(userTenantsClient).postUserTenant(any());
-    when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
+    when(conversionService.convert(tenantDetailsEntity, Tenant.class)).thenReturn(tenant);
     doReturn(folioExecutionContext).when(contextHelper).getSystemUserFolioExecutionContext(anyString(), anyMap());
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
     Map<String, Collection<String>> okapiHeaders = new HashMap<>();
@@ -305,13 +310,13 @@ class TenantServiceTest {
 
   @Test
   void shouldThrowExceptionWhileSavingLocalTenantWithoutAdminUserId() {
-    TenantEntity tenantEntity1 = createTenantEntity("TestID", "TestName1");
+    TenantDetailsEntity tenantDetailsEntity = createTenantDetailsEntity("TestID", "TestName1");
     Tenant tenant = createTenant("TestID", "TestName2");
 
     when(consortiumRepository.existsById(any())).thenReturn(true);
     when(tenantRepository.existsById(any())).thenReturn(false);
-    when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
-    when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
+    when(tenantDetailsRepository.save(any(TenantDetailsEntity.class))).thenReturn(tenantDetailsEntity);
+    when(conversionService.convert(tenantDetailsEntity, Tenant.class)).thenReturn(tenant);
 
     assertThrows(java.lang.IllegalArgumentException.class, () ->
       tenantService.save(UUID.fromString(CONSORTIUM_ID), null, tenant));
