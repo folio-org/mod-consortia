@@ -142,7 +142,7 @@ public class PublicationServiceImpl implements PublicationService {
     for (String tenantId : publicationRequest.getTenants()) {
       try {
         PublicationTenantRequestEntity ptrEntity = buildPublicationRequestEntity(publicationRequest, createdPublicationEntity, tenantId);
-        var savedPublicationTenantRequest = savePublicationTenantRequest(ptrEntity, folioExecutionContext);
+        var savedPublicationTenantRequest = savePublicationTenantRequest(ptrEntity);
         var future = executor.submit(() -> executeAndUpdatePublicationTenantRequest(publicationRequest, tenantId, savedPublicationTenantRequest));
         futures.add(future);
       } catch (RuntimeException | JsonProcessingException e) {
@@ -154,7 +154,7 @@ public class PublicationServiceImpl implements PublicationService {
     executor.shutdown();
     try {
       if (executor.awaitTermination(300, TimeUnit.SECONDS)) {
-        updatePublicationsStatus(futures, createdPublicationEntity, folioExecutionContext);
+        updatePublicationsStatus(futures, createdPublicationEntity);
         executor.shutdownNow();
       }
     } catch (InterruptedException ie) {
@@ -169,17 +169,17 @@ public class PublicationServiceImpl implements PublicationService {
     PublicationTenantRequestEntity updatedPtre;
     try {
       var response = executeHttpRequest(publicationRequest, tenantId, folioExecutionContext);
-      updatedPtre = updateSucceedPublicationTenantRequest(response, savedPublicationTenantRequest, folioExecutionContext);
+      updatedPtre = updateSucceedPublicationTenantRequest(response, savedPublicationTenantRequest);
     } catch (Exception e) {
-      updatedPtre = updateFailedPublicationTenantRequest(e, savedPublicationTenantRequest, folioExecutionContext);
+      updatedPtre = updateFailedPublicationTenantRequest(e, savedPublicationTenantRequest);
     }
     return updatedPtre;
   }
 
-  private PublicationTenantRequestEntity savePublicationTenantRequest(PublicationTenantRequestEntity ptrEntity, FolioExecutionContext centralTenantContext) {
-    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantContext.getTenantId(), folioModuleMetadata, centralTenantContext))) {
+  private PublicationTenantRequestEntity savePublicationTenantRequest(PublicationTenantRequestEntity ptrEntity) {
+   try {
       log.info("savePublicationTenantRequest:: PublicationTenantRequest with id '{}' and PublicationStatus with id '{} and status '{} was saved",
-        ptrEntity.getId(), ptrEntity.getPcState().getId(), ptrEntity.getPcState().getStatus());
+          ptrEntity.getId(), ptrEntity.getPcState().getId(), ptrEntity.getPcState().getStatus());
       return publicationTenantRequestRepository.save(ptrEntity);
     } catch (RuntimeException e) {
       log.error("savePublicationTenantRequest:: error saving publication tenant request {}", ptrEntity.getId(), e);
@@ -188,7 +188,7 @@ public class PublicationServiceImpl implements PublicationService {
   }
 
   PublicationHttpResponse executeHttpRequest(PublicationRequest publicationRequest, String tenantId, FolioExecutionContext centralTenantContext) {
-    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioModuleMetadata, centralTenantContext))) {
+    try (var ignored = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioModuleMetadata, centralTenantContext))) {
       var response = httpRequestService.performRequest(publicationRequest.getUrl(), HttpMethod.valueOf(publicationRequest.getMethod()), publicationRequest.getPayload());
       if (response.getStatusCode().is2xxSuccessful()) {
         log.info("executeHttpRequest:: successfully called {} on tenant {}", publicationRequest.getUrl(), tenantId);
@@ -204,7 +204,7 @@ public class PublicationServiceImpl implements PublicationService {
     }
   }
 
-  PublicationTenantRequestEntity updateSucceedPublicationTenantRequest(PublicationHttpResponse responseEntity, PublicationTenantRequestEntity ptrEntity, FolioExecutionContext centralTenantContext) {
+  PublicationTenantRequestEntity updateSucceedPublicationTenantRequest(PublicationHttpResponse responseEntity, PublicationTenantRequestEntity ptrEntity) {
     var currentLocalDateTime = LocalDateTime.now();
     ptrEntity.setCompletedDate(currentLocalDateTime);
 
@@ -212,10 +212,10 @@ public class PublicationServiceImpl implements PublicationService {
     ptrEntity.setResponse(responseEntity.getBody());
     ptrEntity.setStatus(PublicationStatus.COMPLETE);
 
-    return savePublicationTenantRequest(ptrEntity, centralTenantContext);
+    return savePublicationTenantRequest(ptrEntity);
   }
 
-  PublicationTenantRequestEntity updateFailedPublicationTenantRequest(Throwable t, PublicationTenantRequestEntity ptrEntity, FolioExecutionContext centralTenantContext) {
+  PublicationTenantRequestEntity updateFailedPublicationTenantRequest(Throwable t, PublicationTenantRequestEntity ptrEntity) {
     var currentLocalDateTime = LocalDateTime.now();
     ptrEntity.setCompletedDate(currentLocalDateTime);
     ptrEntity.setStatus(PublicationStatus.ERROR);
@@ -227,7 +227,7 @@ public class PublicationServiceImpl implements PublicationService {
       ptrEntity.setResponse(t.getMessage());
     }
 
-    return savePublicationTenantRequest(ptrEntity, centralTenantContext);
+    return savePublicationTenantRequest(ptrEntity);
   }
 
   private PublicationTenantRequestEntity buildPublicationRequestEntity(PublicationRequest publicationRequest,
@@ -253,7 +253,7 @@ public class PublicationServiceImpl implements PublicationService {
     return publicationStatusEntity;
   }
 
-  private void updatePublicationsStatus(List<Future<PublicationTenantRequestEntity>> futures, PublicationStatusEntity publicationStatusEntity, FolioExecutionContext centralTenantContext) {
+  private void updatePublicationsStatus(List<Future<PublicationTenantRequestEntity>> futures, PublicationStatusEntity publicationStatusEntity) {
     List<PublicationTenantRequestEntity> ptreList = new ArrayList<>();
     futures.forEach(future -> {
       try {
@@ -275,12 +275,8 @@ public class PublicationServiceImpl implements PublicationService {
     var updateStatus = isErrorStatus ? PublicationStatus.ERROR : PublicationStatus.COMPLETE;
     publicationStatusEntity.setStatus(updateStatus);
 
-    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantContext.getTenantId(), folioModuleMetadata, centralTenantContext))) {
-      publicationStatusRepository.save(publicationStatusEntity);
-      log.info("updatePublicationsStatus:: updated publication record {} with status {}", publicationStatusEntity.getId(), publicationStatusEntity.getStatus());
-    } catch (Exception e) {
-      log.error("updatePublicationsStatus:: failed to update publication record {}", publicationStatusEntity.getId(), e);
-    }
+    publicationStatusRepository.save(publicationStatusEntity);
+    log.info("updatePublicationsStatus:: updated publication record {} with status {}", publicationStatusEntity.getId(), publicationStatusEntity.getStatus());
   }
 
   private void validatePublicationRequest(UUID consortiumId, PublicationRequest publication, FolioExecutionContext context) {
