@@ -172,8 +172,6 @@ class SyncPrimaryAffiliationServiceImplTest {
     var consortiumId = UUID.randomUUID();
     var tenantId = "ABC1";
     var centralTenantId = "diku";
-    TenantEntity tenantEntity1 = createTenantEntity(tenantId, "TestName1");
-    tenantEntity1.setConsortiumId(consortiumId);
 
     var userCollectionString = getMockDataAsString("mockdata/user_collection.json");
     List<User> userCollection = new ObjectMapper().readValue(userCollectionString, UserCollection.class).getUsers();
@@ -195,6 +193,20 @@ class SyncPrimaryAffiliationServiceImplTest {
     } catch (FeignException e) {
       verify(tenantService).updateTenantSetupStatus(tenantId, centralTenantId, SetupStatusEnum.FAILED);
     }
+  }
+
+  @Test
+  void syncPrimaryAffiliationsGetUsersException() {
+    var consortiumId = UUID.randomUUID();
+    var tenantId = "ABC1";
+    var centralTenantId = "diku";
+
+    when(userService.getUsersByQuery(anyString(), anyInt(), anyInt()))
+      .thenThrow(FeignException.FeignClientException.class);
+
+    syncPrimaryAffiliationService.syncPrimaryAffiliations(consortiumId, tenantId, centralTenantId);
+
+    verify(tenantService).updateTenantSetupStatus(tenantId, centralTenantId, SetupStatusEnum.FAILED);
   }
 
   @Test
