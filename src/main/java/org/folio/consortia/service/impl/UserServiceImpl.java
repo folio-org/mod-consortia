@@ -1,13 +1,12 @@
 package org.folio.consortia.service.impl;
 
+import static org.folio.consortia.service.FolioTenantService.CUSTOM_FIELD_NAME;
 import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import org.folio.consortia.client.UsersClient;
+import org.folio.consortia.domain.dto.Personal;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.exception.ConsortiumClientException;
 import org.folio.consortia.exception.ResourceNotFoundException;
