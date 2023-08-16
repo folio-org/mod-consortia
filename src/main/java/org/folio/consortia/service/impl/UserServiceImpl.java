@@ -1,10 +1,8 @@
 package org.folio.consortia.service.impl;
 
-import static org.folio.consortia.service.FolioTenantService.CUSTOM_FIELD_NAME;
 import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -92,6 +90,12 @@ public class UserServiceImpl implements UserService {
         user.setUsername(String.format("%s_%s", userOptional.getUsername(), HelperUtils.randomString(RANDOM_STRING_COUNT)));
         user.setType(SHADOW_USER_TYPE);
         user.setActive(true);
+        if (Objects.nonNull(userOptional.getPersonal())) {
+          // these firstname, lastname fields needed to correctly build UI metadata objects
+          user.setPersonal(new Personal()
+            .firstName(userOptional.getPersonal().getFirstName())
+            .lastName(userOptional.getPersonal().getLastName()));
+        }
         user.setCustomFields(Map.of(CUSTOM_FIELD_NAME, tenantId));
       } else {
         log.warn("Could not find real user with id: {} in his home tenant: {}", userId.toString(), tenantId);

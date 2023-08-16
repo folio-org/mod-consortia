@@ -78,6 +78,8 @@ class UserServiceTest {
     Assertions.assertEquals("shadow", user.getType());
     Assertions.assertEquals("diku", user.getCustomFields().get("originalTenantId"));
     Assertions.assertEquals(true, user.getActive());
+    Assertions.assertEquals("testFirst", user.getPersonal().getFirstName());
+    Assertions.assertEquals("testLast", user.getPersonal().getLastName());
   }
 
   private User createUserEntity(Boolean updateble) {
