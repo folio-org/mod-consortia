@@ -197,10 +197,11 @@ public class TenantServiceImpl implements TenantService {
   }
 
   private Tenant saveTenant(UUID consortiumId, Tenant tenantDto, SetupStatusEnum setupStatus) {
-    log.debug("saveTenant:: Trying to save tenant with consoritumId={} and tenant with id={}", consortiumId, tenantDto);
+    log.debug("saveTenant:: Trying to save tenant with consoritumId={} and tenant with id={}, setupStatus={}",
+      consortiumId, tenantDto, setupStatus);
     TenantDetailsEntity entity = toTenantDetailsEntity(consortiumId, tenantDto, setupStatus);
     TenantDetailsEntity savedTenant = tenantDetailsRepository.save(entity);
-    log.info("saveTenant: Tenant '{}' successfully saved", savedTenant.getId());
+    log.info("saveTenant: Tenant '{}' successfully saved, setupStatus={}", savedTenant.getId(), savedTenant.getSetupStatus());
     return converter.convert(savedTenant, Tenant.class);
   }
 

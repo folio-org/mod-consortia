@@ -48,7 +48,6 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
 
   @Override
   public void syncPrimaryAffiliations(UUID consortiumId, String tenantId, String centralTenantId) {
-
     log.info("Start syncing user primary affiliations for tenant {}", tenantId);
     List<User> users = new ArrayList<>();
     try {
