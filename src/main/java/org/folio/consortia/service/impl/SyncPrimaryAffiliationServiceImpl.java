@@ -48,16 +48,17 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
 
   @Override
   public void syncPrimaryAffiliations(UUID consortiumId, String tenantId, String centralTenantId) {
-    try {
-      log.info("Start syncing user primary affiliations for tenant {}", tenantId);
-      List<User> users = new ArrayList<>();
-      try {
-        users = userService.getUsersByQuery("cql.allRecords=1", 0, Integer.MAX_VALUE);
-      } catch (Exception e) {
-        log.error("syncPrimaryAffiliations:: failed to retrieve '{}' users", tenantId, e);
-        tenantService.updateTenantSetupStatus(tenantId, centralTenantId, SetupStatusEnum.FAILED);
-      }
 
+    log.info("Start syncing user primary affiliations for tenant {}", tenantId);
+    List<User> users = new ArrayList<>();
+    try {
+      users = userService.getUsersByQuery("cql.allRecords=1", 0, Integer.MAX_VALUE);
+    } catch (Exception e) {
+      log.error("syncPrimaryAffiliations:: failed to retrieve '{}' users", tenantId, e);
+      tenantService.updateTenantSetupStatus(tenantId, centralTenantId, SetupStatusEnum.FAILED);
+    }
+
+    try {
       if (CollectionUtils.isNotEmpty(users)) {
         SyncPrimaryAffiliationBody spab = buildSyncPrimaryAffiliationBody(tenantId, users);
         syncPrimaryAffiliationClient.savePrimaryAffiliations(spab, consortiumId.toString(), tenantId, centralTenantId);
