@@ -67,4 +67,4 @@ inventory-storage.alternative-title-types.item.delete
 circulation-storage.cancellation-reasons.item.post
 circulation-storage.cancellation-reasons.item.put
 circulation-storage.cancellation-reasons.item.delete
-custom.fields.item.post
+user-settings.custom-fields.item.post
