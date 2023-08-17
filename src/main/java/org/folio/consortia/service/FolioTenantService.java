@@ -7,7 +7,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.folio.consortia.config.FolioExecutionContextHelper;
 import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.domain.dto.CustomField;
-import org.folio.consortia.domain.dto.Type;
+import org.folio.consortia.domain.dto.CustomFieldType;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.liquibase.FolioSpringLiquibase;
 import org.folio.spring.service.TenantService;
@@ -32,10 +32,14 @@ public class FolioTenantService extends TenantService {
   private final FolioExecutionContext folioExecutionContext;
   private final FolioExecutionContextHelper contextHelper;
 
-  private static final Boolean IS_VISIBLE = false;
-  public static final String CUSTOM_FIELD_NAME = "originaltenantid";
-  private static final String ENTITY_TYPE = "user";
-  private static final String HELP_TEXT = "id of tenant where user created originally";
+  public static final String CUSTOM_FIELD_NAME = "originalTenantId";
+  private static final CustomField ORIGINAL_TENANT_ID_CUSTOM_FIELD = CustomField.builder()
+    .name(CUSTOM_FIELD_NAME)
+    .entityType("user")
+    .helpText("id of tenant where user created originally")
+    .customFieldType(CustomFieldType.TEXTBOX_LONG)
+    .visible(false)
+    .build();
 
   public FolioTenantService(JdbcTemplate jdbcTemplate,
                             KafkaService kafkaService,
@@ -56,7 +60,7 @@ public class FolioTenantService extends TenantService {
       var context = contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId());
       if (Objects.nonNull(context)) {
         runInFolioContext(context, () ->
-          customFieldService.createCustomField(createCustomFieldObject()));
+          customFieldService.createCustomField(ORIGINAL_TENANT_ID_CUSTOM_FIELD));
       }
     } catch (Exception e) {
       log.error(e.getMessage(), e);
@@ -77,14 +81,5 @@ public class FolioTenantService extends TenantService {
         getSchemaName()
       )
     );
-  }
-
-  private CustomField createCustomFieldObject() {
-    return CustomField.builder()
-      .name(CUSTOM_FIELD_NAME)
-      .entityType(ENTITY_TYPE)
-      .helpText(HELP_TEXT)
-      .type(Type.TEXTBOX_LONG)
-      .visible(IS_VISIBLE).build();
   }
 }

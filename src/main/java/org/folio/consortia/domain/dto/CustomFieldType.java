@@ -1,5 +1,5 @@
 package org.folio.consortia.domain.dto;
 
-public enum Type {
+public enum CustomFieldType {
   TEXTBOX_LONG
 }

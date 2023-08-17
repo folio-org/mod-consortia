@@ -14,7 +14,7 @@ import lombok.extern.jackson.Jacksonized;
 public class CustomField {
   String name;
   String entityType;
-  Type type;
+  CustomFieldType customFieldType;
   String helpText;
   Boolean visible;
 }

@@ -25,11 +25,21 @@ public class CustomFieldServiceImpl implements CustomFieldService {
   public static final String OKAPI_URL = "http://_";
   private final CustomFieldsClient customFieldsClient;
   private static final String MOD_USERS = "mod-users";
+  public static final String QUERY_PATTERN_NAME = "name==%s";
 
   @Override
   public void createCustomField(CustomField customField) {
-    log.info("Creating custom-field with name {}.", customField.getName());
-    customFieldsClient.postCustomFields(getModuleId(MOD_USERS), customField);
+    Boolean isFieldAlreadyPresent = getCustomFieldByName(customField.getName());
+    if (Boolean.FALSE.equals(isFieldAlreadyPresent)) {
+      log.info("Custom-field is not available creating new custom-field with name {}.", customField.getName());
+      customFieldsClient.postCustomFields(getModuleId(MOD_USERS), customField);
+    }
+  }
+
+  private Boolean getCustomFieldByName(String name)  {
+    log.info("Getting custom-field with name {}.", name);
+    return customFieldsClient.getByQuery(getModuleId(MOD_USERS), format(QUERY_PATTERN_NAME, name))
+      .getCustomFields().stream().anyMatch(customField -> customField.getName().equals(name));
   }
 
   @Cacheable(cacheNames = "moduleIds")
