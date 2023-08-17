@@ -177,9 +177,10 @@ public class TenantServiceImpl implements TenantService {
 
   @Override
   public void updateTenantSetupStatus(String tenantId, String centralTenantId, SetupStatusEnum setupStatus) {
-    try (var ctx = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId, folioExecutionContext.getFolioModuleMetadata(),
-      folioExecutionContext))) {
+    try (var ctx = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId,
+      folioExecutionContext.getFolioModuleMetadata(), folioExecutionContext))) {
       tenantDetailsRepository.setSetupStatusByTenantId(setupStatus, tenantId);
+      log.info("updateTenantSetupStatus:: tenant id={} status updated to {}", tenantId, setupStatus);
     }
   }
 
