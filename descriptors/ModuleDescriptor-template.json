@@ -322,8 +322,7 @@
             "login.item.post",
             "perms.users.get",
             "perms.users.item.post",
-            "perms.users.assign.immutable",
-            "custom.fields.item.post"
+            "perms.users.assign.immutable"
           ]
         },
         {

@@ -8,7 +8,6 @@ import org.folio.consortia.domain.dto.CustomField;
 import org.folio.consortia.service.CustomFieldService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.exception.NotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -19,10 +18,9 @@ import static java.lang.String.format;
 @Log4j2
 @RequiredArgsConstructor
 public class CustomFieldServiceImpl implements CustomFieldService {
-  @Autowired
-  FolioExecutionContext folioExecutionContext;
-  @Autowired
-  OkapiClient okapiClient;
+  private final FolioExecutionContext folioExecutionContext;
+
+  private final OkapiClient okapiClient;
   public static final String OKAPI_URL = "http://_";
   private final CustomFieldsClient customFieldsClient;
   private static final String MOD_USERS = "mod-users";
