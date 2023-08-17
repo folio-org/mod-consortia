@@ -6,6 +6,7 @@ import static org.folio.consortia.utils.EntityUtils.createTenantDetailsEntity;
 import static org.folio.consortia.utils.EntityUtils.createTenantEntity;
 import static org.folio.consortia.utils.EntityUtils.createUser;
 import static org.folio.consortia.utils.InputOutputTestUtils.getMockDataAsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -38,6 +39,7 @@ import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.domain.dto.PermissionUserCollection;
 import org.folio.consortia.domain.dto.Tenant;
+import org.folio.consortia.domain.dto.TenantDetails;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.dto.UserCollection;
 import org.folio.consortia.domain.entity.TenantDetailsEntity;
@@ -407,5 +409,21 @@ class TenantServiceTest {
     when(tenantRepository.findById(anyString())).thenReturn(Optional.empty());
     var tenantEntity = tenantService.getByTenantId(UUID.randomUUID().toString());
     assertNull(tenantEntity);
+  }
+
+  @Test
+  void shouldGetTenantDetails() {
+    UUID consortiumId = UUID.randomUUID();
+    String tenantId = "diku";
+
+    var tenantDetailsEntity = new TenantDetailsEntity();
+    var tenantDetailsExpected = new TenantDetails();
+    when(tenantDetailsRepository.findById(tenantId)).thenReturn(Optional.of(tenantDetailsEntity ));
+    when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
+    when(tenantRepository.existsById(any())).thenReturn(true);
+    when(conversionService.convert(tenantDetailsEntity, TenantDetails.class)).thenReturn(tenantDetailsExpected);
+
+    var tenantDetails = tenantService.getTenantDetailsById(consortiumId, tenantId);
+    assertEquals(tenantDetailsExpected, tenantDetails);
   }
 }
