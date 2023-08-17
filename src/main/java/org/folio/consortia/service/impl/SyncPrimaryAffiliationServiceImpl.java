@@ -122,7 +122,7 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
       }
     });
     tenantService.updateTenantSetupStatus(tenantId, centralTenantId, hasFailedAffiliations.get()
-      ? SetupStatusEnum.COMPLETED_WITH_ERRORS : SetupStatusEnum.COMPLETED);
+      ? SetupStatusEnum.FAILED : SetupStatusEnum.COMPLETED);
     log.info("createPrimaryUserAffiliations:: Successfully created {} of {} primary affiliations for tenant {}",
       affiliatedUsersCount.get(), userList.size(), tenantId);
   }
