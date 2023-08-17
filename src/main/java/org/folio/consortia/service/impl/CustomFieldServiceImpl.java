@@ -8,6 +8,7 @@ import org.folio.consortia.domain.dto.CustomField;
 import org.folio.consortia.service.CustomFieldService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.exception.NotFoundException;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -31,6 +32,7 @@ public class CustomFieldServiceImpl implements CustomFieldService {
     customFieldsClient.postCustomFields(getModuleId(MOD_USERS), customField);
   }
 
+  @Cacheable(cacheNames = "moduleIds")
   public String getModuleId(String moduleName) {
     var tenantId = folioExecutionContext.getTenantId();
     var moduleNamesJson = okapiClient.getModuleIds(URI.create(OKAPI_URL), tenantId, moduleName);

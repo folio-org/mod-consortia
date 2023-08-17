@@ -12,6 +12,7 @@ import java.net.URI;
 
 @FeignClient(name = "okapi", configuration = FeignClientConfiguration.class)
 public interface OkapiClient {
+
   @GetMapping(value = "/proxy/tenants/{tenantId}/modules", produces = MediaType.APPLICATION_JSON_VALUE)
   JsonNode getModuleIds(URI uri, @PathVariable("tenantId") String tenantId, @RequestParam("filter") String moduleName);
 }

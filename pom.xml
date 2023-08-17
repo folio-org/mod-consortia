@@ -27,7 +27,6 @@
   <properties>
     <java.version>17</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <folio-custom-fields.version>1.8.0</folio-custom-fields.version>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <start-class>org.folio.consortia.FolioConsortiaApplication</start-class>
     <sonar.exclusions>
@@ -71,11 +70,6 @@
     </dependencies>
   </dependencyManagement>
   <dependencies>
-    <dependency>
-      <groupId>org.folio</groupId>
-      <artifactId>folio-custom-fields</artifactId>
-      <version>${folio-custom-fields.version}</version>
-    </dependency>
     <dependency>
       <groupId>org.folio</groupId>
       <artifactId>folio-spring-base</artifactId>

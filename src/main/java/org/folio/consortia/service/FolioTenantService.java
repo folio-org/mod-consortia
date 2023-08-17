@@ -33,7 +33,7 @@ public class FolioTenantService extends TenantService {
   private final FolioExecutionContextHelper contextHelper;
 
   private static final Boolean IS_VISIBLE = false;
-  public static final String CUSTOM_FIELD_NAME = "originalTenantId";
+  public static final String CUSTOM_FIELD_NAME = "originaltenantid";
   private static final String ENTITY_TYPE = "user";
   private static final String HELP_TEXT = "id of tenant where user created originally";
 
