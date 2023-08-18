@@ -9,9 +9,9 @@ import lombok.extern.log4j.Log4j2;
 import org.folio.consortia.client.CustomFieldsClient;
 import org.folio.consortia.client.OkapiClient;
 import org.folio.consortia.domain.dto.CustomField;
+import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.CustomFieldService;
 import org.folio.spring.FolioExecutionContext;
-import org.folio.spring.exception.NotFoundException;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +38,7 @@ public class CustomFieldServiceImpl implements CustomFieldService {
     return customFieldsClient.getByQuery(getModuleId(MOD_USERS), format(QUERY_PATTERN_NAME, name))
       .getCustomFields().stream().filter(customField -> customField.getName().equals(name))
       .findFirst()
-      .orElseThrow(() -> new NotFoundException(format("Custom field with name=%s not found", name)));
+      .orElse(null);
   }
 
   @Cacheable(cacheNames = "moduleIds")
@@ -48,6 +48,6 @@ public class CustomFieldServiceImpl implements CustomFieldService {
     if (!moduleNamesJson.isEmpty()) {
       return moduleNamesJson.get(0).get("id").asText();
     }
-    throw new NotFoundException(format("Module id not found for name: %s", moduleName));
+    throw new ResourceNotFoundException(format("Module id not found for name: %s", moduleName));
   }
 }

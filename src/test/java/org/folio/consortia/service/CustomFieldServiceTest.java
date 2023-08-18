@@ -12,6 +12,7 @@ import org.folio.consortia.client.OkapiClient;
 import org.folio.consortia.domain.dto.CustomField;
 import org.folio.consortia.domain.dto.CustomFieldCollection;
 import org.folio.consortia.domain.dto.CustomFieldType;
+import org.folio.consortia.exception.ResourceNotFoundException;
 import org.folio.consortia.service.impl.CustomFieldServiceImpl;
 import org.folio.spring.FolioExecutionContext;
 import org.junit.jupiter.api.Assertions;
@@ -68,5 +69,17 @@ class CustomFieldServiceTest {
     Assertions.assertEquals("originalTenantId", customFields.getName());
     Mockito.verify(customFieldsClient, times(1)).getByQuery(any(), any());
     Mockito.verify(okapiClient, times(1)).getModuleIds(any(), any(), any());
+  }
+
+  @Test
+  void shouldThrowAnErrorIfModuleNotFoundTest() {
+    CustomFieldCollection customFieldCollection = new CustomFieldCollection();
+    customFieldCollection.setCustomFields(List.of(ORIGINAL_TENANT_ID_CUSTOM_FIELD));
+    customFieldCollection.setTotalRecords(1);
+    when(folioExecutionContext.getTenantId()).thenReturn("consortium");
+    when(okapiClient.getModuleIds(any(), any(), any())).thenReturn(JsonNodeFactory.instance.arrayNode());
+    when(customFieldsClient.getByQuery(any(), any())).thenReturn(customFieldCollection);
+
+    Assertions.assertThrows(ResourceNotFoundException.class, () -> customFieldService.getCustomFieldByName("originalTenantId"));
   }
 }
