@@ -24,5 +24,5 @@ public interface PermissionsClient {
   void addPermission(@PathVariable("userId") String userId, Permission permission);
 
   @DeleteMapping(value = "/perms/users/{id}")
-  void deleteUser(@PathVariable("id") String id);
+  void deletePermissionUser(@PathVariable("id") String id);
 }

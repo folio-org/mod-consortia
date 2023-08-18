@@ -111,13 +111,11 @@ public interface UserTenantService {
   UserTenant update(UUID consortiumId, UserTenant primary);
 
   /**
-   * Updating the firstname and the lastname of all shadows users in tenants
+   * Update the firstname and the lastname of shadows users in all tenants
    *
-   * @param firstName firstName of user
-   * @param lastName lastName of user
    * @param userId id of user
    */
-  void updateFirstNameAndLastName(String firstName, String lastName, UUID userId);
+  void updateNames(UUID userId);
 
   /**
    * Check if user has primary affiliation.

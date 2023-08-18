@@ -7,7 +7,6 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.folio.consortia.config.kafka.KafkaService;
-import org.folio.consortia.domain.dto.Personal;
 import org.folio.consortia.domain.dto.PrimaryAffiliationEvent;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.dto.UserEvent;
@@ -99,8 +98,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
 
       boolean isPersonalDataChanged = true;
       if (isPersonalDataChanged) {
-        Personal personalData = getPersonalData(userEvent);
-        userTenantService.updateFirstNameAndLastName(personalData.getFirstName(), personalData.getLastName(), getUserId(userEvent));
+        userTenantService.updateNames(getUserId(userEvent));
       }
       PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(userEvent, centralTenantId);
       String data = objectMapper.writeValueAsString(affiliationEvent);
@@ -170,14 +168,6 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       throw new IllegalArgumentException("User id is empty");
     }
     return UUID.fromString(userEvent.getUserDto().getId());
-  }
-
-  private Personal getPersonalData(UserEvent userEvent) {
-    Personal personalData = userEvent.getUserDto().getPersonal();
-    if (ObjectUtils.isEmpty(personalData)) {
-      throw new IllegalStateException("Missing personal data exception");
-    }
-    return personalData;
   }
 
   private UserTenant createUserTenant(String tenantId, UserEvent userEvent) {
