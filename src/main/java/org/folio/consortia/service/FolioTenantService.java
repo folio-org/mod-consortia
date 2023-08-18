@@ -1,7 +1,5 @@
 package org.folio.consortia.service;
 
-import static org.folio.consortia.utils.TenantContextUtils.runInFolioContext;
-
 import java.sql.ResultSet;
 
 import org.apache.commons.lang3.BooleanUtils;
@@ -12,6 +10,7 @@ import org.folio.consortia.domain.dto.CustomField;
 import org.folio.consortia.domain.dto.CustomFieldType;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.liquibase.FolioSpringLiquibase;
+import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.folio.spring.service.TenantService;
 import org.folio.tenant.domain.dto.TenantAttributes;
 import org.springframework.context.annotation.Primary;
@@ -60,14 +59,7 @@ public class FolioTenantService extends TenantService {
     try {
       contextHelper.registerTenant();
       kafkaService.createKafkaTopics();
-      runInFolioContext(contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId()), () -> {
-        if (isCustomFieldExist()) {
-          log.info("Custom-field already available in tenant {} with name {}", folioExecutionContext.getTenantId(), ORIGINAL_TENANT_ID);
-        } else {
-          log.info("Custom-field is not available in tenant {} with name {}", folioExecutionContext.getTenantId(), ORIGINAL_TENANT_ID);
-          createOriginalTenantIdCustomField();
-        }
-      });
+      createOriginalTenantIdCustomField();
     } catch (Exception e) {
       log.error(e.getMessage(), e);
       throw e;
@@ -90,10 +82,12 @@ public class FolioTenantService extends TenantService {
   }
 
   private void createOriginalTenantIdCustomField() {
-    customFieldService.createCustomField(FolioTenantService.ORIGINAL_TENANT_ID_CUSTOM_FIELD);
-  }
-
-  private boolean isCustomFieldExist() {
-    return ObjectUtils.isNotEmpty(customFieldService.getCustomFieldByName(FolioTenantService.ORIGINAL_TENANT_ID));
+    try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId()))) {
+      if (ObjectUtils.isNotEmpty(customFieldService.getCustomFieldByName(ORIGINAL_TENANT_ID))) {
+        log.info("Custom-field already available in tenant {} with name {}", folioExecutionContext.getTenantId(), ORIGINAL_TENANT_ID);
+      } else {
+        customFieldService.createCustomField(ORIGINAL_TENANT_ID_CUSTOM_FIELD);
+      }
+    }
   }
 }

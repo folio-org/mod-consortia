@@ -90,12 +90,15 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     publicationPostRequest.setPayload(updatedPayload);
     publicationPutRequest.setPayload(updatedPayload);
     log.info("start:: set source as '{}' in payload of setting: {}", updatedPayload.get("source"), settingId);
+
     // we create PC request with POST and PUT Http method to create settings as a consortia-system-user
-    UUID createSettingsPcId = publishRequest(consortiumId, publicationPostRequest);
-    UUID updateSettingsPcId = publishRequest(consortiumId, publicationPutRequest);
-    return new SharingSettingResponse()
-      .createSettingsPCId(createSettingsPcId)
-      .updateSettingsPCId(updateSettingsPcId);
+    try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId()))) {
+      UUID createSettingsPcId = publishRequest(consortiumId, publicationPostRequest);
+      UUID updateSettingsPcId = publishRequest(consortiumId, publicationPutRequest);
+      return new SharingSettingResponse()
+        .createSettingsPCId(createSettingsPcId)
+        .updateSettingsPCId(updateSettingsPcId);
+    }
   }
 
   @Override
