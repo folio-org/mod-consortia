@@ -29,12 +29,12 @@ public class CustomFieldServiceImpl implements CustomFieldService {
 
   @Override
   public void createCustomField(CustomField customField) {
-    log.info("Creating new custom-field with name {}", customField.getName());
+    log.info("createCustomField::creating new custom-field with name {}", customField.getName());
     customFieldsClient.postCustomFields(getModuleId(MOD_USERS), customField);
   }
 
   public CustomField getCustomFieldByName(String name) {
-    log.info("Getting custom-field with name {}.", name);
+    log.debug("getCustomFieldByName::getting custom-field with name {}.", name);
     return customFieldsClient.getByQuery(getModuleId(MOD_USERS), format(QUERY_PATTERN_NAME, name))
       .getCustomFields().stream().filter(customField -> customField.getName().equals(name))
       .findFirst()

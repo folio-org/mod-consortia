@@ -84,7 +84,7 @@ public class FolioTenantService extends TenantService {
   private void createOriginalTenantIdCustomField() {
     try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId()))) {
       if (ObjectUtils.isNotEmpty(customFieldService.getCustomFieldByName(ORIGINAL_TENANT_ID))) {
-        log.info("Custom-field already available in tenant {} with name {}", folioExecutionContext.getTenantId(), ORIGINAL_TENANT_ID);
+        log.info("createOriginalTenantIdCustomField:: custom-field already available in tenant {} with name {}", folioExecutionContext.getTenantId(), ORIGINAL_TENANT_ID);
       } else {
         customFieldService.createCustomField(ORIGINAL_TENANT_ID_CUSTOM_FIELD);
       }
