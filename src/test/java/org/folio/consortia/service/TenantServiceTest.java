@@ -418,12 +418,24 @@ class TenantServiceTest {
 
     var tenantDetailsEntity = new TenantDetailsEntity();
     var tenantDetailsExpected = new TenantDetails();
-    when(tenantDetailsRepository.findById(tenantId)).thenReturn(Optional.of(tenantDetailsEntity ));
+
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
-    when(tenantRepository.existsById(any())).thenReturn(true);
+    when(tenantDetailsRepository.findById(tenantId)).thenReturn(Optional.of(tenantDetailsEntity));
     when(conversionService.convert(tenantDetailsEntity, TenantDetails.class)).thenReturn(tenantDetailsExpected);
 
     var tenantDetails = tenantService.getTenantDetailsById(consortiumId, tenantId);
     assertEquals(tenantDetailsExpected, tenantDetails);
+  }
+
+  @Test
+  void testGetTenantDetailsNotExistingTenant() {
+    UUID consortiumId = UUID.randomUUID();
+    String tenantId = "123";
+
+    when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
+    when(tenantDetailsRepository.findById(tenantId)).thenReturn(Optional.empty());
+
+    assertThrows(ResourceNotFoundException.class, () ->
+      tenantService.getTenantDetailsById(consortiumId, tenantId));
   }
 }

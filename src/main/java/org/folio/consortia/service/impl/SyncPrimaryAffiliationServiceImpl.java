@@ -96,9 +96,9 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
 
   private void createPrimaryUserAffiliations(UUID consortiumId, String centralTenantId, String tenantId,
     List<SyncUser> userList, TenantEntity tenantEntity) {
-    var affiliatedUsersCount = new AtomicInteger(0);
-    var hasFailedAffiliations = new AtomicBoolean(false);
-    IntStream.range(0, userList.size()).sequential().forEach(idx -> {
+    var affiliatedUsersCount = 0;
+    var hasFailedAffiliations = false;
+    for (int idx = 0; idx < userList.size(); idx++) {
       var user = userList.get(idx);
       try {
         log.info("createPrimaryUserAffiliations:: Processing users: {} of {}", idx + 1, userList.size());
@@ -114,17 +114,17 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
           }
           sendCreatePrimaryAffiliationEvent(tenantEntity, user, centralTenantId);
         }
-        affiliatedUsersCount.getAndIncrement();
+        affiliatedUsersCount++;
       } catch (Exception e) {
-        hasFailedAffiliations.set(true);
+        hasFailedAffiliations = true;
         log.error("createPrimaryUserAffiliations:: Failed to create primary affiliations for userid: {}, tenant: {}" +
           " and error message: {}", user.getId(), tenantId, e.getMessage(), e);
       }
-    });
-    tenantService.updateTenantSetupStatus(tenantId, centralTenantId, hasFailedAffiliations.get()
-      ? SetupStatusEnum.FAILED : SetupStatusEnum.COMPLETED);
+    }
+    tenantService.updateTenantSetupStatus(tenantId, centralTenantId, hasFailedAffiliations ? SetupStatusEnum.FAILED
+      : SetupStatusEnum.COMPLETED);
     log.info("createPrimaryUserAffiliations:: Successfully created {} of {} primary affiliations for tenant {}",
-      affiliatedUsersCount.get(), userList.size(), tenantId);
+      affiliatedUsersCount, userList.size(), tenantId);
   }
 
   @SneakyThrows

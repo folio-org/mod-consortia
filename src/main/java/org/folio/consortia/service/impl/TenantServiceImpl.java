@@ -98,8 +98,9 @@ public class TenantServiceImpl implements TenantService {
   @Override
   public TenantDetails getTenantDetailsById(UUID consortiumId, String tenantId) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    checkTenantExistsOrThrow(tenantId);
-    return converter.convert(tenantDetailsRepository.findById(tenantId).orElse(null), TenantDetails.class);
+    var tenantDetailsEntity = tenantDetailsRepository.findById(tenantId).orElseThrow(() ->
+      new ResourceNotFoundException("id", tenantId));
+    return converter.convert(tenantDetailsEntity, TenantDetails.class);
   }
 
   @Override
