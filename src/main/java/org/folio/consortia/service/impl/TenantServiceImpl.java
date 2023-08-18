@@ -99,7 +99,7 @@ public class TenantServiceImpl implements TenantService {
   public TenantDetails getTenantDetailsById(UUID consortiumId, String tenantId) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     var tenantDetailsEntity = tenantDetailsRepository.findById(tenantId).orElseThrow(() ->
-      new ResourceNotFoundException("id", tenantId));
+      new ResourceNotFoundException("tenantId", tenantId));
     return converter.convert(tenantDetailsEntity, TenantDetails.class);
   }
 
