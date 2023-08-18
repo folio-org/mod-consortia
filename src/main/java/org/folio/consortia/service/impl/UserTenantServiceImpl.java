@@ -176,7 +176,7 @@ public class UserTenantServiceImpl implements UserTenantService {
 
     userTenantRepository.deleteByUserIdAndTenantId(userId, tenantId);
 
-    try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioModuleMetadata, folioExecutionContext))) {
+    try (var ignored = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioModuleMetadata, folioExecutionContext))) {
       User user = userService.getById(userId);
       deactivateUser(user);
       log.info("User affiliation deleted and user deactivated for user id: {} in the tenant: {}", userId.toString(), tenantId);
@@ -203,7 +203,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   }
 
   @Override
-  public void updateNames(UUID userId) {
+  public void updateShadowUsersFirstLastNames(UUID userId) {
     List<UserTenantEntity> userTenantEntities = userTenantRepository.getByUserIdAndIsPrimaryFalse(userId);
     if (CollectionUtils.isNotEmpty(userTenantEntities)) {
       User user = userService.getById(userId);
@@ -281,7 +281,7 @@ public class UserTenantServiceImpl implements UserTenantService {
 
       log.info("Removing orphaned shadow users from all tenants exist in consortia for the user: {}", userId);
       tenantIds.forEach(tenantId -> {
-        try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioModuleMetadata, folioExecutionContext))) {
+        try (var ignored = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioModuleMetadata, folioExecutionContext))) {
           permissionUserService.deleteUserPermissions(userId.toString());
           userService.deleteById(userId.toString());
           log.info("Removed shadow user: {} from tenant : {}", userId, tenantId);

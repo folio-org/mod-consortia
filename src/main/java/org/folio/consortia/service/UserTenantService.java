@@ -115,7 +115,7 @@ public interface UserTenantService {
    *
    * @param userId id of user
    */
-  void updateNames(UUID userId);
+  void updateShadowUsersFirstLastNames(UUID userId);
 
   /**
    * Check if user has primary affiliation.
