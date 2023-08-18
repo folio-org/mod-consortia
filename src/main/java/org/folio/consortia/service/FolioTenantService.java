@@ -1,5 +1,7 @@
 package org.folio.consortia.service;
 
+import static org.folio.consortia.utils.TenantContextUtils.runInFolioContext;
+
 import java.sql.ResultSet;
 
 import org.apache.commons.lang3.BooleanUtils;
@@ -17,8 +19,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.log4j.Log4j2;
-
-import static org.folio.consortia.utils.TenantContextUtils.runInFolioContext;
 
 @Log4j2
 @Service
@@ -62,8 +62,9 @@ public class FolioTenantService extends TenantService {
       kafkaService.createKafkaTopics();
       runInFolioContext(contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId()), () -> {
         if (isCustomFieldExist()) {
-          log.info("Custom-field already available with name {}", ORIGINAL_TENANT_ID);
+          log.info("Custom-field already available in tenant {} with name {}", folioExecutionContext.getTenantId(), ORIGINAL_TENANT_ID);
         } else {
+          log.info("Custom-field is not available in tenant {} with name {}", folioExecutionContext.getTenantId(), ORIGINAL_TENANT_ID);
           createOriginalTenantIdCustomField();
         }
       });
