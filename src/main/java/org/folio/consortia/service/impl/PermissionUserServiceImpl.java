@@ -70,6 +70,12 @@ public class PermissionUserServiceImpl implements PermissionUserService {
     });
   }
 
+  @Override
+  public void deleteUserPermissions(String userId) {
+    permissionsClient.deleteUser(userId);
+    log.info("deleteUserPermissions:: Deleting permissionUser with userId={}", userId);
+  }
+
   private List<String> readPermissionsFromResource(String permissionsFilePath) {
     List<String> result;
     var url = Resources.getResource(permissionsFilePath);

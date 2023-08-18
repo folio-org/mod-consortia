@@ -202,6 +202,24 @@ public class UserTenantServiceImpl implements UserTenantService {
     return new UserTenant();
   }
 
+  @Override
+  public void updateFirstNameAndLastName(String firstName, String lastName, UUID userId) {
+    List<UserTenantEntity> userTenantEntities = userTenantRepository.getByUserIdAndIsPrimaryFalse(userId);
+    if (CollectionUtils.isNotEmpty(userTenantEntities)) {
+      List<String> tenantIds = userTenantEntities.stream().map(userTenantEntity -> userTenantEntity.getTenant().getId()).toList();
+      log.info("Updating shadow users in all tenants exist in consortia for the user: {}", userId);
+      tenantIds.forEach(tenantId -> {
+        try (var ignored = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioModuleMetadata, folioExecutionContext))) {
+          User user = userService.getById(userId);
+          user.getPersonal().setFirstName(firstName);
+          user.getPersonal().setLastName(lastName);
+          userService.updateUser(user);
+          log.info("Updated shadow user: {} in tenant : {}", userId, tenantId);
+        }
+      });
+    }
+  }
+
   private void createOrUpdateShadowUser(UUID userId, User shadowUser, UserTenant userTenantDto) {
     log.info("createOrUpdateShadowUser:: Going to create or update shadow user with id: {} in the desired tenant: {}", userId.toString(), userTenantDto.getTenantId());
     User user = userService.getById(userId);
@@ -252,6 +270,7 @@ public class UserTenantServiceImpl implements UserTenantService {
     }
   }
 
+  @Override
   public void deleteShadowUsers(UUID userId) {
     List<UserTenantEntity> userTenantEntities = userTenantRepository.getByUserIdAndIsPrimaryFalse(userId);
     if (CollectionUtils.isNotEmpty(userTenantEntities)) {
@@ -260,6 +279,7 @@ public class UserTenantServiceImpl implements UserTenantService {
       log.info("Removing orphaned shadow users from all tenants exist in consortia for the user: {}", userId);
       tenantIds.forEach(tenantId -> {
         try (var context = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioModuleMetadata, folioExecutionContext))) {
+          permissionUserService.deleteUserPermissions(userId.toString());
           userService.deleteById(userId.toString());
           log.info("Removed shadow user: {} from tenant : {}", userId, tenantId);
         }
