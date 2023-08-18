@@ -176,6 +176,7 @@ public class TenantServiceImpl implements TenantService {
   }
 
   @Override
+  @Transactional
   public void updateTenantSetupStatus(String tenantId, String centralTenantId, SetupStatusEnum setupStatus) {
     try (var ctx = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId,
       folioExecutionContext.getFolioModuleMetadata(), folioExecutionContext))) {
