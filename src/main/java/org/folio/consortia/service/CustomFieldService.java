@@ -16,4 +16,12 @@ public interface CustomFieldService {
    *
    */
   void createCustomField(CustomField customField);
+
+  /**
+   * gets custom-field.
+   *
+   * @param name name of custom-field.
+   *
+   */
+  CustomField getCustomFieldByName(String name);
 }

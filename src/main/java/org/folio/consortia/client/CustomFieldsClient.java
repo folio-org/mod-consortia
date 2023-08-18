@@ -16,6 +16,7 @@ public interface CustomFieldsClient {
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   CustomFieldCollection getByQuery(@RequestHeader(value = "x-okapi-module-id") String moduleId, @RequestParam("query") String query);
+
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
   void postCustomFields(@RequestHeader(value = "x-okapi-module-id") String moduleId, @RequestBody CustomField entity);
 }

@@ -1,9 +1,9 @@
 package org.folio.consortia.service;
 
 import java.sql.ResultSet;
-import java.util.Objects;
 
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.folio.consortia.config.FolioExecutionContextHelper;
 import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.domain.dto.CustomField;
@@ -32,9 +32,9 @@ public class FolioTenantService extends TenantService {
   private final FolioExecutionContext folioExecutionContext;
   private final FolioExecutionContextHelper contextHelper;
 
-  public static final String CUSTOM_FIELD_NAME = "originalTenantId";
+  public static final String ORIGINAL_TENANT_ID = "originalTenantId";
   private static final CustomField ORIGINAL_TENANT_ID_CUSTOM_FIELD = CustomField.builder()
-    .name(CUSTOM_FIELD_NAME)
+    .name(ORIGINAL_TENANT_ID)
     .entityType("user")
     .helpText("id of tenant where user created originally")
     .customFieldType(CustomFieldType.TEXTBOX_LONG)
@@ -44,7 +44,10 @@ public class FolioTenantService extends TenantService {
   public FolioTenantService(JdbcTemplate jdbcTemplate,
                             KafkaService kafkaService,
                             FolioExecutionContext context,
-                            FolioSpringLiquibase folioSpringLiquibase, CustomFieldService customFieldService, FolioExecutionContext folioExecutionContext, FolioExecutionContextHelper contextHelper) {
+                            FolioSpringLiquibase folioSpringLiquibase,
+                            CustomFieldService customFieldService,
+                            FolioExecutionContext folioExecutionContext,
+                            FolioExecutionContextHelper contextHelper) {
     super(jdbcTemplate, context, folioSpringLiquibase);
     this.kafkaService = kafkaService;
     this.customFieldService = customFieldService;
@@ -57,11 +60,13 @@ public class FolioTenantService extends TenantService {
     try {
       contextHelper.registerTenant();
       kafkaService.createKafkaTopics();
-      var context = contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId());
-      if (Objects.nonNull(context)) {
-        runInFolioContext(context, () ->
-          customFieldService.createCustomField(ORIGINAL_TENANT_ID_CUSTOM_FIELD));
-      }
+      runInFolioContext(contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId()), () -> {
+        if (isCustomFieldExist()) {
+          log.info("Custom-field already available with name {}", ORIGINAL_TENANT_ID);
+        } else {
+          createOriginalTenantIdCustomField();
+        }
+      });
     } catch (Exception e) {
       log.error(e.getMessage(), e);
       throw e;
@@ -81,5 +86,13 @@ public class FolioTenantService extends TenantService {
         getSchemaName()
       )
     );
+  }
+
+  private void createOriginalTenantIdCustomField() {
+    customFieldService.createCustomField(FolioTenantService.ORIGINAL_TENANT_ID_CUSTOM_FIELD);
+  }
+
+  private boolean isCustomFieldExist() {
+    return ObjectUtils.isNotEmpty(customFieldService.getCustomFieldByName(FolioTenantService.ORIGINAL_TENANT_ID));
   }
 }

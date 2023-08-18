@@ -8,6 +8,7 @@ import org.folio.consortia.domain.dto.CustomFieldCollection;
 import org.folio.consortia.domain.dto.CustomFieldType;
 import org.folio.consortia.service.impl.CustomFieldServiceImpl;
 import org.folio.spring.FolioExecutionContext;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -16,7 +17,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -43,35 +43,29 @@ class CustomFieldServiceTest {
     .visible(false)
     .build();
 
-
   @Test
   void shouldCreateCustomField() {
-    CustomFieldCollection customFieldCollection = new CustomFieldCollection();
-    customFieldCollection.setCustomFields(new ArrayList<>());
-    customFieldCollection.setTotalRecords(0);
     CustomField customField = CustomField.builder().build();
     when(folioExecutionContext.getTenantId()).thenReturn("consortium");
     when(okapiClient.getModuleIds(any(), any(), any())).thenReturn(JsonNodeFactory.instance.arrayNode().add(JsonNodeFactory.instance.objectNode().put("id", "USERS")));
-    when(customFieldsClient.getByQuery(any(), any())).thenReturn(customFieldCollection);
     Mockito.doNothing().when(customFieldsClient).postCustomFields(any(), any());
     customFieldService.createCustomField(customField);
 
     Mockito.verify(customFieldsClient).postCustomFields(any(), any());
-    Mockito.verify(okapiClient, times(2)).getModuleIds(any(), any(), any());
+    Mockito.verify(okapiClient, times(1)).getModuleIds(any(), any(), any());
   }
 
   @Test
-  void shouldNotCreateNewCustomField() {
+  void shouldGetCustomField() {
     CustomFieldCollection customFieldCollection = new CustomFieldCollection();
     customFieldCollection.setCustomFields(List.of(ORIGINAL_TENANT_ID_CUSTOM_FIELD));
     customFieldCollection.setTotalRecords(1);
-    CustomField customField = CustomField.builder().name("originalTenantId").build();
     when(folioExecutionContext.getTenantId()).thenReturn("consortium");
     when(okapiClient.getModuleIds(any(), any(), any())).thenReturn(JsonNodeFactory.instance.arrayNode().add(JsonNodeFactory.instance.objectNode().put("id", "USERS")));
     when(customFieldsClient.getByQuery(any(), any())).thenReturn(customFieldCollection);
-    customFieldService.createCustomField(customField);
+    var customFields = customFieldService.getCustomFieldByName("originalTenantId");
 
-    Mockito.verify(customFieldsClient, times(0)).postCustomFields(any(), any());
+    Assertions.assertEquals("originalTenantId", customFields.getName());
     Mockito.verify(customFieldsClient, times(1)).getByQuery(any(), any());
     Mockito.verify(okapiClient, times(1)).getModuleIds(any(), any(), any());
   }

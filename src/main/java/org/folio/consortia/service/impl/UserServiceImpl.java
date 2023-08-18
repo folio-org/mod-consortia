@@ -1,6 +1,6 @@
 package org.folio.consortia.service.impl;
 
-import static org.folio.consortia.service.FolioTenantService.CUSTOM_FIELD_NAME;
+import static org.folio.consortia.service.FolioTenantService.ORIGINAL_TENANT_ID;
 import static org.folio.consortia.utils.TenantContextUtils.prepareContextForTenant;
 
 import java.util.List;
@@ -99,7 +99,7 @@ public class UserServiceImpl implements UserService {
             .firstName(userOptional.getPersonal().getFirstName())
             .lastName(userOptional.getPersonal().getLastName()));
         }
-        user.setCustomFields(Map.of(CUSTOM_FIELD_NAME, tenantId));
+        user.setCustomFields(Map.of(ORIGINAL_TENANT_ID, tenantId));
       } else {
         log.warn("Could not find real user with id: {} in his home tenant: {}", userId.toString(), tenantId);
         throw new ResourceNotFoundException(USER_ID, userId.toString());
