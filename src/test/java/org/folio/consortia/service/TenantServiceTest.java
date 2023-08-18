@@ -428,7 +428,7 @@ class TenantServiceTest {
   }
 
   @Test
-  void testGetTenantDetailsNotExistingTenant() {
+  void testGetTenantDetailsNonExistingTenant() {
     UUID consortiumId = UUID.randomUUID();
     String tenantId = "123";
 
