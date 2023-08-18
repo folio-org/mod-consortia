@@ -18,7 +18,7 @@ public interface CustomFieldService {
   void createCustomField(CustomField customField);
 
   /**
-   * gets custom-field.
+   * Gets custom-field.
    *
    * @param name name of custom-field.
    *

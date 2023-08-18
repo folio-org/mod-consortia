@@ -35,7 +35,7 @@ public class FolioTenantService extends TenantService {
   private static final CustomField ORIGINAL_TENANT_ID_CUSTOM_FIELD = CustomField.builder()
     .name(ORIGINAL_TENANT_ID)
     .entityType("user")
-    .helpText("id of tenant where user created originally")
+    .helpText("Id of tenant where user created originally")
     .customFieldType(CustomFieldType.TEXTBOX_LONG)
     .visible(false)
     .build();
