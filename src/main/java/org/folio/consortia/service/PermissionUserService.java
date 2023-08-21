@@ -46,5 +46,5 @@ public interface PermissionUserService {
    *
    * @param userId id of user
    */
-  void deleteUserPermissions(String userId);
+  void deletePermissionUser(String userId);
 }

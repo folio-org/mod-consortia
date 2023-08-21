@@ -71,7 +71,7 @@ public class PermissionUserServiceImpl implements PermissionUserService {
   }
 
   @Override
-  public void deleteUserPermissions(String userId) {
+  public void deletePermissionUser(String userId) {
     permissionsClient.deletePermissionUser(userId);
     log.info("deleteUserPermissions:: Deleted permissionUser with userId={}", userId);
   }

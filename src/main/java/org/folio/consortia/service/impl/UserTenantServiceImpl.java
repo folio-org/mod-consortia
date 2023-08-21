@@ -198,12 +198,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   }
 
   @Override
-  public UserTenant update(UUID consortiumId, UserTenant primary) {
-    return new UserTenant();
-  }
-
-  @Override
-  public void updateShadowUsersFirstLastNames(UUID userId) {
+  public void updateShadowUsersFirstAndLastNames(UUID userId) {
     List<UserTenantEntity> userTenantEntities = userTenantRepository.getByUserIdAndIsPrimaryFalse(userId);
     if (CollectionUtils.isNotEmpty(userTenantEntities)) {
       User user = userService.getById(userId);
@@ -282,7 +277,7 @@ public class UserTenantServiceImpl implements UserTenantService {
       log.info("Removing orphaned shadow users from all tenants exist in consortia for the user: {}", userId);
       tenantIds.forEach(tenantId -> {
         try (var ignored = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioModuleMetadata, folioExecutionContext))) {
-          permissionUserService.deleteUserPermissions(userId.toString());
+          permissionUserService.deletePermissionUser(userId.toString());
           userService.deleteById(userId.toString());
           log.info("Removed shadow user: {} from tenant : {}", userId, tenantId);
         }

@@ -98,7 +98,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
 
       boolean isPersonalDataChanged = true;
       if (isPersonalDataChanged) {
-        userTenantService.updateShadowUsersFirstLastNames(getUserId(userEvent));
+        userTenantService.updateShadowUsersFirstAndLastNames(getUserId(userEvent));
       }
       PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(userEvent, centralTenantId);
       String data = objectMapper.writeValueAsString(affiliationEvent);

@@ -102,20 +102,11 @@ public interface UserTenantService {
   void deleteByUserIdAndTenantId(UUID consortiumId, String tenantId, UUID userId);
 
   /**
-   * Updates user_tenant based on consortiumId and userTenantDto.
-   *
-   * @param consortiumId id of consortium
-   * @param primary      userTenantDto
-   * @return userTenantDto
-   */
-  UserTenant update(UUID consortiumId, UserTenant primary);
-
-  /**
    * Update the firstname and the lastname of shadows users in all tenants
    *
    * @param userId id of user
    */
-  void updateShadowUsersFirstLastNames(UUID userId);
+  void updateShadowUsersFirstAndLastNames(UUID userId);
 
   /**
    * Check if user has primary affiliation.
