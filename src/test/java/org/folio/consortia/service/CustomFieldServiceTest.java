@@ -1,9 +1,12 @@
 package org.folio.consortia.service;
 
+import static org.folio.consortia.utils.EntityUtils.CENTRAL_TENANT_ID;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
+import java.net.URI;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -47,9 +50,9 @@ class CustomFieldServiceTest {
   @Test
   void shouldCreateCustomField() {
     CustomField customField = CustomField.builder().build();
-    when(folioExecutionContext.getTenantId()).thenReturn("consortium");
-    when(okapiClient.getModuleIds(any(), any(), any())).thenReturn(JsonNodeFactory.instance.arrayNode().add(JsonNodeFactory.instance.objectNode().put("id", "USERS")));
-    Mockito.doNothing().when(customFieldsClient).postCustomFields(any(), any());
+    when(folioExecutionContext.getTenantId()).thenReturn(CENTRAL_TENANT_ID);
+    when(okapiClient.getModuleIds(URI.create("http://_"), CENTRAL_TENANT_ID, "mod-users")).thenReturn(JsonNodeFactory.instance.arrayNode().add(JsonNodeFactory.instance.objectNode().put("id", "USERS")));
+    Mockito.doNothing().when(customFieldsClient).postCustomFields(any(), eq(customField));
     customFieldService.createCustomField(customField);
 
     Mockito.verify(customFieldsClient).postCustomFields(any(), any());
@@ -61,9 +64,9 @@ class CustomFieldServiceTest {
     CustomFieldCollection customFieldCollection = new CustomFieldCollection();
     customFieldCollection.setCustomFields(List.of(ORIGINAL_TENANT_ID_CUSTOM_FIELD));
     customFieldCollection.setTotalRecords(1);
-    when(folioExecutionContext.getTenantId()).thenReturn("consortium");
-    when(okapiClient.getModuleIds(any(), any(), any())).thenReturn(JsonNodeFactory.instance.arrayNode().add(JsonNodeFactory.instance.objectNode().put("id", "USERS")));
-    when(customFieldsClient.getByQuery(any(), any())).thenReturn(customFieldCollection);
+    when(folioExecutionContext.getTenantId()).thenReturn(CENTRAL_TENANT_ID);
+    when(okapiClient.getModuleIds(URI.create("http://_"), CENTRAL_TENANT_ID, "mod-users")).thenReturn(JsonNodeFactory.instance.arrayNode().add(JsonNodeFactory.instance.objectNode().put("id", "USERS")));
+    when(customFieldsClient.getByQuery(any(), eq("name==originalTenantId"))).thenReturn(customFieldCollection);
     var customFields = customFieldService.getCustomFieldByName("originalTenantId");
 
     Assertions.assertEquals("originalTenantId", customFields.getName());
@@ -76,9 +79,9 @@ class CustomFieldServiceTest {
     CustomFieldCollection customFieldCollection = new CustomFieldCollection();
     customFieldCollection.setCustomFields(List.of(ORIGINAL_TENANT_ID_CUSTOM_FIELD));
     customFieldCollection.setTotalRecords(1);
-    when(folioExecutionContext.getTenantId()).thenReturn("consortium");
-    when(okapiClient.getModuleIds(any(), any(), any())).thenReturn(JsonNodeFactory.instance.arrayNode());
-    when(customFieldsClient.getByQuery(any(), any())).thenReturn(customFieldCollection);
+    when(folioExecutionContext.getTenantId()).thenReturn(CENTRAL_TENANT_ID);
+    when(okapiClient.getModuleIds(URI.create("http://_"), CENTRAL_TENANT_ID, "mod-users")).thenReturn(JsonNodeFactory.instance.arrayNode());
+    when(customFieldsClient.getByQuery(any(), eq("name==originalTenantId"))).thenReturn(customFieldCollection);
 
     Assertions.assertThrows(ResourceNotFoundException.class, () -> customFieldService.getCustomFieldByName("originalTenantId"));
   }
