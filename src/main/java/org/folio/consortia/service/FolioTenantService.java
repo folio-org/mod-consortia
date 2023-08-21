@@ -31,7 +31,7 @@ public class FolioTenantService extends TenantService {
   private final FolioExecutionContext folioExecutionContext;
   private final FolioExecutionContextHelper contextHelper;
 
-  public static final String ORIGINAL_TENANT_ID = "originalTenantId";
+  private static final String ORIGINAL_TENANT_ID = "originalTenantId";
   private static final CustomField ORIGINAL_TENANT_ID_CUSTOM_FIELD = CustomField.builder()
     .name(ORIGINAL_TENANT_ID)
     .entityType("user")
