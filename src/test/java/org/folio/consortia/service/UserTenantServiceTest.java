@@ -13,6 +13,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -372,6 +373,27 @@ class UserTenantServiceTest {
     mockOkapiHeaders();
 
     assertDoesNotThrow(() -> userTenantService.save(UUID.fromString(CONSORTIUM_ID), tenant, false));
+  }
+
+  @Test
+  void shouldNotCreatePermissionUserIfExists() {
+    UserTenant tenant = createUserTenantDtoEntity();
+    UUID userId = UUID.randomUUID();
+    String tenantId = String.valueOf(UUID.randomUUID());
+    UserTenantEntity userTenant = createUserTenantEntity(UUID.randomUUID(), userId, "testuser", tenantId);
+    userTenant.setIsPrimary(false);
+
+    when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID))).thenReturn(Optional.of(createConsortiumEntity()));
+    when(userTenantRepository.findByUserIdAndIsPrimary(any(), any())).thenReturn(Optional.of(userTenant));
+    when(userService.getById(any())).thenReturn(createNullUserEntity());
+    when(userService.prepareShadowUser(any(), any())).thenReturn(createNullUserEntity());
+    when(permissionUserService.getByUserId(userId.toString())).thenReturn(Optional.of(new PermissionUser()));
+
+    mockOkapiHeaders();
+
+    verify(permissionUserService, never()).createWithEmptyPermissions(userId.toString());
+
+    userTenantService.save(UUID.fromString(CONSORTIUM_ID), tenant, false);
   }
 
   @Test
