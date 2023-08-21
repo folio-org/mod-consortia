@@ -31,9 +31,9 @@ public class FolioTenantService extends TenantService {
   private final FolioExecutionContext folioExecutionContext;
   private final FolioExecutionContextHelper contextHelper;
 
-  private static final String ORIGINAL_TENANT_ID = "originalTenantId";
+  private static final String ORIGINAL_TENANT_ID_NAME = "originalTenantId";
   private static final CustomField ORIGINAL_TENANT_ID_CUSTOM_FIELD = CustomField.builder()
-    .name(ORIGINAL_TENANT_ID)
+    .name(ORIGINAL_TENANT_ID_NAME)
     .entityType("user")
     .helpText("Id of tenant where user created originally")
     .customFieldType(CustomFieldType.TEXTBOX_LONG)
@@ -83,8 +83,8 @@ public class FolioTenantService extends TenantService {
 
   private void createOriginalTenantIdCustomField() {
     try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId()))) {
-      if (ObjectUtils.isNotEmpty(customFieldService.getCustomFieldByName(ORIGINAL_TENANT_ID))) {
-        log.info("createOriginalTenantIdCustomField:: custom-field already available in tenant {} with name {}", folioExecutionContext.getTenantId(), ORIGINAL_TENANT_ID);
+      if (ObjectUtils.isNotEmpty(customFieldService.getCustomFieldByName(ORIGINAL_TENANT_ID_NAME))) {
+        log.info("createOriginalTenantIdCustomField:: custom-field already available in tenant {} with name {}", folioExecutionContext.getTenantId(), ORIGINAL_TENANT_ID_NAME);
       } else {
         customFieldService.createCustomField(ORIGINAL_TENANT_ID_CUSTOM_FIELD);
       }
