@@ -111,7 +111,7 @@ public class UserTenantServiceImpl implements UserTenantService {
     log.debug("Going to save user with id: {} into tenant: {}", userTenantDto.getUserId(), userTenantDto.getTenantId());
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
 
-    Optional<UserTenantEntity> userTenant = userTenantRepository.findByUserIdAndIsPrimary(userTenantDto.getUserId(), IS_PRIMARY_TRUE);
+    Optional<UserTenantEntity> userTenant = userTenantRepository.findByUserIdAndIsPrimaryTrue(userTenantDto.getUserId());
     if (userTenant.isEmpty()) {
       log.warn("Could not find user '{}' with primary affiliation in user_tenant table", userTenantDto.getUserId());
       throw new ResourceNotFoundException(String.format(NOT_FOUND_PRIMARY_AFFILIATION_MSG, USER_ID, userTenantDto.getUserId()));
@@ -187,7 +187,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   public boolean checkUserIfHasPrimaryAffiliationByUserId(UUID consortiumId, String userId) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     Optional<UserTenantEntity> optionalUserTenant = userTenantRepository
-      .findByUserIdAndIsPrimary(UUID.fromString(userId), IS_PRIMARY_TRUE);
+      .findByUserIdAndIsPrimaryTrue(UUID.fromString(userId));
     return optionalUserTenant.isPresent();
   }
 
@@ -201,9 +201,9 @@ public class UserTenantServiceImpl implements UserTenantService {
   public void updateShadowUsersFirstAndLastNames(UUID userId) {
     List<UserTenantEntity> userTenantEntities = userTenantRepository.getByUserIdAndIsPrimaryFalse(userId);
     if (CollectionUtils.isNotEmpty(userTenantEntities)) {
-      User user = userService.getById(userId);
-      String firstName = user.getPersonal().getFirstName();
-      String lastName = user.getPersonal().getLastName();
+      User primaryUser = userService.getById(userId);
+      String firstName = primaryUser.getPersonal().getFirstName();
+      String lastName = primaryUser.getPersonal().getLastName();
       List<String> tenantIds = userTenantEntities.stream().map(userTenantEntity -> userTenantEntity.getTenant().getId()).toList();
       log.info("Updating shadow users in all tenants exist in consortia for the user: {}", userId);
       tenantIds.forEach(tenantId -> {
@@ -272,7 +272,7 @@ public class UserTenantServiceImpl implements UserTenantService {
 
   @Override
   public void deleteShadowUsers(UUID userId) {
-    List<UserTenantEntity> userTenantEntities = userTenantRepository.getByUserIdAndIsPrimaryFalse(userId);
+    List<UserTenantEntity> userTenantEntities = userTenantRepository.getOrphanUserTenantAssociationsByUserIdAndIsPrimaryFalse(userId);
     if (CollectionUtils.isNotEmpty(userTenantEntities)) {
       List<String> tenantIds = userTenantEntities.stream().map(userTenantEntity -> userTenantEntity.getTenant().getId()).toList();
 
@@ -285,7 +285,7 @@ public class UserTenantServiceImpl implements UserTenantService {
         }
       });
 
-      userTenantRepository.deleteByUserIdAndIsPrimaryFalse(userId);
+      userTenantRepository.deleteOrphanUserTenantAssociationsByUserIdAndIsPrimaryFalse(userId);
     }
   }
 
