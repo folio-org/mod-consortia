@@ -23,6 +23,6 @@ public interface PermissionsClient {
   @PostMapping(value = "/{userId}/permissions?indexField=userId", consumes = MediaType.APPLICATION_JSON_VALUE)
   void addPermission(@PathVariable("userId") String userId, Permission permission);
 
-  @DeleteMapping(value = "/perms/users/{id}")
+  @DeleteMapping(value = "/{id}")
   void deletePermissionUser(@PathVariable("id") String id);
 }

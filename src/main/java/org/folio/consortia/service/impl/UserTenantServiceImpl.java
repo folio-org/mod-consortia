@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.folio.consortia.config.FolioExecutionContextHelper;
+import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.dto.UserTenantCollection;
@@ -279,8 +280,9 @@ public class UserTenantServiceImpl implements UserTenantService {
       log.info("Removing orphaned shadow users from all tenants exist in consortia for the user: {}", userId);
       tenantIds.forEach(tenantId -> {
         try (var ignored = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioModuleMetadata, folioExecutionContext))) {
-          permissionUserService.deletePermissionUser(userId.toString());
           userService.deleteById(userId.toString());
+          Optional<PermissionUser> permissionUser = permissionUserService.getByUserId(userId.toString());
+          permissionUser.ifPresent(ps -> permissionUserService.deletePermissionUser(ps.getId()));
           log.info("Removed shadow user: {} from tenant : {}", userId, tenantId);
         }
       });
