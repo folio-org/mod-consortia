@@ -17,6 +17,7 @@ import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.entity.TenantEntity;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.repository.UserTenantRepository;
+import org.folio.consortia.service.LockService;
 import org.folio.consortia.service.SyncPrimaryAffiliationService;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserService;
@@ -27,6 +28,8 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
@@ -42,6 +45,8 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
   private final ObjectMapper objectMapper = new ObjectMapper();
   private final KafkaService kafkaService;
   private final SyncPrimaryAffiliationClient syncPrimaryAffiliationClient;
+  private final LockService lockService;
+  private final EntityManagerFactory entityManagerFactory;
 
   @Override
   public void syncPrimaryAffiliations(UUID consortiumId, String tenantId, String centralTenantId) {
@@ -78,8 +83,11 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
   @Override
   public void createPrimaryUserAffiliations(UUID consortiumId, String centralTenantId,
     SyncPrimaryAffiliationBody syncPrimaryAffiliationBody) {
+    // need this in order to bypass usage of cached connections which prevents correct session level locks work
+    EntityManager entityManager = entityManagerFactory.createEntityManager();
     try {
       log.info("Start creating user primary affiliation for tenant {}", syncPrimaryAffiliationBody.getTenantId());
+      lockService.lockTenantSetup(entityManager);
       var tenantId = syncPrimaryAffiliationBody.getTenantId();
       var userList = syncPrimaryAffiliationBody.getUsers();
       TenantEntity tenantEntity = tenantService.getByTenantId(tenantId);
@@ -88,6 +96,9 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
       log.error("createPrimaryUserAffiliations:: error creating user primary affiliations", e);
       tenantService.updateTenantSetupStatus(syncPrimaryAffiliationBody.getTenantId(), centralTenantId, SetupStatusEnum.FAILED);
       throw e;
+    } finally {
+      lockService.unlockTenantSetup(entityManager);
+      entityManager.close();
     }
   }
 
