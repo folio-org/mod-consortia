@@ -273,7 +273,7 @@ public class UserTenantServiceImpl implements UserTenantService {
 
   @Override
   public void deleteShadowUsers(UUID userId) {
-    List<UserTenantEntity> userTenantEntities = userTenantRepository.getOrphanUserTenantAssociationsByUserIdAndIsPrimaryFalse(userId);
+    List<UserTenantEntity> userTenantEntities = userTenantRepository.getOrphansByUserIdAndIsPrimaryFalse(userId);
     if (CollectionUtils.isNotEmpty(userTenantEntities)) {
       List<String> tenantIds = userTenantEntities.stream().map(userTenantEntity -> userTenantEntity.getTenant().getId()).toList();
 
@@ -282,6 +282,7 @@ public class UserTenantServiceImpl implements UserTenantService {
         try (var ignored = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioModuleMetadata, folioExecutionContext))) {
           userService.deleteById(userId.toString());
           Optional<PermissionUser> permissionUser = permissionUserService.getByUserId(userId.toString());
+          log.info("Trying to delete permission user for userId={}", userId.toString());
           permissionUser.ifPresent(ps -> permissionUserService.deletePermissionUser(ps.getId()));
           log.info("Removed shadow user: {} from tenant : {}", userId, tenantId);
         }

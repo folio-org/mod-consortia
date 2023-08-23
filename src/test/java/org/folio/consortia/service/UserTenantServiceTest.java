@@ -406,7 +406,7 @@ class UserTenantServiceTest {
     userTenant1.setIsPrimary(false);
     userTenant2.setIsPrimary(false);
     userTenant3.setIsPrimary(false);
-    when(userTenantRepository.getOrphanUserTenantAssociationsByUserIdAndIsPrimaryFalse(any())).thenReturn(List.of(userTenant1, userTenant2, userTenant3));
+    when(userTenantRepository.getOrphansByUserIdAndIsPrimaryFalse(any())).thenReturn(List.of(userTenant1, userTenant2, userTenant3));
     mockOkapiHeaders();
 
     assertDoesNotThrow(() -> userTenantService.deleteShadowUsers(userId1));

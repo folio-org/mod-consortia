@@ -64,9 +64,9 @@ class PermissionServiceTest {
 
   @Test
   void shouldDeletePermissionUser() {
-    String userId = RANDOM_USER_ID;
-    permissionUserService.deletePermissionUser(userId);
-    verify(permissionsClient).deletePermissionUser(userId);
+    String permissionUserId = UUID.randomUUID().toString();
+    permissionUserService.deletePermissionUser(permissionUserId);
+    verify(permissionsClient).deletePermissionUser(permissionUserId);
   }
 
 }

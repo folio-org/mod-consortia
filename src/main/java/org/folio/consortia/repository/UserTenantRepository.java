@@ -28,7 +28,7 @@ public interface UserTenantRepository extends JpaRepository<UserTenantEntity, UU
   Optional<UserTenantEntity> findByUserIdAndIsPrimaryTrue(UUID userId);
 
   @Query("SELECT ut FROM UserTenantEntity ut WHERE ut.userId NOT IN (SELECT ut.userId FROM UserTenantEntity ut WHERE ut.userId= ?1 AND ut.isPrimary=true) AND ut.userId= ?1")
-  List<UserTenantEntity> getOrphanUserTenantAssociationsByUserIdAndIsPrimaryFalse(UUID userId);
+  List<UserTenantEntity> getOrphansByUserIdAndIsPrimaryFalse(UUID userId);
 
   @Query("SELECT ut FROM UserTenantEntity ut WHERE ut.userId= ?1 AND ut.isPrimary= false")
   List<UserTenantEntity> getByUserIdAndIsPrimaryFalse(UUID userId);
