@@ -288,7 +288,7 @@ public class UserTenantServiceImpl implements UserTenantService {
         }
       });
 
-      userTenantRepository.deleteOrphanUserTenantAssociationsByUserIdAndIsPrimaryFalse(userId);
+      userTenantRepository.deleteOrphansByUserIdAndIsPrimaryFalse(userId);
     }
   }
 
