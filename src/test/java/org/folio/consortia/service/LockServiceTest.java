@@ -17,7 +17,7 @@ import jakarta.persistence.Query;
 
 @SpringBootTest
 @EnableAutoConfiguration(exclude = BatchAutoConfiguration.class)
-public class LockServiceTest {
+class LockServiceTest {
   @InjectMocks
   private LockServiceImpl lockService;
 
@@ -27,7 +27,7 @@ public class LockServiceTest {
   private Query query;
 
   @Test
-  public void shouldLockWithinTransaction() {
+  void shouldLockWithinTransaction() {
     when(entityManager.createNativeQuery(any())).thenReturn(query);
 
     lockService.lockTenantSetupWithinTransaction();
