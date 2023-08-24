@@ -49,8 +49,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import feign.FeignException;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
 
 @SpringBootTest
 @EnableAutoConfiguration(exclude = BatchAutoConfiguration.class)
@@ -77,10 +75,6 @@ class SyncPrimaryAffiliationServiceImplTest {
   TenantRepository tenantRepository;
   @Mock
   private LockService lockService;
-  @Mock
-  private EntityManagerFactory entityManagerFactory;
-  @Mock
-  private EntityManager entityManager;
 
   protected static final String TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkaWt1X2FkbWluIiwidXNlcl9pZCI6IjFkM2I1OGNiLTA3YjUtNWZjZC04YTJhLTNjZTA2YTBlYjkwZiIsImlhdCI6MTYxNjQyMDM5MywidGVuYW50IjoiZGlrdSJ9.2nvEYQBbJP1PewEgxixBWLHSX_eELiBEBpjufWiJZRs";
   protected static final String TENANT = "diku";
@@ -110,15 +104,12 @@ class SyncPrimaryAffiliationServiceImplTest {
     when(userService.getUsersByQuery(anyString(), anyInt(), anyInt())).thenReturn(userCollection);
     when(userTenantService.createPrimaryUserTenantAffiliation(any(), any(), anyString(), anyString())).thenReturn(new UserTenant());
     when(consortiaConfigurationService.getCentralTenantId(anyString())).thenReturn(tenantId);
-    when(entityManagerFactory.createEntityManager()).thenReturn(entityManager);
 
     syncPrimaryAffiliationService.createPrimaryUserAffiliations(consortiumId, centralTenantId, spab);
 
     verify(kafkaService, timeout(2000)).send(any(), anyString(), anyString());
     verify(tenantService).updateTenantSetupStatus(tenantId, centralTenantId, SetupStatusEnum.COMPLETED);
-    verify(lockService).lockTenantSetup(entityManager);
-    verify(lockService).unlockTenantSetup(entityManager);
-    verify(entityManager).close();
+    verify(lockService).lockTenantSetupWithinTransaction();
   }
   @Test
   void createPrimaryUserAffiliationsWhenLocalTenantSaving() throws JsonProcessingException {
@@ -146,15 +137,12 @@ class SyncPrimaryAffiliationServiceImplTest {
     when(userTenantService.createPrimaryUserTenantAffiliation(any(), any(), anyString(), anyString())).thenReturn(new UserTenant());
     when(consortiaConfigurationService.getCentralTenantId(anyString())).thenReturn(centralTenantId);
     when(userTenantService.save(any(), any(), anyBoolean())).thenReturn(new UserTenant());
-    when(entityManagerFactory.createEntityManager()).thenReturn(entityManager);
 
     syncPrimaryAffiliationService.createPrimaryUserAffiliations(consortiumId, centralTenantId, spab);
 
     verify(kafkaService, timeout(2000)).send(any(), anyString(), anyString());
     verify(tenantService).updateTenantSetupStatus(tenantId, centralTenantId, SetupStatusEnum.COMPLETED);
-    verify(lockService).lockTenantSetup(entityManager);
-    verify(lockService).unlockTenantSetup(entityManager);
-    verify(entityManager).close();
+    verify(lockService).lockTenantSetupWithinTransaction();
   }
 
   @Test
@@ -239,7 +227,6 @@ class SyncPrimaryAffiliationServiceImplTest {
       .tenantId(tenantId);
 
     when(tenantService.getByTenantId(anyString())).thenThrow(DataAccessResourceFailureException.class);
-    when(entityManagerFactory.createEntityManager()).thenReturn(entityManager);
 
     try {
       syncPrimaryAffiliationService.createPrimaryUserAffiliations(consortiumId, centralTenantId, spab);
@@ -247,9 +234,7 @@ class SyncPrimaryAffiliationServiceImplTest {
     } catch (DataAccessResourceFailureException e) {
       verifyNoInteractions(kafkaService);
       verify(tenantService).updateTenantSetupStatus(tenantId, centralTenantId, SetupStatusEnum.FAILED);
-      verify(lockService).lockTenantSetup(entityManager);
-      verify(lockService).unlockTenantSetup(entityManager);
-      verify(entityManager).close();
+      verify(lockService).lockTenantSetupWithinTransaction();
     }
   }
 
@@ -278,13 +263,10 @@ class SyncPrimaryAffiliationServiceImplTest {
     when(userTenantService.createPrimaryUserTenantAffiliation(any(), any(), anyString(), anyString()))
       .thenThrow(DataAccessResourceFailureException.class);
     when(consortiaConfigurationService.getCentralTenantId(anyString())).thenReturn(tenantId);
-    when(entityManagerFactory.createEntityManager()).thenReturn(entityManager);
 
     syncPrimaryAffiliationService.createPrimaryUserAffiliations(consortiumId, centralTenantId, spab);
     verifyNoInteractions(kafkaService);
     verify(tenantService).updateTenantSetupStatus(tenantId, centralTenantId, SetupStatusEnum.COMPLETED_WITH_ERRORS);
-    verify(lockService).lockTenantSetup(entityManager);
-    verify(lockService).unlockTenantSetup(entityManager);
-    verify(entityManager).close();
+    verify(lockService).lockTenantSetupWithinTransaction();
   }
 }

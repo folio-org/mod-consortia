@@ -25,11 +25,10 @@ import org.folio.consortia.service.UserTenantService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
@@ -46,7 +45,6 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
   private final KafkaService kafkaService;
   private final SyncPrimaryAffiliationClient syncPrimaryAffiliationClient;
   private final LockService lockService;
-  private final EntityManagerFactory entityManagerFactory;
 
   @Override
   public void syncPrimaryAffiliations(UUID consortiumId, String tenantId, String centralTenantId) {
@@ -80,14 +78,13 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
       .users(syncUsers);
   }
 
+  @Transactional
   @Override
   public void createPrimaryUserAffiliations(UUID consortiumId, String centralTenantId,
     SyncPrimaryAffiliationBody syncPrimaryAffiliationBody) {
-    // need this in order to bypass usage of cached connections which prevents correct session level locks work
-    EntityManager entityManager = entityManagerFactory.createEntityManager();
     try {
       log.info("Start creating user primary affiliation for tenant {}", syncPrimaryAffiliationBody.getTenantId());
-      lockService.lockTenantSetup(entityManager);
+      lockService.lockTenantSetupWithinTransaction();
       var tenantId = syncPrimaryAffiliationBody.getTenantId();
       var userList = syncPrimaryAffiliationBody.getUsers();
       TenantEntity tenantEntity = tenantService.getByTenantId(tenantId);
@@ -96,9 +93,6 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
       log.error("createPrimaryUserAffiliations:: error creating user primary affiliations", e);
       tenantService.updateTenantSetupStatus(syncPrimaryAffiliationBody.getTenantId(), centralTenantId, SetupStatusEnum.FAILED);
       throw e;
-    } finally {
-      lockService.unlockTenantSetup(entityManager);
-      entityManager.close();
     }
   }
 
