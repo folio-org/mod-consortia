@@ -186,10 +186,22 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
     User userDto = userEvent.getUserDto();
     if (StringUtils.isNotBlank(userDto.getUsername())) { // for delete event username will be empty
       event.setUsername(userEvent.getUserDto().getUsername());
-      if (ObjectUtils.isNotEmpty(userDto.getPersonal())) {
-        event.setEmail(userDto.getPersonal().getEmail());
-        event.setPhoneNumber(userDto.getPersonal().getPhone());
-        event.setMobilePhoneNumber(userDto.getPersonal().getMobilePhone());
+
+      var personalInfo = userDto.getPersonal();
+      if (ObjectUtils.isNotEmpty(personalInfo)) {
+        event.setEmail(personalInfo.getEmail());
+        event.setPhoneNumber(personalInfo.getPhone());
+        event.setMobilePhoneNumber(personalInfo.getMobilePhone());
+      }
+
+      String barcode = userDto.getBarcode();
+      if (ObjectUtils.isNotEmpty(barcode)) {
+        event.setBarcode(barcode);
+      }
+
+      String externalSystemId = userDto.getExternalSystemId();
+      if (ObjectUtils.isNotEmpty(externalSystemId)) {
+        event.setExternalSystemId(externalSystemId);
       }
     }
     event.setTenantId(userEvent.getTenantId());
