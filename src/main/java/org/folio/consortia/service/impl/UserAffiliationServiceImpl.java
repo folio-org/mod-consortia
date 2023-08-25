@@ -193,16 +193,9 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
         event.setPhoneNumber(personalInfo.getPhone());
         event.setMobilePhoneNumber(personalInfo.getMobilePhone());
       }
+      event.setBarcode(userDto.getBarcode());
+      event.setExternalSystemId(userDto.getExternalSystemId());
 
-      String barcode = userDto.getBarcode();
-      if (ObjectUtils.isNotEmpty(barcode)) {
-        event.setBarcode(barcode);
-      }
-
-      String externalSystemId = userDto.getExternalSystemId();
-      if (ObjectUtils.isNotEmpty(externalSystemId)) {
-        event.setExternalSystemId(externalSystemId);
-      }
     }
     event.setTenantId(userEvent.getTenantId());
     event.setCentralTenantId(centralTenantId);
