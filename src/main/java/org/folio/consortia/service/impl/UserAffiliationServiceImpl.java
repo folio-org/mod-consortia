@@ -96,8 +96,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
         log.info("Username in primary affiliation has been updated for the user: {}", userEvent.getUserDto().getId());
       }
 
-      boolean isPersonalDataChanged = true;
-      if (isPersonalDataChanged) {
+      if (Boolean.TRUE.equals(userEvent.getIsPersonalDataChanged())) {
         userTenantService.updateShadowUsersFirstAndLastNames(getUserId(userEvent));
       }
       PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(userEvent, centralTenantId);
