@@ -9,5 +9,4 @@ public class UserAffiliationException extends RuntimeException {
   public UserAffiliationException(String message) {
     super(message);
   }
-
 }

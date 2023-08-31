@@ -264,7 +264,7 @@ class UserTenantServiceTest {
   @Test
   void shouldDeletePrimaryAffiliation() {
     var userEvent = createUserEvent();
-    when(userTenantRepository.deleteByUserIdAndIsPrimaryTrue(any())).thenReturn(1L);
+    when(userTenantRepository.deleteByUserIdAndIsPrimaryTrue(any())).thenReturn(1);
 
     boolean deleted = userTenantService.deletePrimaryUserTenantAffiliation(UUID.fromString(userEvent.getUserDto().getId()));
 
@@ -275,7 +275,7 @@ class UserTenantServiceTest {
   @Test
   void shouldNotDeletePrimaryAffiliation() {
     var userEvent = createUserEvent();
-    when(userTenantRepository.deleteByUserIdAndIsPrimaryTrue(any())).thenReturn(0L);
+    when(userTenantRepository.deleteByUserIdAndIsPrimaryTrue(any())).thenReturn(0);
 
     boolean deleted = userTenantService.deletePrimaryUserTenantAffiliation(UUID.fromString(userEvent.getUserDto().getId()));
 
