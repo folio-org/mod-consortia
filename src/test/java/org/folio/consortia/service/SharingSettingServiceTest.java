@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.HttpMethod;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -53,6 +54,8 @@ class SharingSettingServiceTest {
   private ConsortiumRepository consortiumRepository;
   @Mock
   private ConsortiumService consortiumService;
+  @Mock
+  private TaskExecutor asyncTaskExecutor;
   @Mock
   private TenantService tenantService;
   @Mock

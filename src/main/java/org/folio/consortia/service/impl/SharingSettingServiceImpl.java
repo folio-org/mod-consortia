@@ -1,17 +1,25 @@
 package org.folio.consortia.service.impl;
 
 import static org.folio.consortia.utils.HelperUtils.CONSORTIUM_SETTING_SOURCE;
+import static org.folio.consortia.utils.HelperUtils.LOCAL_SETTING_SOURCE;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.folio.consortia.config.FolioExecutionContextHelper;
+import org.folio.consortia.domain.dto.PublicationDetailsResponse;
 import org.folio.consortia.domain.dto.PublicationRequest;
+import org.folio.consortia.domain.dto.PublicationResult;
+import org.folio.consortia.domain.dto.PublicationStatus;
 import org.folio.consortia.domain.dto.SharingSettingDeleteResponse;
 import org.folio.consortia.domain.dto.SharingSettingRequest;
 import org.folio.consortia.domain.dto.SharingSettingResponse;
@@ -26,7 +34,9 @@ import org.folio.consortia.service.SharingSettingService;
 import org.folio.consortia.service.TenantService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.scope.FolioExecutionContextSetter;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.HttpMethod;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +53,9 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @RequiredArgsConstructor
 public class SharingSettingServiceImpl implements SharingSettingService {
+  private static final String NULL = "null";
+  private static final String SOURCE = "source";
+  private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
   private final SharingSettingRepository sharingSettingRepository;
   private final TenantService tenantService;
   private final ConsortiumService consortiumService;
@@ -50,6 +63,7 @@ public class SharingSettingServiceImpl implements SharingSettingService {
   private final PublicationService publicationService;
   private final FolioExecutionContext folioExecutionContext;
   private final ObjectMapper objectMapper;
+  private final TaskExecutor asyncTaskExecutor;
 
   @Override
   @Transactional
@@ -86,10 +100,10 @@ public class SharingSettingServiceImpl implements SharingSettingService {
       sharingSettingRequest.getSettingId(), publicationPostRequest.getTenants().size());
 
     JsonNode payload = objectMapper.convertValue(sharingSettingRequest.getPayload(), JsonNode.class);
-    var updatedPayload = ((ObjectNode) payload).set("source", new TextNode(CONSORTIUM_SETTING_SOURCE));
+    var updatedPayload = ((ObjectNode) payload).set(SOURCE, new TextNode(CONSORTIUM_SETTING_SOURCE));
     publicationPostRequest.setPayload(updatedPayload);
     publicationPutRequest.setPayload(updatedPayload);
-    log.info("start:: set source as '{}' in payload of setting: {}", updatedPayload.get("source"), settingId);
+    log.info("start:: set source as '{}' in payload of setting: {}", updatedPayload.get(SOURCE), settingId);
 
     // we create PC request with POST and PUT Http method to create settings as a consortia-system-user
     try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId()))) {
@@ -125,11 +139,16 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     log.info("start:: The Sharing Settings for settingId '{}' and '{}' unique tenant(s) were successfully deleted from the database", sharingSettingRequest.getSettingId(), publicationDeleteRequest.getTenants().size());
 
     // we create PC request with POST and PUT Http method to create settings as a consortia-system-user
+    UUID pcId;
+    SharingSettingDeleteResponse sharingSettingDeleteResponse;
     try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId()))) {
-      UUID pcId = publishRequest(consortiumId, publicationDeleteRequest);
-      return new SharingSettingDeleteResponse()
+      pcId = publishRequest(consortiumId, publicationDeleteRequest);
+      sharingSettingDeleteResponse = new SharingSettingDeleteResponse()
         .pcId(pcId);
     }
+    asyncTaskExecutor.execute(
+      () -> updateSettingsToLocalForFailedTenant(consortiumId, pcId, sharingSettingRequest));
+    return sharingSettingDeleteResponse;
   }
 
   private void validateSharingSettingRequestOrThrow(UUID settingId, SharingSettingRequest sharingSettingRequest) {
@@ -147,6 +166,40 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     }
     log.info("publishRequest:: Tenant list of publishing for http method: {} is empty", publicationRequest.getMethod());
     return null;
+  }
+
+  @Scheduled(fixedRate = 10) // Poll every 10 ms
+  private void updateSettingsToLocalForFailedTenant(UUID consortiumId, UUID publicationId, SharingSettingRequest sharingSettingRequest) {
+    AtomicBoolean desiredResultReceived = new AtomicBoolean(false);
+    while (!desiredResultReceived.get()) {
+      scheduler.scheduleAtFixedRate(() -> {
+        PublicationDetailsResponse publicationDetails = publicationService.getPublicationDetails(consortiumId, publicationId);
+        // Check if the response contains the desired result
+        if (publicationDetails.getStatus() == PublicationStatus.ERROR) {
+          scheduler.shutdown();
+          desiredResultReceived.set(true);
+
+          JsonNode payload = objectMapper.convertValue(sharingSettingRequest.getPayload(), JsonNode.class);
+          var updatedPayload = ((ObjectNode) payload).set(SOURCE, new TextNode(LOCAL_SETTING_SOURCE));
+
+          List<PublicationResult> publicationResults = publicationService
+            .getPublicationResults(consortiumId, publicationId)
+            .getPublicationResults()
+            .stream()
+            .filter(publicationResult -> ObjectUtils.notEqual(publicationResult.getResponse(), NULL)).toList();
+
+          publicationResults.forEach(publicationResult -> {
+            PublicationRequest publicationDeleteRequest = createPublicationRequestForSetting(sharingSettingRequest, HttpMethod.PUT.toString());
+            publicationDeleteRequest.setPayload(updatedPayload);
+            publicationDeleteRequest.setTenants(Set.of(publicationResult.getTenantId()));
+
+            try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId()))) {
+              publishRequest(consortiumId, publicationDeleteRequest);
+            }
+          });
+        }
+      }, 0, 300, TimeUnit.MILLISECONDS);
+    }
   }
 
   private void checkEqualsOfPayloadIdWithSettingId(SharingSettingRequest sharingSettingRequest) {
