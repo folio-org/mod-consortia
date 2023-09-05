@@ -46,19 +46,19 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
     }
 
     try {
-      var consortiaTenant = tenantService.getByTenantId(userEvent.getTenantId());
+      var tenant = tenantService.getByTenantId(userEvent.getTenantId());
 
       boolean isPrimaryAffiliationExists = userTenantService
-        .checkUserIfHasPrimaryAffiliationByUserId(consortiaTenant.getConsortiumId(), userEvent.getUserDto().getId());
+        .checkUserIfHasPrimaryAffiliationByUserId(tenant.getConsortiumId(), userEvent.getUserDto().getId());
       if (isPrimaryAffiliationExists) {
         log.warn("Primary affiliation already exists for tenant/user: {}/{}", userEvent.getTenantId(), userEvent.getUserDto().getUsername());
         return;
       }
 
-      userTenantService.createPrimaryUserTenantAffiliation(consortiaTenant.getConsortiumId(), consortiaTenant,
+      userTenantService.createPrimaryUserTenantAffiliation(tenant.getConsortiumId(), tenant,
         userEvent.getUserDto().getId(), userEvent.getUserDto().getUsername());
-      if (ObjectUtils.notEqual(centralTenantId, consortiaTenant.getId())) {
-        userTenantService.save(consortiaTenant.getConsortiumId(), createUserTenant(centralTenantId, userEvent), false);
+      if (ObjectUtils.notEqual(centralTenantId, tenant.getId())) {
+        userTenantService.save(tenant.getConsortiumId(), createUserTenant(centralTenantId, userEvent), false);
       }
 
       PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(userEvent, centralTenantId);
