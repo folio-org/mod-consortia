@@ -25,6 +25,7 @@ import org.folio.consortia.service.UserTenantService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -78,13 +79,11 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
       .users(syncUsers);
   }
 
-  @Transactional
   @Override
   public void createPrimaryUserAffiliations(UUID consortiumId, String centralTenantId,
     SyncPrimaryAffiliationBody syncPrimaryAffiliationBody) {
     try {
       log.info("Start creating user primary affiliation for tenant {}", syncPrimaryAffiliationBody.getTenantId());
-      lockService.lockTenantSetupWithinTransaction();
       var tenantId = syncPrimaryAffiliationBody.getTenantId();
       var userList = syncPrimaryAffiliationBody.getUsers();
       TenantEntity tenantEntity = tenantService.getByTenantId(tenantId);
@@ -96,8 +95,11 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
     }
   }
 
-  private void createPrimaryUserAffiliations(UUID consortiumId, String centralTenantId, String tenantId,
+  @Transactional
+  public void createPrimaryUserAffiliations(UUID consortiumId, String centralTenantId, String tenantId,
     List<SyncUser> userList, TenantEntity tenantEntity) {
+    lockService.lockTenantSetupWithinTransaction();
+
     var affiliatedUsersCount = 0;
     var hasFailedAffiliations = false;
     for (int idx = 0; idx < userList.size(); idx++) {
@@ -110,11 +112,7 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
           log.info("createPrimaryUserAffiliations:: Primary affiliation already exists for tenant/user: {}/{}",
             tenantId, user.getUsername());
         } else {
-          userTenantService.createPrimaryUserTenantAffiliation(consortiumId, tenantEntity, user.getId(), user.getUsername());
-          if (ObjectUtils.notEqual(centralTenantId, tenantEntity.getId())) {
-            userTenantService.save(consortiumId, createUserTenant(centralTenantId, user), true);
-          }
-          sendCreatePrimaryAffiliationEvent(tenantEntity, user, centralTenantId, consortiumId);
+          createPrimaryAffiliationForUser(consortiumId, centralTenantId, tenantEntity, user);
         }
         affiliatedUsersCount++;
       } catch (Exception e) {
@@ -127,6 +125,15 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
       SetupStatusEnum.COMPLETED_WITH_ERRORS : SetupStatusEnum.COMPLETED);
     log.info("createPrimaryUserAffiliations:: Successfully created {} of {} primary affiliations for tenant {}",
       affiliatedUsersCount, userList.size(), tenantId);
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public void createPrimaryAffiliationForUser(UUID consortiumId, String centralTenantId, TenantEntity tenantEntity, SyncUser user) {
+    userTenantService.createPrimaryUserTenantAffiliation(consortiumId, tenantEntity, user.getId(), user.getUsername());
+    if (ObjectUtils.notEqual(centralTenantId, tenantEntity.getId())) {
+      userTenantService.save(consortiumId, createUserTenant(centralTenantId, user), true);
+    }
+    sendCreatePrimaryAffiliationEvent(tenantEntity, user, centralTenantId, consortiumId);
   }
 
   @SneakyThrows
