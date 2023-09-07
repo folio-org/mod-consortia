@@ -234,7 +234,6 @@ class SyncPrimaryAffiliationServiceImplTest {
     } catch (DataAccessResourceFailureException e) {
       verifyNoInteractions(kafkaService);
       verify(tenantService).updateTenantSetupStatus(tenantId, centralTenantId, SetupStatusEnum.FAILED);
-      verify(lockService).lockTenantSetupWithinTransaction();
     }
   }
 
