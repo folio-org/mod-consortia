@@ -31,6 +31,7 @@ import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -179,7 +180,7 @@ public class SharingSettingServiceImpl implements SharingSettingService {
             .getPublicationResults(consortiumId, publicationId)
             .getPublicationResults()
             .stream()
-            .filter(publicationResult -> isError(publicationResult.getStatusCode()))
+            .filter(publicationResult -> HttpStatus.valueOf(publicationResult.getStatusCode()).isError())
             .map(PublicationResult::getTenantId)
             .collect(Collectors.toSet());
 
