@@ -1,6 +1,10 @@
 package org.folio.consortia.service.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -138,7 +142,7 @@ public class SharingSettingServiceImpl implements SharingSettingService {
         .pcId(pcId);
     }
     asyncTaskExecutor.execute(
-      () -> getFailedSettingsForFailedTenants(consortiumId, pcId, sharingSettingRequest));
+      () -> getSettingsForFailedTenants(consortiumId, pcId, sharingSettingRequest));
     return sharingSettingDeleteResponse;
   }
 
@@ -159,8 +163,7 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     return null;
   }
 
-  private void getFailedSettingsForFailedTenants(UUID consortiumId, UUID publicationId, SharingSettingRequest sharingSettingRequest) {
-    // NOSONAR
+  private void getSettingsForFailedTenants(UUID consortiumId, UUID publicationId, SharingSettingRequest sharingSettingRequest) {
     boolean desiredResultReceived = false;
     long startTime = System.currentTimeMillis();
     long timeout = 3000;
@@ -181,25 +184,24 @@ public class SharingSettingServiceImpl implements SharingSettingService {
             .collect(Collectors.toSet());
 
           if (ObjectUtils.isNotEmpty(failedTenantList)) {
-            updateFailedSettingsToLocal(consortiumId, sharingSettingRequest, failedTenantList);
+            updateFailedSettingsToLocalSource(consortiumId, sharingSettingRequest, failedTenantList);
           }
         }
       }
     }
   }
 
-  private void updateFailedSettingsToLocal(UUID consortiumId, SharingSettingRequest sharingSettingRequest, Set<String> failedTenantList) {
-    // NOSONAR
+  private void updateFailedSettingsToLocalSource(UUID consortiumId, SharingSettingRequest sharingSettingRequest, Set<String> failedTenantList) {
     JsonNode payload = objectMapper.convertValue(sharingSettingRequest.getPayload(), JsonNode.class);
     var updatedPayload = ((ObjectNode) payload).set(SOURCE, new TextNode(LOCAL_SETTING_SOURCE));
 
-      PublicationRequest publicationPutRequest = createPublicationRequestForSetting(sharingSettingRequest, HttpMethod.PUT.toString());
-      publicationPutRequest.setPayload(updatedPayload);
-      publicationPutRequest.setTenants(failedTenantList);
+    PublicationRequest publicationPutRequest = createPublicationRequestForSetting(sharingSettingRequest, HttpMethod.PUT.toString());
+    publicationPutRequest.setPayload(updatedPayload);
+    publicationPutRequest.setTenants(failedTenantList);
 
-      try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId()))) {
-        publishRequest(consortiumId, publicationPutRequest);
-      }
+    try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId()))) {
+      publishRequest(consortiumId, publicationPutRequest);
+    }
   }
 
   private void checkEqualsOfPayloadIdWithSettingId(SharingSettingRequest sharingSettingRequest) {
