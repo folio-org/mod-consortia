@@ -22,4 +22,8 @@ public class HelperUtils {
     RandomStringGenerator generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
     return generator.generate(noOfString);
   }
+
+  public static Boolean isError(Integer statusCode) {
+    return statusCode >= 400 && statusCode <= 499;
+  }
 }

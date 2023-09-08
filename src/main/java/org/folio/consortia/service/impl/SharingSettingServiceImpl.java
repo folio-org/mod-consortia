@@ -1,13 +1,7 @@
 package org.folio.consortia.service.impl;
 
-import static org.folio.consortia.utils.HelperUtils.CONSORTIUM_SETTING_SOURCE;
-import static org.folio.consortia.utils.HelperUtils.LOCAL_SETTING_SOURCE;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -45,11 +39,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 
+import static org.folio.consortia.utils.HelperUtils.*;
+
 @Service
 @Log4j2
 @RequiredArgsConstructor
 public class SharingSettingServiceImpl implements SharingSettingService {
-  private static final String NULL = "null";
   private static final String SOURCE = "source";
   private final SharingSettingRepository sharingSettingRepository;
   private final TenantService tenantService;
@@ -174,35 +169,37 @@ public class SharingSettingServiceImpl implements SharingSettingService {
       var publicationStatusEntity = publicationStatusRepository.findById(publicationId);
       if (publicationStatusEntity.isPresent()) {
         PublicationDetailsResponse publicationDetails = publicationService.getPublicationDetails(consortiumId, publicationId);
-        if (publicationDetails.getStatus() == PublicationStatus.ERROR) {
+        if (ObjectUtils.notEqual(publicationDetails.getStatus(), PublicationStatus.IN_PROGRESS)) {
           desiredResultReceived = true;
 
-          List<PublicationResult> publicationResults = publicationService
+          Set<String> failedTenantList = publicationService
             .getPublicationResults(consortiumId, publicationId)
             .getPublicationResults()
             .stream()
-            .filter(publicationResult -> ObjectUtils.notEqual(publicationResult.getResponse(), NULL)).toList();
+            .filter(publicationResult -> isError(publicationResult.getStatusCode()))
+            .map(PublicationResult::getTenantId)
+            .collect(Collectors.toSet());
 
-          updateFailedSettingsToLocal(consortiumId, sharingSettingRequest, publicationResults);
+          if (ObjectUtils.isNotEmpty(failedTenantList)) {
+            updateFailedSettingsToLocal(consortiumId, sharingSettingRequest, failedTenantList);
+          }
         }
       }
     }
   }
 
-  private void updateFailedSettingsToLocal(UUID consortiumId, SharingSettingRequest sharingSettingRequest, List<PublicationResult> publicationResults) {
+  private void updateFailedSettingsToLocal(UUID consortiumId, SharingSettingRequest sharingSettingRequest, Set<String> failedTenantList) {
     // NOSONAR
     JsonNode payload = objectMapper.convertValue(sharingSettingRequest.getPayload(), JsonNode.class);
     var updatedPayload = ((ObjectNode) payload).set(SOURCE, new TextNode(LOCAL_SETTING_SOURCE));
 
-    publicationResults.forEach(publicationResult -> {
       PublicationRequest publicationPutRequest = createPublicationRequestForSetting(sharingSettingRequest, HttpMethod.PUT.toString());
       publicationPutRequest.setPayload(updatedPayload);
-      publicationPutRequest.setTenants(Set.of(publicationResult.getTenantId()));
+      publicationPutRequest.setTenants(failedTenantList);
 
       try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId()))) {
         publishRequest(consortiumId, publicationPutRequest);
       }
-    });
   }
 
   private void checkEqualsOfPayloadIdWithSettingId(SharingSettingRequest sharingSettingRequest) {
