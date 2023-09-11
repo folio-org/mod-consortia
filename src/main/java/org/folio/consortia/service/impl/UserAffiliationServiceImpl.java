@@ -82,6 +82,8 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       return;
     }
 
+    log.info("Temp user event: {}", userEvent);
+
     try {
       UUID userId = getUserId(userEvent);
       String newUsername = userEvent.getUserDto().getUsername();
