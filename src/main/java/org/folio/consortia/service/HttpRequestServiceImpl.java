@@ -33,7 +33,8 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   @Override
   public PublicationHttpResponse performRequest(String url, HttpMethod httpMethod, Object payload) {
     var headers = convertHeadersToMultiMap(folioExecutionContext.getOkapiHeaders());
-    headers.setAccept(Collections.singletonList(MediaType.TEXT_PLAIN));
+    headers.setAccept(Collections.singletonList(MediaType.ALL));
+
     HttpEntity<Object> httpEntity = new HttpEntity<>(payload, headers);
     var absUrl = folioExecutionContext.getOkapiUrl() + url;
     log.debug("performRequest:: folio context header TENANT = {}", folioExecutionContext.getOkapiHeaders().get(XOkapiHeaders.TENANT).iterator().next());
