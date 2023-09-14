@@ -20,7 +20,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-public class PrimaryAffiliationServiceTest {
+class PrimaryAffiliationServiceTest {
   private static final UUID CONSORTIUM_ID = UUID.randomUUID();
   private static final String CENTRAL_TENANT_ID = "consortium";
   private static final String MEMBER_TENANT_ID = "university";
@@ -45,7 +45,7 @@ public class PrimaryAffiliationServiceTest {
   }
 
   @Test
-  public void testRequiresNewTransactionForCentralTenant() {
+  void testRequiresNewTransactionForCentralTenant() {
     TenantEntity tenantEntity = new TenantEntity();
     tenantEntity.setId(CENTRAL_TENANT_ID);
     PrimaryAffiliationEvent event = getPrimaryAffiliationEvent();
@@ -58,7 +58,7 @@ public class PrimaryAffiliationServiceTest {
   }
 
   @Test
-  public void testRequiresNewTransactionForMemberTenant() {
+  void testRequiresNewTransactionForMemberTenant() {
     TenantEntity tenantEntity = new TenantEntity();
     tenantEntity.setId(MEMBER_TENANT_ID);
     PrimaryAffiliationEvent event = getPrimaryAffiliationEvent();
@@ -71,7 +71,7 @@ public class PrimaryAffiliationServiceTest {
   }
 
   @Test
-  public void testSupportTransactionForCentralTenant() {
+  void testSupportTransactionForCentralTenant() {
     TenantEntity tenantEntity = new TenantEntity();
     tenantEntity.setId(CENTRAL_TENANT_ID);
     PrimaryAffiliationEvent event = getPrimaryAffiliationEvent();
@@ -84,7 +84,7 @@ public class PrimaryAffiliationServiceTest {
   }
 
   @Test
-  public void testSupportTransactionForMemberTenant() {
+  void testSupportTransactionForMemberTenant() {
     TenantEntity tenantEntity = new TenantEntity();
     tenantEntity.setId(MEMBER_TENANT_ID);
     PrimaryAffiliationEvent event = getPrimaryAffiliationEvent();

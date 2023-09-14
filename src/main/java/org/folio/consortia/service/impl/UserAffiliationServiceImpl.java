@@ -149,14 +149,6 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
     return UUID.fromString(userEvent.getUserDto().getId());
   }
 
-  private UserTenant createUserTenant(String tenantId, UserEvent userEvent) {
-    UserTenant userTenant = new UserTenant();
-    userTenant.setTenantId(tenantId);
-    userTenant.setUserId(UUID.fromString(userEvent.getUserDto().getId()));
-    userTenant.setUsername(userEvent.getUserDto().getUsername());
-    return userTenant;
-  }
-
   private PrimaryAffiliationEvent createPrimaryAffiliationEvent(UserEvent userEvent, String centralTenantId, UUID consortiumId) {
     PrimaryAffiliationEvent event = new PrimaryAffiliationEvent();
     event.setId(userEvent.getId());
