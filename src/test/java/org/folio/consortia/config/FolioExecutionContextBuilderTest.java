@@ -1,6 +1,8 @@
 package org.folio.consortia.config;
 
+import org.apache.commons.lang3.StringUtils;
 import org.folio.spring.FolioModuleMetadata;
+import org.folio.spring.context.ExecutionContextBuilder;
 import org.folio.spring.model.SystemUser;
 import org.folio.spring.model.UserToken;
 import org.junit.jupiter.api.Test;
@@ -13,8 +15,8 @@ import static org.mockito.Mockito.mock;
 
 
 class FolioExecutionContextBuilderTest {
-  private final FolioExecutionContextBuilder builder =
-    new FolioExecutionContextBuilder(mock(FolioModuleMetadata.class));
+  private final ExecutionContextBuilder builder =
+    new ExecutionContextBuilder(mock(FolioModuleMetadata.class));
 
   @Test
   void canCreateSystemUserContext() {
@@ -48,7 +50,7 @@ class FolioExecutionContextBuilderTest {
     context = builder.forSystemUser(systemUser);
 
     assertThat(context.getTenantId()).isEqualTo("tenant");
-    assertThat(context.getToken()).isNull();
+    assertThat(StringUtils.isBlank(context.getToken()));
     assertThat(context.getUserId()).isEqualTo(userId);
     assertThat(context.getOkapiUrl()).isEqualTo("okapi");
 
