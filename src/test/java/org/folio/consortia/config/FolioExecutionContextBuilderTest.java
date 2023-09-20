@@ -50,7 +50,7 @@ class FolioExecutionContextBuilderTest {
     context = builder.forSystemUser(systemUser);
 
     assertThat(context.getTenantId()).isEqualTo("tenant");
-    assertThat(StringUtils.isBlank(context.getToken()));
+    assertThat(context.getToken()).isEqualTo("");
     assertThat(context.getUserId()).isEqualTo(userId);
     assertThat(context.getOkapiUrl()).isEqualTo("okapi");
 
