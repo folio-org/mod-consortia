@@ -34,6 +34,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   public PublicationHttpResponse performRequest(String url, HttpMethod httpMethod, Object payload) {
     var headers = convertHeadersToMultiMap(folioExecutionContext.getOkapiHeaders());
     headers.setAccept(Collections.singletonList(MediaType.ALL));
+    headers.setContentType(MediaType.APPLICATION_JSON);
 
     HttpEntity<Object> httpEntity = new HttpEntity<>(payload, headers);
     var absUrl = folioExecutionContext.getOkapiUrl() + url;
