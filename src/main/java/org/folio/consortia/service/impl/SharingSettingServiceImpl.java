@@ -6,6 +6,7 @@ import static org.folio.consortia.utils.HelperUtils.LOCAL_SETTING_SOURCE;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -202,8 +203,8 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     if (ObjectUtils.notEqual(sharingSettingRequest.getSettingId(), settingId)) {
       throw new IllegalArgumentException("Mismatch id in path to settingId in request body");
     }
-    if (ObjectUtils.isNotEmpty(sharingSettingRequest.getPayload())) {
-      throw new IllegalArgumentException("payload should not be null");
+    if (Objects.isNull(sharingSettingRequest.getPayload())) {
+      throw new IllegalArgumentException("Payload must not be null");
     }
     if (!sharingSettingRepository.existsBySettingId(settingId)) {
       throw new ResourceNotFoundException("settingId", String.valueOf(settingId));

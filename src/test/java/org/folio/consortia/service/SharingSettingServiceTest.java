@@ -213,11 +213,23 @@ class SharingSettingServiceTest {
   void shouldThrowErrorForNotEqualSettingIdPathId() {
     UUID settingId = UUID.fromString("999999-8367-4926-9999-514c35840399");
 
+    var sharingSettingRequest = getMockDataObject(SHARING_SETTING_REQUEST_SAMPLE_FOR_GROUP, SharingSettingRequest.class);
+
+    when(consortiumRepository.existsById(CONSORTIUM_ID)).thenReturn(true);
+
+    assertThrows(java.lang.IllegalArgumentException.class,
+      () -> sharingSettingService.delete(CONSORTIUM_ID, settingId, sharingSettingRequest));
+    verify(publicationService, times(0)).publishRequest(any(), any());
+  }
+
+  @Test
+  void shouldThrowErrorForNotHavingPayloadOfSetting() {
     var sharingSettingRequest = getMockDataObject(SHARING_SETTING_REQUEST_SAMPLE_WITHOUT_PAYLOAD, SharingSettingRequest.class);
 
     when(consortiumRepository.existsById(CONSORTIUM_ID)).thenReturn(true);
 
-    assertThrows(java.lang.IllegalArgumentException.class, () -> sharingSettingService.delete(CONSORTIUM_ID, settingId, sharingSettingRequest));
+    assertThrows(java.lang.IllegalArgumentException.class,
+      () -> sharingSettingService.delete(CONSORTIUM_ID, sharingSettingRequest.getSettingId(), sharingSettingRequest));
     verify(publicationService, times(0)).publishRequest(any(), any());
   }
 
@@ -230,7 +242,8 @@ class SharingSettingServiceTest {
     when(consortiumRepository.existsById(CONSORTIUM_ID)).thenReturn(true);
     when(sharingSettingRepository.existsBySettingId(settingId)).thenReturn(false);
 
-    assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class, () -> sharingSettingService.delete(CONSORTIUM_ID, settingId, sharingSettingRequest));
+    assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class,
+      () -> sharingSettingService.delete(CONSORTIUM_ID, settingId, sharingSettingRequest));
     verify(publicationService, times(0)).publishRequest(any(), any());
   }
 
