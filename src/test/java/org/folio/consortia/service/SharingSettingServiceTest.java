@@ -138,18 +138,23 @@ class SharingSettingServiceTest {
     Tenant tenant2 = createTenant("tenant2", "tenant2");
     Set<String> tenantAssociationsWithSetting = Set.of("tenant1");
     TenantCollection tenantCollection = createTenantCollection(List.of(tenant1, tenant2));
-    var sharingSettingRequest = getMockDataObject(SHARING_SETTING_REQUEST_SAMPLE_WITHOUT_PAYLOAD, SharingSettingRequest.class);
+    var sharingSettingRequest = getMockDataObject(SHARING_SETTING_REQUEST_SAMPLE_FOR_DEPARTMENT, SharingSettingRequest.class);
 
     // "tenant1" exists in tenant setting association so that tenant1 is in DELETE request publication,
-    var publicationRequestDelete = createPublicationRequestForSetting(sharingSettingRequest, HttpMethod.DELETE.toString());
-    publicationRequestDelete.setTenants(Set.of("tenant1"));
-    publicationRequestDelete.setUrl("/organizations-storage/organizations/1844767a-8367-4926-9999-514c35840399");
+    var expectedPublicationRequestDelete = createPublicationRequestForSetting(sharingSettingRequest, HttpMethod.DELETE.toString());
+    expectedPublicationRequestDelete.setTenants(Set.of("tenant1"));
+    expectedPublicationRequestDelete.setUrl("/organizations-storage/organizations/1844767a-8367-4926-9999-514c35840399");
+    Map<String, String> map = new LinkedHashMap<>();
+    map.put("id", "1844767a-8367-4926-9999-514c35840399");
+    map.put("name", "ORG-NAME");
+    map.put("source", "local");
+    expectedPublicationRequestDelete.setPayload(map);
 
     var publicationResponse = new PublicationResponse().id(pcId);
 
     when(consortiumRepository.existsById(CONSORTIUM_ID)).thenReturn(true);
     when(sharingSettingRepository.existsBySettingId(settingId)).thenReturn(true);
-    when(publicationService.publishRequest(CONSORTIUM_ID, publicationRequestDelete)).thenReturn(publicationResponse);
+    when(publicationService.publishRequest(CONSORTIUM_ID, expectedPublicationRequestDelete)).thenReturn(publicationResponse);
     when(tenantService.getAll(CONSORTIUM_ID)).thenReturn(tenantCollection);
     when(sharingSettingRepository.findTenantsBySettingId(sharingSettingRequest.getSettingId())).thenReturn(tenantAssociationsWithSetting);
     when(folioExecutionContext.getTenantId()).thenReturn("mobius");
@@ -200,6 +205,7 @@ class SharingSettingServiceTest {
   @Test
   void shouldThrowErrorForNotEqualSettingIdWithPayloadId() throws JsonProcessingException {
     var sharingSettingRequest = getMockDataObject(SHARING_SETTING_REQUEST_SAMPLE_FOR_DEPARTMENT, SharingSettingRequest.class);
+    sharingSettingRequest.setSettingId(UUID.randomUUID());
     JsonNode node = createJsonNodeForDepartmentPayload();
 
     when(consortiumRepository.existsById(CONSORTIUM_ID)).thenReturn(true);
@@ -237,7 +243,7 @@ class SharingSettingServiceTest {
   void shouldThrowErrorForNotFound() {
     UUID settingId = UUID.fromString("1844767a-8367-4926-9999-514c35840399");
 
-    var sharingSettingRequest = getMockDataObject(SHARING_SETTING_REQUEST_SAMPLE_WITHOUT_PAYLOAD, SharingSettingRequest.class);
+    var sharingSettingRequest = getMockDataObject(SHARING_SETTING_REQUEST_SAMPLE_FOR_DEPARTMENT, SharingSettingRequest.class);
 
     when(consortiumRepository.existsById(CONSORTIUM_ID)).thenReturn(true);
     when(sharingSettingRepository.existsBySettingId(settingId)).thenReturn(false);
