@@ -3,6 +3,7 @@ package org.folio.consortia.config;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.spring.FolioExecutionContext;
+import org.folio.spring.context.ExecutionContextBuilder;
 import org.folio.spring.service.PrepareSystemUserService;
 import org.folio.spring.service.SystemUserService;
 import org.springframework.stereotype.Component;
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class FolioExecutionContextHelper {
 
-  private final FolioExecutionContextBuilder contextBuilder;
+  private final ExecutionContextBuilder contextBuilder;
   private final PrepareSystemUserService prepareSystemUserService;
   private final SystemUserService systemUserService;
 

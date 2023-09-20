@@ -63,8 +63,8 @@ folio:
       enabled: true
   system-user:
     username: consortia-system-user
-    password: ${SYSTEM_USER_PASSWORD:Mod-consortia-1-0-0}
-    lastname: System
+    password: ${SYSTEM_USER_PASSWORD:consortia-system-user}
+    lastname: SystemConsortia
     permissionsFilePath: permissions/system-user-permissions.csv
   timer:
     publication-records-max-age-in-seconds: 86400
