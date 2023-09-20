@@ -7,6 +7,7 @@ import static org.folio.consortia.messaging.listener.ConsortiaSharingInstanceEve
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -41,7 +42,6 @@ public class KafkaService {
   private final FolioExecutionContext folioExecutionContext;
   private final KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
   private final FolioKafkaProperties folioKafkaProperties;
-  private final Environment springEnvironment;
   private final String kafkaEnvId;
   private final KafkaTemplate<String, Object> kafkaTemplate;
 
@@ -137,16 +137,15 @@ public class KafkaService {
   }
 
   public void send(Topic topic, String key, String data) {
-    log.info("Sending {}.", data);
     String tenant = folioExecutionContext.getTenantId();
     if (StringUtils.isBlank(tenant)) {
       throw new IllegalStateException("Can't send to Kafka because tenant is blank");
     }
     String tenantTopicName = getTenantTopicName(topic.getTopicName(), tenant);
-
+    log.debug("Sending event with key: {} to topic: {} for tenant: {}", key, tenantTopicName, tenant);
     ProducerRecord<String, Object> producerRecord = createProducerRecord(tenantTopicName, key, data);
     kafkaTemplate.send(producerRecord);
-    log.info("Kafka event sent to topic: {} for tenant: {} with data: {}.", tenantTopicName, tenant, data);
+    log.info("Kafka event sent with key: {} to topic: {} for tenant: {}", key, tenantTopicName, tenant);
   }
 
   private ProducerRecord<String, Object> createProducerRecord(String tenantTopicName, String key, String data) {
@@ -154,6 +153,9 @@ public class KafkaService {
     producerRecord.headers().add(XOkapiHeaders.TENANT, folioExecutionContext.getTenantId().getBytes(StandardCharsets.UTF_8));
     producerRecord.headers().add(XOkapiHeaders.TOKEN, folioExecutionContext.getToken().getBytes(StandardCharsets.UTF_8));
     producerRecord.headers().add(XOkapiHeaders.URL, folioExecutionContext.getOkapiUrl().getBytes(StandardCharsets.UTF_8));
+    if (Objects.nonNull(folioExecutionContext.getUserId())) {
+      producerRecord.headers().add(XOkapiHeaders.USER_ID, folioExecutionContext.getUserId().toString().getBytes(StandardCharsets.UTF_8));
+    }
     return producerRecord;
   }
 }
