@@ -1,5 +1,8 @@
 package org.folio.consortia.service.impl;
 
+import static org.folio.consortia.utils.HelperUtils.CONSORTIUM_SETTING_SOURCE;
+import static org.folio.consortia.utils.HelperUtils.LOCAL_SETTING_SOURCE;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -21,7 +24,6 @@ import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
 import org.folio.consortia.domain.entity.SharingSettingEntity;
 import org.folio.consortia.exception.ResourceNotFoundException;
-import org.folio.consortia.repository.PublicationStatusRepository;
 import org.folio.consortia.repository.SharingSettingRepository;
 import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.PublicationService;
@@ -44,8 +46,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 
-import static org.folio.consortia.utils.HelperUtils.*;
-
 @Service
 @Log4j2
 @RequiredArgsConstructor
@@ -59,7 +59,6 @@ public class SharingSettingServiceImpl implements SharingSettingService {
   private final FolioExecutionContext folioExecutionContext;
   private final ObjectMapper objectMapper;
   private final TaskExecutor asyncTaskExecutor;
-  private final PublicationStatusRepository publicationStatusRepository;
 
   @Override
   @Transactional
@@ -142,18 +141,8 @@ public class SharingSettingServiceImpl implements SharingSettingService {
       sharingSettingDeleteResponse = new SharingSettingDeleteResponse()
         .pcId(pcId);
     }
-    asyncTaskExecutor.execute(
-      () -> getSettingsForFailedTenants(consortiumId, pcId, sharingSettingRequest));
+    asyncTaskExecutor.execute(() -> updateSettingsForFailedTenants(consortiumId, pcId, sharingSettingRequest));
     return sharingSettingDeleteResponse;
-  }
-
-  private void validateSharingSettingRequestOrThrow(UUID settingId, SharingSettingRequest sharingSettingRequest) {
-    if (ObjectUtils.notEqual(sharingSettingRequest.getSettingId(), settingId)) {
-      throw new IllegalArgumentException("Mismatch id in path to settingId in request body");
-    }
-    if (!sharingSettingRepository.existsBySettingId(settingId)) {
-      throw new ResourceNotFoundException("settingId", String.valueOf(settingId));
-    }
   }
 
   private UUID publishRequest(UUID consortiumId, PublicationRequest publicationRequest) {
@@ -164,14 +153,16 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     return null;
   }
 
-  private void getSettingsForFailedTenants(UUID consortiumId, UUID publicationId, SharingSettingRequest sharingSettingRequest) {
+  private void updateSettingsForFailedTenants(UUID consortiumId, UUID publicationId, SharingSettingRequest sharingSettingRequest) {
+    log.debug("updateSettingsForFailedTenants:: Trying to update settings for failed tenants for consortiumId={} publicationId={} and sharingSettingRequestId={}",
+      consortiumId, publicationId, sharingSettingRequest.getSettingId());
     boolean desiredResultReceived = false;
     long startTime = System.currentTimeMillis();
     long timeout = 3000;
 
     while (Boolean.FALSE.equals(desiredResultReceived) && System.currentTimeMillis() - startTime < timeout) {
-      var publicationStatusEntity = publicationStatusRepository.findById(publicationId);
-      if (publicationStatusEntity.isPresent()) {
+      boolean isPublicationStatusExists = publicationService.checkPublicationStatusExists(publicationId);
+      if (isPublicationStatusExists) {
         PublicationDetailsResponse publicationDetails = publicationService.getPublicationDetails(consortiumId, publicationId);
         if (ObjectUtils.notEqual(publicationDetails.getStatus(), PublicationStatus.IN_PROGRESS)) {
           desiredResultReceived = true;
@@ -193,6 +184,7 @@ public class SharingSettingServiceImpl implements SharingSettingService {
   }
 
   private void updateFailedSettingsToLocalSource(UUID consortiumId, SharingSettingRequest sharingSettingRequest, Set<String> failedTenantList) {
+    log.info("updateFailedSettingsToLocalSource:: updating failed '{}' tenants settings ", failedTenantList.size());
     JsonNode payload = objectMapper.convertValue(sharingSettingRequest.getPayload(), JsonNode.class);
     var updatedPayload = ((ObjectNode) payload).set(SOURCE, new TextNode(LOCAL_SETTING_SOURCE));
 
@@ -201,7 +193,20 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     publicationPutRequest.setTenants(failedTenantList);
 
     try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId()))) {
+      log.info("send PUT request to publication with new source in payload={} by system user of {}", LOCAL_SETTING_SOURCE, folioExecutionContext.getTenantId());
       publishRequest(consortiumId, publicationPutRequest);
+    }
+  }
+
+  private void validateSharingSettingRequestOrThrow(UUID settingId, SharingSettingRequest sharingSettingRequest) {
+    if (ObjectUtils.notEqual(sharingSettingRequest.getSettingId(), settingId)) {
+      throw new IllegalArgumentException("Mismatch id in path to settingId in request body");
+    }
+    if (ObjectUtils.isNotEmpty(sharingSettingRequest.getPayload())) {
+      throw new IllegalArgumentException("payload should not be null");
+    }
+    if (!sharingSettingRepository.existsBySettingId(settingId)) {
+      throw new ResourceNotFoundException("settingId", String.valueOf(settingId));
     }
   }
 

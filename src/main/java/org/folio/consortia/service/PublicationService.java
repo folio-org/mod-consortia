@@ -14,5 +14,7 @@ public interface PublicationService {
 
   PublicationResultCollection getPublicationResults(UUID consortiumId, UUID publicationId);
 
+  boolean checkPublicationStatusExists(UUID publicationId);
+
   void deletePublicationById(UUID consortiumId, UUID publicationId);
 }
