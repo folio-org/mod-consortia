@@ -183,7 +183,7 @@ class SharingSettingServiceTest {
     Set<String> expectedFailedTenantList = new HashSet<>(List.of(centralTenant, localTenant));
     var expectedPublicationRequest = createExceptedPublicationRequest(sharingSettingRequest, expectedFailedTenantList, HttpMethod.PUT);
 
-    when(publicationService.checkPublicationStatusExists(publicationId)).thenReturn(true);
+    when(publicationService.checkPublicationDetailsExists(CONSORTIUM_ID, publicationId)).thenReturn(true);
     when(publicationService.getPublicationDetails(CONSORTIUM_ID, publicationId)).thenReturn(publicationDetails);
     when(publicationService.getPublicationResults(CONSORTIUM_ID, publicationId)).thenReturn(publicationResultCollection);
     when(objectMapper.convertValue(any(), eq(JsonNode.class))).thenReturn(node);
@@ -197,7 +197,7 @@ class SharingSettingServiceTest {
     method.invoke(sharingSettingService, CONSORTIUM_ID, publicationId, sharingSettingRequest);
 
     verify(publicationService).getPublicationDetails(any(), any());
-    verify(publicationService).checkPublicationStatusExists(publicationId);
+    verify(publicationService).checkPublicationDetailsExists(CONSORTIUM_ID, publicationId);
     verify(publicationService).publishRequest(any(), any());
   }
 

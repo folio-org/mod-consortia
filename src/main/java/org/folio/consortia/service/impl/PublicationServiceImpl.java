@@ -321,7 +321,8 @@ public class PublicationServiceImpl implements PublicationService {
   }
 
   @Override
-  public boolean checkPublicationStatusExists(UUID publicationId) {
+  public boolean checkPublicationDetailsExists(UUID consortiumId, UUID publicationId) {
+    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     return publicationStatusRepository.existsById(publicationId);
   }
 

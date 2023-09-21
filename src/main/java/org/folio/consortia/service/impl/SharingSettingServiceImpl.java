@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.folio.consortia.config.FolioExecutionContextHelper;
+import org.folio.consortia.domain.dto.PublicationDetailsResponse;
 import org.folio.consortia.domain.dto.PublicationRequest;
 import org.folio.consortia.domain.dto.PublicationResult;
 import org.folio.consortia.domain.dto.PublicationStatus;
@@ -156,16 +157,7 @@ public class SharingSettingServiceImpl implements SharingSettingService {
   private void updateSettingsForFailedTenants(UUID consortiumId, UUID publicationId, SharingSettingRequest sharingSettingRequest) {
     log.debug("updateSettingsForFailedTenants:: Trying to update settings for failed tenants for consortiumId={} publicationId={} and sharingSettingRequestId={}",
       consortiumId, publicationId, sharingSettingRequest.getSettingId());
-    boolean isPublicationStatusExists = publicationService.checkPublicationStatusExists(publicationId);
-    if (Boolean.FALSE.equals(isPublicationStatusExists)) {
-      try {
-        Thread.sleep(3000);
-      } catch (InterruptedException e) {
-        log.error("Thread sleep was interrupted", e);
-        Thread.currentThread().interrupt();
-      }
-    }
-    var publicationDetails = publicationService.getPublicationDetails(consortiumId, publicationId);
+    var publicationDetails = getPublicationDetailsAfterStatusReady(consortiumId, publicationId);
     log.info("updateSettingsForFailedTenants:: publication status '{}' for sharing setting '{}'", publicationDetails.getId(), sharingSettingRequest.getSettingId());
     // skip action if status is COMPLETE
     if (Objects.equals(publicationDetails.getStatus(), PublicationStatus.COMPLETE)) {
@@ -192,6 +184,34 @@ public class SharingSettingServiceImpl implements SharingSettingService {
       log.info("send PUT request to publication with new source in payload={} by system user of {}", LOCAL_SETTING_SOURCE, folioExecutionContext.getTenantId());
       publishRequest(consortiumId, publicationPutRequest);
     }
+  }
+
+  private PublicationDetailsResponse getPublicationDetailsAfterStatusReady(UUID consortiumId, UUID publicationId) {
+    // wait until publication details exists
+    boolean isPublicationStatusExists = publicationService.checkPublicationDetailsExists(consortiumId, publicationId);
+    int i = 0;
+    while (Boolean.FALSE.equals(isPublicationStatusExists) && i++ < 5) {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        log.error("Thread sleep was interrupted", e);
+        Thread.currentThread().interrupt();
+      }
+      isPublicationStatusExists = publicationService.checkPublicationDetailsExists(consortiumId, publicationId);
+    }
+    // to wait until status changed from IN_PROGRESS to COMPLETE or ERROR
+    var publicationDetails = publicationService.getPublicationDetails(consortiumId, publicationId);
+    int j = 0;
+    while (Objects.equals(publicationDetails.getStatus(), PublicationStatus.IN_PROGRESS) && j++ < 5) {
+      try {
+        Thread.sleep(200);
+      } catch (InterruptedException e) {
+        log.error("Thread sleep was interrupted", e);
+        Thread.currentThread().interrupt();
+      }
+      publicationDetails = publicationService.getPublicationDetails(consortiumId, publicationId);
+    }
+    return publicationDetails;
   }
 
   private void validateSharingSettingRequestOrThrow(UUID settingId, SharingSettingRequest sharingSettingRequest) {
