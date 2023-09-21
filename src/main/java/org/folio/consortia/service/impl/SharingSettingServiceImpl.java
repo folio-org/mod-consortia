@@ -168,20 +168,29 @@ public class SharingSettingServiceImpl implements SharingSettingService {
   }
 
   private void updateSettingsForFailedTenants(UUID consortiumId, UUID publicationId, SharingSettingRequest sharingSettingRequest) throws InterruptedException {
-    log.debug("updateSettingsForFailedTenants:: Trying to update settings for failed tenants for consortiumId={} publicationId={} and sharingSettingRequestId={}",
-      consortiumId, publicationId, sharingSettingRequest.getSettingId());
-    var publicationDetails = getPublicationDetailsAfterStatusReady(consortiumId, publicationId);
-    log.info("updateSettingsForFailedTenants:: publication status '{}' for sharing setting '{}'", publicationDetails.getId(), sharingSettingRequest.getSettingId());
-    // skip action if status is COMPLETE
-    if (Objects.equals(publicationDetails.getStatus(), PublicationStatus.COMPLETE)) {
-      return;
+    log.debug("updateSettingsForFailedTenants:: Trying to update settings for failed tenants for consortiumId={} publicationId={} and sharingSettingRequestId={}", consortiumId, publicationId, sharingSettingRequest.getSettingId());
+    boolean isPublicationStatusReady = false;
+    int i = 0;
+    while (Boolean.FALSE.equals(isPublicationStatusReady) && i++ < MAX_TRIES) {
+      Thread.sleep(INTERVAL);
+      boolean isPublicationStatusExists = publicationService.checkPublicationDetailsExists(consortiumId, publicationId);
+      if (isPublicationStatusExists) {
+        PublicationDetailsResponse publicationDetails = publicationService.getPublicationDetails(consortiumId, publicationId);
+        if (ObjectUtils.notEqual(publicationDetails.getStatus(), PublicationStatus.IN_PROGRESS)) {
+          isPublicationStatusReady = true;
+          log.info("updateSettingsForFailedTenants:: publication status '{}' for sharing setting '{}'", publicationDetails.getId(), sharingSettingRequest.getSettingId());
+
+          Set<String> failedTenantList = publicationService.getPublicationResults(consortiumId, publicationId).getPublicationResults()
+            .stream().filter(publicationResult -> HttpStatus.valueOf(publicationResult.getStatusCode()).isError())
+            .map(PublicationResult::getTenantId).collect(Collectors.toSet());
+          log.info("updateSettingsForFailedTenants:: '{}' tenant(s) failed ", failedTenantList.size());
+
+          if (ObjectUtils.isNotEmpty(failedTenantList)) {
+            updateFailedSettingsToLocalSource(consortiumId, sharingSettingRequest, failedTenantList);
+          }
+        }
+      }
     }
-    // update settings if status is ERROR
-    Set<String> failedTenantList = publicationService.getPublicationResults(consortiumId, publicationId).getPublicationResults()
-      .stream().filter(publicationResult -> HttpStatus.valueOf(publicationResult.getStatusCode()).isError())
-      .map(PublicationResult::getTenantId).collect(Collectors.toSet());
-    log.info("updateSettingsForFailedTenants:: '{}' tenant(s) failed ", failedTenantList.size());
-    updateFailedSettingsToLocalSource(consortiumId, sharingSettingRequest, failedTenantList);
   }
 
   private void updateFailedSettingsToLocalSource(UUID consortiumId, SharingSettingRequest sharingSettingRequest, Set<String> failedTenantList) {
@@ -197,24 +206,6 @@ public class SharingSettingServiceImpl implements SharingSettingService {
       log.info("send PUT request to publication with new source in payload={} by system user of {}", LOCAL_SETTING_SOURCE, folioExecutionContext.getTenantId());
       publishRequest(consortiumId, publicationPutRequest);
     }
-  }
-
-  private PublicationDetailsResponse getPublicationDetailsAfterStatusReady(UUID consortiumId, UUID publicationId) throws InterruptedException {
-    // wait until publication details exists
-    boolean isPublicationStatusExists = publicationService.checkPublicationDetailsExists(consortiumId, publicationId);
-    int i = 0;
-    while (Boolean.FALSE.equals(isPublicationStatusExists) && i++ < MAX_TRIES) {
-      Thread.sleep(INTERVAL);
-      isPublicationStatusExists = publicationService.checkPublicationDetailsExists(consortiumId, publicationId);
-    }
-    // to wait until status changed from IN_PROGRESS to COMPLETE or ERROR
-    var publicationDetails = publicationService.getPublicationDetails(consortiumId, publicationId);
-    int j = 0;
-    while (Objects.equals(publicationDetails.getStatus(), PublicationStatus.IN_PROGRESS) && j++ < MAX_TRIES) {
-      Thread.sleep(INTERVAL);
-      publicationDetails = publicationService.getPublicationDetails(consortiumId, publicationId);
-    }
-    return publicationDetails;
   }
 
   private void validateSharingSettingRequestOrThrow(UUID settingId, SharingSettingRequest sharingSettingRequest) {
