@@ -32,6 +32,7 @@ import org.folio.consortia.service.SharingSettingService;
 import org.folio.consortia.service.TenantService;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.scope.FolioExecutionContextSetter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -51,6 +52,11 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @RequiredArgsConstructor
 public class SharingSettingServiceImpl implements SharingSettingService {
+  @Value("${folio.time.interval}")
+  private int INTERVAL;
+  @Value("${folio.time.max-tries}")
+  private int MAX_TRIES;
+
   private static final String SOURCE = "source";
   private final SharingSettingRepository sharingSettingRepository;
   private final TenantService tenantService;
@@ -142,7 +148,14 @@ public class SharingSettingServiceImpl implements SharingSettingService {
       sharingSettingDeleteResponse = new SharingSettingDeleteResponse()
         .pcId(pcId);
     }
-    asyncTaskExecutor.execute(() -> updateSettingsForFailedTenants(consortiumId, pcId, sharingSettingRequest));
+    asyncTaskExecutor.execute(() -> {
+      try {
+        updateSettingsForFailedTenants(consortiumId, pcId, sharingSettingRequest);
+      } catch (InterruptedException e) {
+        log.error("Thread sleep was interrupted", e);
+        Thread.currentThread().interrupt();
+      }
+    });
     return sharingSettingDeleteResponse;
   }
 
@@ -154,7 +167,7 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     return null;
   }
 
-  private void updateSettingsForFailedTenants(UUID consortiumId, UUID publicationId, SharingSettingRequest sharingSettingRequest) {
+  private void updateSettingsForFailedTenants(UUID consortiumId, UUID publicationId, SharingSettingRequest sharingSettingRequest) throws InterruptedException {
     log.debug("updateSettingsForFailedTenants:: Trying to update settings for failed tenants for consortiumId={} publicationId={} and sharingSettingRequestId={}",
       consortiumId, publicationId, sharingSettingRequest.getSettingId());
     var publicationDetails = getPublicationDetailsAfterStatusReady(consortiumId, publicationId);
@@ -186,29 +199,19 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     }
   }
 
-  private PublicationDetailsResponse getPublicationDetailsAfterStatusReady(UUID consortiumId, UUID publicationId) {
+  private PublicationDetailsResponse getPublicationDetailsAfterStatusReady(UUID consortiumId, UUID publicationId) throws InterruptedException {
     // wait until publication details exists
     boolean isPublicationStatusExists = publicationService.checkPublicationDetailsExists(consortiumId, publicationId);
     int i = 0;
-    while (Boolean.FALSE.equals(isPublicationStatusExists) && i++ < 5) {
-      try {
-        Thread.sleep(100);
-      } catch (InterruptedException e) {
-        log.error("Thread sleep was interrupted", e);
-        Thread.currentThread().interrupt();
-      }
+    while (Boolean.FALSE.equals(isPublicationStatusExists) && i++ < MAX_TRIES) {
+      Thread.sleep(INTERVAL);
       isPublicationStatusExists = publicationService.checkPublicationDetailsExists(consortiumId, publicationId);
     }
     // to wait until status changed from IN_PROGRESS to COMPLETE or ERROR
     var publicationDetails = publicationService.getPublicationDetails(consortiumId, publicationId);
     int j = 0;
-    while (Objects.equals(publicationDetails.getStatus(), PublicationStatus.IN_PROGRESS) && j++ < 5) {
-      try {
-        Thread.sleep(200);
-      } catch (InterruptedException e) {
-        log.error("Thread sleep was interrupted", e);
-        Thread.currentThread().interrupt();
-      }
+    while (Objects.equals(publicationDetails.getStatus(), PublicationStatus.IN_PROGRESS) && j++ < MAX_TRIES) {
+      Thread.sleep(INTERVAL);
       publicationDetails = publicationService.getPublicationDetails(consortiumId, publicationId);
     }
     return publicationDetails;

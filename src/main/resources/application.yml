@@ -66,6 +66,9 @@ folio:
     password: ${SYSTEM_USER_PASSWORD:consortia-system-user}
     lastname: SystemConsortia
     permissionsFilePath: permissions/system-user-permissions.csv
+  time:
+    interval: 200
+    max-tries: 5
   timer:
     publication-records-max-age-in-seconds: 86400
   max-active-threads: 5
