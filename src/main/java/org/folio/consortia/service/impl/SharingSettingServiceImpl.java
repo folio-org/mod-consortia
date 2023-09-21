@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.folio.consortia.config.FolioExecutionContextHelper;
-import org.folio.consortia.domain.dto.PublicationDetailsResponse;
 import org.folio.consortia.domain.dto.PublicationRequest;
 import org.folio.consortia.domain.dto.PublicationResult;
 import org.folio.consortia.domain.dto.PublicationStatus;
@@ -157,35 +156,31 @@ public class SharingSettingServiceImpl implements SharingSettingService {
   private void updateSettingsForFailedTenants(UUID consortiumId, UUID publicationId, SharingSettingRequest sharingSettingRequest) {
     log.debug("updateSettingsForFailedTenants:: Trying to update settings for failed tenants for consortiumId={} publicationId={} and sharingSettingRequestId={}",
       consortiumId, publicationId, sharingSettingRequest.getSettingId());
-    boolean desiredResultReceived = false;
-    long startTime = System.currentTimeMillis();
-    long timeout = 3000;
-
-    while (Boolean.FALSE.equals(desiredResultReceived) && System.currentTimeMillis() - startTime < timeout) {
-      boolean isPublicationStatusExists = publicationService.checkPublicationStatusExists(publicationId);
-      if (isPublicationStatusExists) {
-        PublicationDetailsResponse publicationDetails = publicationService.getPublicationDetails(consortiumId, publicationId);
-        if (ObjectUtils.notEqual(publicationDetails.getStatus(), PublicationStatus.IN_PROGRESS)) {
-          desiredResultReceived = true;
-
-          Set<String> failedTenantList = publicationService
-            .getPublicationResults(consortiumId, publicationId)
-            .getPublicationResults()
-            .stream()
-            .filter(publicationResult -> HttpStatus.valueOf(publicationResult.getStatusCode()).isError())
-            .map(PublicationResult::getTenantId)
-            .collect(Collectors.toSet());
-
-          if (ObjectUtils.isNotEmpty(failedTenantList)) {
-            updateFailedSettingsToLocalSource(consortiumId, sharingSettingRequest, failedTenantList);
-          }
-        }
+    boolean isPublicationStatusExists = publicationService.checkPublicationStatusExists(publicationId);
+    if (Boolean.FALSE.equals(isPublicationStatusExists)) {
+      try {
+        Thread.sleep(3000);
+      } catch (InterruptedException e) {
+        log.error("Thread sleep was interrupted", e);
+        Thread.currentThread().interrupt();
       }
     }
+    var publicationDetails = publicationService.getPublicationDetails(consortiumId, publicationId);
+    log.info("updateSettingsForFailedTenants:: publication status '{}' for sharing setting '{}'", publicationDetails.getId(), sharingSettingRequest.getSettingId());
+    // skip action if status is COMPLETE
+    if (Objects.equals(publicationDetails.getStatus(), PublicationStatus.COMPLETE)) {
+      return;
+    }
+    // update settings if status is ERROR
+    Set<String> failedTenantList = publicationService.getPublicationResults(consortiumId, publicationId).getPublicationResults()
+      .stream().filter(publicationResult -> HttpStatus.valueOf(publicationResult.getStatusCode()).isError())
+      .map(PublicationResult::getTenantId).collect(Collectors.toSet());
+    log.info("updateSettingsForFailedTenants:: '{}' tenant(s) failed ", failedTenantList.size());
+    updateFailedSettingsToLocalSource(consortiumId, sharingSettingRequest, failedTenantList);
   }
 
   private void updateFailedSettingsToLocalSource(UUID consortiumId, SharingSettingRequest sharingSettingRequest, Set<String> failedTenantList) {
-    log.info("updateFailedSettingsToLocalSource:: updating failed '{}' tenants settings ", failedTenantList.size());
+    log.info("updateFailedSettingsToLocalSource:: Updating failed '{}' tenants settings ", failedTenantList.size());
     JsonNode payload = objectMapper.convertValue(sharingSettingRequest.getPayload(), JsonNode.class);
     var updatedPayload = ((ObjectNode) payload).set(SOURCE, new TextNode(LOCAL_SETTING_SOURCE));
 
