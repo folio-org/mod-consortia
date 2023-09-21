@@ -52,10 +52,10 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @RequiredArgsConstructor
 public class SharingSettingServiceImpl implements SharingSettingService {
-  @Value("${folio.time.interval}")
-  private int INTERVAL;
-  @Value("${folio.time.max-tries}")
-  private int MAX_TRIES;
+  @Value("${folio.time.interval:200}")
+  private int interval;
+  @Value("${folio.time.max-tries:5}")
+  private int maxTries;
 
   private static final String SOURCE = "source";
   private final SharingSettingRepository sharingSettingRepository;
@@ -171,8 +171,8 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     log.debug("updateSettingsForFailedTenants:: Trying to update settings for failed tenants for consortiumId={} publicationId={} and sharingSettingRequestId={}", consortiumId, publicationId, sharingSettingRequest.getSettingId());
     boolean isPublicationStatusReady = false;
     int i = 0;
-    while (Boolean.FALSE.equals(isPublicationStatusReady) && i++ < MAX_TRIES) {
-      Thread.sleep(INTERVAL);
+    while (Boolean.FALSE.equals(isPublicationStatusReady) && i++ < maxTries) {
+      Thread.sleep(interval);
       boolean isPublicationStatusExists = publicationService.checkPublicationDetailsExists(consortiumId, publicationId);
       if (isPublicationStatusExists) {
         PublicationDetailsResponse publicationDetails = publicationService.getPublicationDetails(consortiumId, publicationId);
