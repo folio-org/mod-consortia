@@ -52,12 +52,13 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @RequiredArgsConstructor
 public class SharingSettingServiceImpl implements SharingSettingService {
+  private static final String SOURCE = "source";
+
   @Value("${folio.sharing.setting.interval:200}")
   private int interval;
   @Value("${folio.sharing.setting.max-tries:10}")
   private int maxTries;
 
-  private static final String SOURCE = "source";
   private final SharingSettingRepository sharingSettingRepository;
   private final TenantService tenantService;
   private final ConsortiumService consortiumService;
