@@ -49,6 +49,7 @@ import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.HttpMethod;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -182,6 +183,10 @@ class SharingSettingServiceTest {
     // expected data for publish request
     Set<String> expectedFailedTenantList = new HashSet<>(List.of(centralTenant, localTenant));
     var expectedPublicationRequest = createExceptedPublicationRequest(sharingSettingRequest, expectedFailedTenantList, HttpMethod.PUT);
+
+    // set time interval and maxTries for Thread sleep cycle
+    ReflectionTestUtils.setField(sharingSettingService, "maxTries", 60);
+    ReflectionTestUtils.setField(sharingSettingService, "interval", 200);
 
     when(publicationService.checkPublicationDetailsExists(CONSORTIUM_ID, publicationId)).thenReturn(true);
     when(publicationService.getPublicationDetails(CONSORTIUM_ID, publicationId)).thenReturn(publicationDetails);

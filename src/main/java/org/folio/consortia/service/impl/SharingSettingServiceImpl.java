@@ -56,7 +56,7 @@ public class SharingSettingServiceImpl implements SharingSettingService {
 
   @Value("${folio.sharing.setting.interval:200}")
   private int interval;
-  @Value("${folio.sharing.setting.max-tries:10}")
+  @Value("${folio.sharing.setting.max-tries:60}")
   private int maxTries;
 
   private final SharingSettingRepository sharingSettingRepository;
