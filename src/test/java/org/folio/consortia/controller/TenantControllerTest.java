@@ -52,6 +52,7 @@ import org.folio.consortia.repository.ConsortiumRepository;
 import org.folio.consortia.repository.TenantDetailsRepository;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.repository.UserTenantRepository;
+import org.folio.consortia.service.PermissionService;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserService;
 import org.folio.consortia.service.UserTenantService;
@@ -110,6 +111,8 @@ class TenantControllerTest extends BaseIT {
   FolioExecutionContext folioExecutionContext = new FolioExecutionContext() {};
   @Mock
   PermissionsClient permissionsClient;
+  @Mock
+  PermissionService permissionService;
   @MockBean
   UserTenantsClient userTenantsClient;
   @MockBean
@@ -168,6 +171,7 @@ class TenantControllerTest extends BaseIT {
     doReturn(new User()).when(usersClient).getUsersByUserId(any());
     doReturn(permissionUserCollection).when(permissionsClient).get(anyString());
     doNothing().when(permissionsClient).addPermission(anyString(), any());
+    doNothing().when(permissionService).createPermission("consortia.consortia-configuration.item.post");
     when(consortiumRepository.existsById(any())).thenReturn(true);
     when(tenantRepository.existsById(any())).thenReturn(false);
     when(tenantDetailsRepository.save(any(TenantDetailsEntity.class))).thenReturn(tenantDetailsEntity);

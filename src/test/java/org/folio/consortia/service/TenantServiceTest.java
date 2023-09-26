@@ -108,7 +108,7 @@ class TenantServiceTest {
   @Mock
   private PermissionUserService permissionUserService;
   @Mock
-  private PermissionUserService permissionService;
+  private PermissionService permissionService;
   @Mock
   private UserService userService;
   @Mock
@@ -178,6 +178,7 @@ class TenantServiceTest {
     when(userService.getById(any())).thenReturn(new User());
     when(permissionsClient.get(any())).thenReturn(permissionUserCollection);
     when(permissionsClient.create(any())).thenReturn(PermissionUser.of(UUID.randomUUID().toString(), adminUser.getId(), List.of("users.collection.get")));
+    doNothing().when(permissionService).createPermission("consortia.consortia-configuration.item.post");
     when(tenantRepository.existsById(any())).thenReturn(false);
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
     when(tenantDetailsRepository.save(any(TenantDetailsEntity.class))).thenReturn(localTenantDetailsEntity);
@@ -219,6 +220,7 @@ class TenantServiceTest {
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(userService.prepareShadowUser(any(), any())).thenReturn(user);
     when(permissionsClient.get(any())).thenReturn(permissionUserCollection);
+    doNothing().when(permissionService).createPermission("consortia.consortia-configuration.item.post");
     doNothing().when(permissionsClient).addPermission(any(), any());
     when(tenantRepository.existsById(any())).thenReturn(false);
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
