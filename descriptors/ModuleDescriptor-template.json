@@ -503,12 +503,9 @@
       "description": "Delete sharing setting"
     },
     {
-      "permissionName": "user-import.all",
-      "displayName": "User import - all permissions",
-      "description": "",
-      "subPermissions": [
-        "user-import.add"
-      ],
+      "permissionName": "consortia-new-test-permission",
+      "displayName": "Consortia - new test permission",
+      "description": "Consortia - new test permission",
       "visible": true
     }
   ],
