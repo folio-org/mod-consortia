@@ -86,7 +86,8 @@ public class SyncPrimaryAffiliationServiceImpl implements SyncPrimaryAffiliation
         .mobilePhoneNumber(personal.getMobilePhone());
     }
     if (StringUtils.isBlank(user.getType())) {
-      log.warn("Required field 'type' was not populated for existing user with id: {} in tenant: {}", user.getId(), tenantId);
+      log.warn("Required field 'type' was not populated for existing user with id: {}, username: {} in tenant: {}",
+        user.getId(), user.getUsername(), tenantId);
     }
     return syncUser;
   }
