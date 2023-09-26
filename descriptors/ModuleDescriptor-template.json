@@ -474,7 +474,8 @@
     {
       "permissionName": "consortia.consortia-configuration.item.post",
       "displayName": "create consortia configuration",
-      "description": "Create consortia configuration"
+      "description": "Create consortia configuration",
+      "visible": true
     },
     {
       "permissionName": "consortia.sharing-instances.item.post",
@@ -500,6 +501,15 @@
       "permissionName": "consortia.sharing-settings.item.delete",
       "displayName": "delete sharing setting",
       "description": "Delete sharing setting"
+    },
+    {
+      "permissionName": "user-import.all",
+      "displayName": "User import - all permissions",
+      "description": "",
+      "subPermissions": [
+        "user-import.add"
+      ],
+      "visible": true
     }
   ],
   "launchDescriptor": {
