@@ -6,6 +6,7 @@ import static org.folio.spring.integration.XOkapiHeaders.TENANT;
 import static org.folio.spring.integration.XOkapiHeaders.TOKEN;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -20,6 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.folio.consortia.config.kafka.KafkaService;
+import org.folio.consortia.domain.dto.PrimaryAffiliationEvent;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.service.impl.UserAffiliationServiceImpl;
@@ -145,12 +147,14 @@ class UserAffiliationServiceTest {
   @Test
   void primaryAffiliationSuccessfullyUpdatedTest() {
     UserTenantEntity userTenant = new UserTenantEntity();
-    userTenant.setUserId(UUID.randomUUID());
+    userTenant.setUserId(UUID.fromString("148f7c24-54fc-4d7f-afff-da2dfcd902e3"));
     userTenant.setUsername("TestUser");
 
     var te = createTenantEntity();
 
     when(tenantService.getByTenantId(anyString())).thenReturn(te);
+    when(userTenantService.checkUserIfHasPrimaryAffiliationByUserId(te.getConsortiumId(), userTenant.getUserId().toString()))
+      .thenReturn(true);
     doNothing().when(consortiumService).checkConsortiumExistsOrThrow(any());
     when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
     when(folioExecutionContext.getTenantId()).thenReturn("diku");
@@ -165,6 +169,29 @@ class UserAffiliationServiceTest {
     }
 
     verify(kafkaService, times(1)).send(any(), anyString(), any());
+  }
+
+  @Test
+  void updateWhenPrimaryAffiliationNotExists() {
+    String userId = UUID.randomUUID().toString();
+    String centralTenantId = "diku";
+    var te = createTenantEntity();
+
+    when(tenantService.getByTenantId(anyString())).thenReturn(te);
+    when(userTenantService.checkUserIfHasPrimaryAffiliationByUserId(te.getConsortiumId(), userId))
+      .thenReturn(false);
+    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
+    when(folioExecutionContext.getTenantId()).thenReturn(centralTenantId);
+    Map<String, Collection<String>> map = createOkapiHeaders();
+    when(folioExecutionContext.getOkapiHeaders()).thenReturn(createOkapiHeaders());
+
+    folioExecutionContext = new DefaultFolioExecutionContext(folioModuleMetadata, map);
+    try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
+      userAffiliationService.updatePrimaryUserAffiliation(userUpdatedEventSample);
+    }
+
+    verify(primaryAffiliationService).createPrimaryAffiliation(eq(te.getConsortiumId()), eq(centralTenantId), eq(te), any(PrimaryAffiliationEvent.class));
+    verifyNoInteractions(kafkaService);
   }
 
   @Test

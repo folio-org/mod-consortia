@@ -9,7 +9,6 @@ import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.domain.dto.PrimaryAffiliationEvent;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.dto.UserEvent;
-import org.folio.consortia.domain.dto.UserTenant;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.service.PrimaryAffiliationService;
 import org.folio.consortia.service.TenantService;
@@ -76,6 +75,16 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
     }
 
     try {
+      var tenant = tenantService.getByTenantId(userEvent.getTenantId());
+      boolean isPrimaryAffiliationExists = userTenantService
+        .checkUserIfHasPrimaryAffiliationByUserId(tenant.getConsortiumId(), userEvent.getUserDto().getId());
+      if (!isPrimaryAffiliationExists) {
+        // this case is possible for example when changing user type from 'patron' to 'staff'
+        PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(userEvent, centralTenantId, tenant.getConsortiumId());
+        primaryAffiliationService.createPrimaryAffiliation(tenant.getConsortiumId(), centralTenantId, tenant, affiliationEvent);
+        return;
+      }
+
       UUID userId = getUserId(userEvent);
       String newUsername = userEvent.getUserDto().getUsername();
 
