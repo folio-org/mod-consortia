@@ -3,12 +3,14 @@ package org.folio.consortia.service.impl;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.consortia.config.kafka.KafkaService;
 import org.folio.consortia.domain.dto.PrimaryAffiliationEvent;
 import org.folio.consortia.domain.dto.User;
 import org.folio.consortia.domain.dto.UserEvent;
+import org.folio.consortia.domain.dto.UserType;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.service.PrimaryAffiliationService;
 import org.folio.consortia.service.TenantService;
@@ -79,9 +81,17 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       boolean isPrimaryAffiliationExists = userTenantService
         .checkUserIfHasPrimaryAffiliationByUserId(tenant.getConsortiumId(), userEvent.getUserDto().getId());
       if (!isPrimaryAffiliationExists) {
-        // this case is possible for example when changing user type from 'patron' to 'staff'
+        log.info("Started processing case after changing user type from 'patron' to 'staff' for userId: {}, tenant: {}",
+          userEvent.getUserDto().getId(), userEvent.getTenantId());
         PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(userEvent, centralTenantId, tenant.getConsortiumId());
         primaryAffiliationService.createPrimaryAffiliation(tenant.getConsortiumId(), centralTenantId, tenant, affiliationEvent);
+        return;
+      }
+
+      if (UserType.PATRON.getName().equals(userEvent.getUserDto().getType())) {
+        log.info("Started processing case after changing user type from 'staff' to 'patron' for userId: {}, tenant: {}",
+          userEvent.getUserDto().getId(), userEvent.getTenantId());
+        deletePrimaryAffiliationAndShadowUsers(userEvent, centralTenantId);
         return;
       }
 
@@ -120,19 +130,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
     }
 
     try {
-      boolean existed = userTenantService.deletePrimaryUserTenantAffiliation(getUserId(userEvent));
-      if (!existed) {
-        log.warn("Primary affiliation does not existed for tenant/user: {}/{}", userEvent.getTenantId(), userEvent.getUserDto().getId());
-        return;
-      }
-
-      userTenantService.deleteShadowUsers(getUserId(userEvent));
-
-      PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(userEvent, centralTenantId, null);
-      String data = objectMapper.writeValueAsString(affiliationEvent);
-
-      kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_DELETED, userEvent.getUserDto().getId(), data);
-      log.info("Primary affiliation has been deleted for the user: {}", userEvent.getUserDto().getId());
+      deletePrimaryAffiliationAndShadowUsers(userEvent, centralTenantId);
     } catch (Exception e) {
       log.error("Exception occurred while deleting primary affiliation for userId: {}, tenant: {} and error message: {}",
         userEvent.getUserDto().getId(), userEvent.getTenantId(), e.getMessage(), e);
@@ -156,6 +154,24 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       throw new IllegalArgumentException("User id is empty");
     }
     return UUID.fromString(userEvent.getUserDto().getId());
+  }
+
+  private void deletePrimaryAffiliationAndShadowUsers(UserEvent userEvent, String centralTenantId) throws JsonProcessingException {
+    log.info("Going to delete primary affiliation and all shadow users for userId: {}, tenant: {}",
+      userEvent.getUserDto().getId(), userEvent.getTenantId());
+    boolean existed = userTenantService.deletePrimaryUserTenantAffiliation(getUserId(userEvent));
+    if (!existed) {
+      log.warn("Primary affiliation does not existed for tenant/user: {}/{}", userEvent.getTenantId(), userEvent.getUserDto().getId());
+      return;
+    }
+
+    userTenantService.deleteShadowUsers(getUserId(userEvent));
+
+    PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(userEvent, centralTenantId, null);
+    String data = objectMapper.writeValueAsString(affiliationEvent);
+
+    kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_DELETED, userEvent.getUserDto().getId(), data);
+    log.info("Primary affiliation has been deleted for the user: {}", userEvent.getUserDto().getId());
   }
 
   private PrimaryAffiliationEvent createPrimaryAffiliationEvent(UserEvent userEvent, String centralTenantId, UUID consortiumId) {

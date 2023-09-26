@@ -9,6 +9,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -41,6 +42,7 @@ import org.mockito.MockitoAnnotations;
 class UserAffiliationServiceTest {
   private static final String userCreatedEventSample = getMockDataAsString("mockdata/kafka/create_primary_affiliation_request.json");
   private static final String userUpdatedEventSample = getMockDataAsString("mockdata/kafka/update_primary_affiliation_request.json");
+  private static final String patronUserUpdatedEventSample = getMockDataAsString("mockdata/kafka/update_primary_affiliation_request_patron_user.json");
   private static final String userDeletedEventSample = getMockDataAsString("mockdata/kafka/delete_primary_affiliation_request.json");
   @Mock
   private FolioModuleMetadata folioModuleMetadata;
@@ -195,6 +197,32 @@ class UserAffiliationServiceTest {
   }
 
   @Test
+  void updateWhenChangingUserTypeFromStaffToPatron() {
+    UserTenantEntity userTenant = new UserTenantEntity();
+    UUID userId = UUID.fromString("148f7c24-54fc-4d7f-afff-da2dfcd902e3");
+    userTenant.setUserId(userId);
+    userTenant.setUsername("TestUser");
+    var te = createTenantEntity();
+
+    when(tenantService.getByTenantId(anyString())).thenReturn(te);
+    when(userTenantService.checkUserIfHasPrimaryAffiliationByUserId(te.getConsortiumId(), userId.toString()))
+      .thenReturn(true);
+    doNothing().when(consortiumService).checkConsortiumExistsOrThrow(any());
+    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
+    when(folioExecutionContext.getTenantId()).thenReturn("diku");
+    Map<String, Collection<String>> map = createOkapiHeaders();
+    when(folioExecutionContext.getOkapiHeaders()).thenReturn(map);
+    when(userTenantService.deletePrimaryUserTenantAffiliation(any())).thenReturn(true);
+    try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
+      userAffiliationService.updatePrimaryUserAffiliation(patronUserUpdatedEventSample);
+    }
+
+    verify(userTenantService).deletePrimaryUserTenantAffiliation(userId);
+    verify(userTenantService).deleteShadowUsers(userId);
+    verify(kafkaService, times(1)).send(any(), anyString(), any());
+  }
+
+  @Test
   void updatePrimaryAffiliationNotParsed() {
     userAffiliationService.updatePrimaryUserAffiliation("wrong event payload");
 
@@ -218,6 +246,8 @@ class UserAffiliationServiceTest {
       userAffiliationService.deletePrimaryUserAffiliation(userDeletedEventSample);
     }
 
+    verify(userTenantService).deletePrimaryUserTenantAffiliation(any());
+    verify(userTenantService).deleteShadowUsers(any());
     verify(kafkaService, times(1)).send(any(), anyString(), any());
   }
 
@@ -238,6 +268,7 @@ class UserAffiliationServiceTest {
       userAffiliationService.deletePrimaryUserAffiliation(userDeletedEventSample);
     }
 
+    verify(userTenantService, never()).deleteShadowUsers(any());
     verifyNoInteractions(kafkaService);
   }
 
