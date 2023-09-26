@@ -10,6 +10,7 @@ perms.users.item.delete
 perms.users.assign.immutable
 perms.users.assign.mutable
 perms.users.get
+perms.permissions.item.post
 user-tenants.item.post
 consortia.sync-primary-affiliations.item.post
 consortia.create-primary-affiliations.item.post

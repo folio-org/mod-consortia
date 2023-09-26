@@ -13,17 +13,22 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "consortia-perms-client", url = "perms/users", configuration = FeignClientConfiguration.class)
+@FeignClient(name = "consortia-perms-client", url = "perms", configuration = FeignClientConfiguration.class)
 public interface PermissionsClient {
-  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+  /* Permission User endpoints */
+  @GetMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
   PermissionUserCollection get(@RequestParam("query") String query);
 
-  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/users", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   PermissionUser create(@RequestBody PermissionUser permissionUser);
 
-  @PostMapping(value = "/{userId}/permissions?indexField=userId", consumes = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/users/{userId}/permissions?indexField=userId", consumes = MediaType.APPLICATION_JSON_VALUE)
   void addPermission(@PathVariable("userId") String userId, Permission permission);
 
-  @DeleteMapping(value = "/{id}")
+  @DeleteMapping(value = "/users/{id}")
   void deletePermissionUser(@PathVariable("id") String id);
+
+  /* Permission endpoints */
+  @PostMapping(value = "/permissions", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  void createPermission(@RequestBody Permission permission);
 }

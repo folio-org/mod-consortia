@@ -32,6 +32,7 @@ import org.folio.consortia.repository.UserTenantRepository;
 import org.folio.consortia.service.CleanupService;
 import org.folio.consortia.service.ConsortiumService;
 import org.folio.consortia.service.LockService;
+import org.folio.consortia.service.PermissionService;
 import org.folio.consortia.service.PermissionUserService;
 import org.folio.consortia.service.TenantService;
 import org.folio.consortia.service.UserService;
@@ -69,6 +70,7 @@ public class TenantServiceImpl implements TenantService {
   private final ConsortiumService consortiumService;
   private final FolioExecutionContext folioExecutionContext;
   private final ConsortiaConfigurationClient configurationClient;
+  private final PermissionService permissionService;
   private final PermissionUserService permissionUserService;
   private final UserService userService;
   private final FolioExecutionContextHelper contextHelper;
@@ -164,6 +166,8 @@ public class TenantServiceImpl implements TenantService {
         createShadowUserWithPermissions(shadowSystemUser, SHADOW_SYSTEM_USER_PERMISSION_FILE_PATH);
         log.info("save:: shadow system user '{}' with permissions was created in tenant '{}'", shadowSystemUser.getId(), tenantDto.getId());
       }
+      // create permission consortia.consortia-configuration.
+      permissionService.createPermission("consortia.consortia-configuration.item.post");
       syncPrimaryAffiliationClient.syncPrimaryAffiliations(consortiumId.toString(), tenantDto.getId(), centralTenantId);
     }
     log.info("save:: saved consortia configuration with centralTenantId={} by tenantId={} context", centralTenantId, tenantDto.getId());
