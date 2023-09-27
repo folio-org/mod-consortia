@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import org.folio.consortia.domain.dto.ConsortiaConfiguration;
 import org.folio.consortia.domain.dto.Consortium;
+import org.folio.consortia.domain.dto.Permission;
 import org.folio.consortia.domain.dto.Personal;
 import org.folio.consortia.domain.dto.PublicationDetailsResponse;
 import org.folio.consortia.domain.dto.PublicationRequest;
@@ -315,5 +316,13 @@ public class EntityUtils {
     user.setPersonal(personal);
     user.setActive(true);
     return user;
+  }
+
+  public static Permission createInventoryInstanceSharingPermission() {
+    var permission = new Permission();
+    permission.setPermissionName("consortia.inventory.share.local.instance");
+    permission.setDisplayName("Inventory: Share local instance with consortium");
+    permission.setDescription("Inventory: Share local instance with consortium");
+    return permission;
   }
 }

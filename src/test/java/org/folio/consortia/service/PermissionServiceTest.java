@@ -1,7 +1,6 @@
 package org.folio.consortia.service;
 
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import org.folio.consortia.client.PermissionsClient;
@@ -24,13 +23,15 @@ class PermissionServiceTest {
 
   @Test
   void shouldCreatePermission() {
-    String permissionName = "consortia.consortia-configuration.item.post";
-    Permission permission = new Permission(permissionName);
+    Permission permission = new Permission();
+    permission.setPermissionName("consortia.inventory.share.local.instance");
+    permission.setDisplayName("Inventory: Share local instance with consortium");
+    permission.setDescription("Inventory: Share local instance with consortium");
 
     doNothing().when(permissionsClient).createPermission(permission);
 
     permissionService.createPermission(permission);
 
-    verify(permissionService, times(1)).createPermission(permission);
+    verify(permissionsClient).createPermission(permission);
   }
 }

@@ -4,6 +4,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.folio.consortia.exception.ResourceNotFoundException.NOT_FOUND_MSG_TEMPLATE;
 import static org.folio.consortia.utils.EntityUtils.createConsortiaConfiguration;
+import static org.folio.consortia.utils.EntityUtils.createInventoryInstanceSharingPermission;
 import static org.folio.consortia.utils.EntityUtils.createTenant;
 import static org.folio.consortia.utils.EntityUtils.createTenantDetailsEntity;
 import static org.folio.consortia.utils.EntityUtils.createTenantEntity;
@@ -152,6 +153,7 @@ class TenantControllerTest extends BaseIT {
     permissionUserCollection.setPermissionUsers(List.of(permissionUser));
     User adminUser = createUser("diku_admin");
     User systemUser = createUser("consortia-system-user");
+    var consortiaConfigurationPermission = createInventoryInstanceSharingPermission();
 
     var tenantDetailsEntity = new TenantDetailsEntity();
     tenantDetailsEntity.setConsortiumId(centralTenant.getConsortiumId());
@@ -171,7 +173,7 @@ class TenantControllerTest extends BaseIT {
     doReturn(new User()).when(usersClient).getUsersByUserId(any());
     doReturn(permissionUserCollection).when(permissionsClient).get(anyString());
     doNothing().when(permissionsClient).addPermission(anyString(), any());
-    doNothing().when(permissionService).createPermission(any());
+    doNothing().when(permissionsClient).createPermission(consortiaConfigurationPermission);
     when(consortiumRepository.existsById(any())).thenReturn(true);
     when(tenantRepository.existsById(any())).thenReturn(false);
     when(tenantDetailsRepository.save(any(TenantDetailsEntity.class))).thenReturn(tenantDetailsEntity);
