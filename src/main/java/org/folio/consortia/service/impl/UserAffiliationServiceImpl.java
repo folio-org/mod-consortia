@@ -54,7 +54,8 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       boolean isPrimaryAffiliationExists = userTenantService
         .checkUserIfHasPrimaryAffiliationByUserId(tenant.getConsortiumId(), userEvent.getUserDto().getId());
       if (isPrimaryAffiliationExists) {
-        log.warn("Primary affiliation already exists for tenant/user: {}/{}", userEvent.getTenantId(), userEvent.getUserDto().getUsername());
+        log.warn("createPrimaryUserAffiliation:: Primary affiliation already exists for tenant/user: {}/{}",
+          userEvent.getTenantId(), userEvent.getUserDto().getUsername());
         return;
       }
 
@@ -81,7 +82,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       boolean isPrimaryAffiliationExists = userTenantService
         .checkUserIfHasPrimaryAffiliationByUserId(tenant.getConsortiumId(), userEvent.getUserDto().getId());
       if (!isPrimaryAffiliationExists) {
-        log.info("Started processing case after changing user type from 'patron' to 'staff' for userId: {}, tenant: {}",
+        log.info("updatePrimaryUserAffiliation:: Started processing case after changing user type from 'patron' to 'staff' for userId: {}, tenant: {}",
           userEvent.getUserDto().getId(), userEvent.getTenantId());
         PrimaryAffiliationEvent affiliationEvent = createPrimaryAffiliationEvent(userEvent, centralTenantId, tenant.getConsortiumId());
         primaryAffiliationService.createPrimaryAffiliation(tenant.getConsortiumId(), centralTenantId, tenant, affiliationEvent);
@@ -89,7 +90,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
       }
 
       if (UserType.PATRON.getName().equals(userEvent.getUserDto().getType())) {
-        log.info("Started processing case after changing user type from 'staff' to 'patron' for userId: {}, tenant: {}",
+        log.info("updatePrimaryUserAffiliation:: Started processing case after changing user type from 'staff' to 'patron' for userId: {}, tenant: {}",
           userEvent.getUserDto().getId(), userEvent.getTenantId());
         deletePrimaryAffiliationAndShadowUsers(userEvent, centralTenantId);
         return;
@@ -103,7 +104,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
 
       if (isUsernameChanged) {
         userTenantService.updateUsernameInPrimaryUserTenantAffiliation(userId, newUsername, userEvent.getTenantId());
-        log.info("Username in primary affiliation has been updated for the user: {}", userEvent.getUserDto().getId());
+        log.info("updatePrimaryUserAffiliation:: Username in primary affiliation has been updated for the user: {}", userEvent.getUserDto().getId());
       }
 
       if (Boolean.TRUE.equals(userEvent.getIsPersonalDataChanged())) {
@@ -140,7 +141,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   private UserEvent parseUserEvent(String eventPayload) {
     try {
       var userEvent = objectMapper.readValue(eventPayload, UserEvent.class);
-      log.info("Received {} event for userId: {} and tenant: {}",
+      log.info("parseUserEvent:: Received {} event for userId: {} and tenant: {}",
         userEvent.getAction(), userEvent.getUserDto().getId(), userEvent.getTenantId());
       return userEvent;
     } catch (Exception e) {
@@ -157,11 +158,11 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
   }
 
   private void deletePrimaryAffiliationAndShadowUsers(UserEvent userEvent, String centralTenantId) throws JsonProcessingException {
-    log.info("Going to delete primary affiliation and all shadow users for userId: {}, tenant: {}",
+    log.info("deletePrimaryAffiliationAndShadowUsers:: Going to delete primary affiliation and all shadow users for userId: {}, tenant: {}",
       userEvent.getUserDto().getId(), userEvent.getTenantId());
-    boolean existed = userTenantService.deletePrimaryUserTenantAffiliation(getUserId(userEvent));
-    if (!existed) {
-      log.warn("Primary affiliation does not existed for tenant/user: {}/{}", userEvent.getTenantId(), userEvent.getUserDto().getId());
+    boolean isPrimaryAffiliationExists = userTenantService.deletePrimaryUserTenantAffiliation(getUserId(userEvent));
+    if (!isPrimaryAffiliationExists) {
+      log.warn("deletePrimaryAffiliationAndShadowUsers:: Primary affiliation does not existed for tenant/user: {}/{}", userEvent.getTenantId(), userEvent.getUserDto().getId());
       return;
     }
 
@@ -171,7 +172,7 @@ public class UserAffiliationServiceImpl implements UserAffiliationService {
     String data = objectMapper.writeValueAsString(affiliationEvent);
 
     kafkaService.send(KafkaService.Topic.CONSORTIUM_PRIMARY_AFFILIATION_DELETED, userEvent.getUserDto().getId(), data);
-    log.info("Primary affiliation has been deleted for the user: {}", userEvent.getUserDto().getId());
+    log.info("deletePrimaryAffiliationAndShadowUsers:: Primary affiliation has been deleted for the user: {}", userEvent.getUserDto().getId());
   }
 
   private PrimaryAffiliationEvent createPrimaryAffiliationEvent(UserEvent userEvent, String centralTenantId, UUID consortiumId) {

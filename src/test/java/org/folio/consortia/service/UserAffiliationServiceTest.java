@@ -26,11 +26,9 @@ import org.folio.consortia.domain.dto.PrimaryAffiliationEvent;
 import org.folio.consortia.domain.entity.UserTenantEntity;
 import org.folio.consortia.repository.TenantRepository;
 import org.folio.consortia.service.impl.UserAffiliationServiceImpl;
-import org.folio.spring.DefaultFolioExecutionContext;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
 import org.folio.spring.integration.XOkapiHeaders;
-import org.folio.spring.scope.FolioExecutionContextSetter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -81,14 +79,9 @@ class UserAffiliationServiceTest {
 
     when(tenantService.getByTenantId(anyString())).thenReturn(te);
     doNothing().when(consortiumService).checkConsortiumExistsOrThrow(any());
-    when(folioExecutionContext.getTenantId()).thenReturn("diku");
-    Map<String, Collection<String>> map = createOkapiHeaders();
-    when(folioExecutionContext.getOkapiHeaders()).thenReturn(map);
+    mockOkapiHeaders();
 
-    folioExecutionContext = new DefaultFolioExecutionContext(folioModuleMetadata, map);
-    try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
-      userAffiliationService.createPrimaryUserAffiliation(userCreatedEventSample);
-    }
+    userAffiliationService.createPrimaryUserAffiliation(userCreatedEventSample);
 
     verify(primaryAffiliationService, times(1)).createPrimaryAffiliation(any(), anyString(), any(), any());
 
@@ -100,14 +93,9 @@ class UserAffiliationServiceTest {
 
     when(tenantService.getByTenantId(anyString())).thenReturn(te);
     doNothing().when(consortiumService).checkConsortiumExistsOrThrow(any());
-    when(folioExecutionContext.getTenantId()).thenReturn("diku");
-    Map<String, Collection<String>> map = createOkapiHeaders();
-    when(folioExecutionContext.getOkapiHeaders()).thenReturn(map);
+    mockOkapiHeaders();
 
-    folioExecutionContext = new DefaultFolioExecutionContext(folioModuleMetadata, map);
-    try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
-      userAffiliationService.createPrimaryUserAffiliation(userCreatedEventSample);
-    }
+    userAffiliationService.createPrimaryUserAffiliation(userCreatedEventSample);
 
     verify(primaryAffiliationService, times(1)).createPrimaryAffiliation(any(), anyString(), any(), any());
   }
@@ -115,12 +103,10 @@ class UserAffiliationServiceTest {
   @Test
   void tenantNotInConsortiaWhenCreatingTest() {
     when(tenantRepository.findById(anyString())).thenReturn(null);
+    mockOkapiHeaders();
 
-    Map<String, Collection<String>> map = createOkapiHeaders();
-    folioExecutionContext = new DefaultFolioExecutionContext(folioModuleMetadata, map);
-    try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
-      userAffiliationService.createPrimaryUserAffiliation(userCreatedEventSample);
-    }
+    userAffiliationService.createPrimaryUserAffiliation(userCreatedEventSample);
+
     verify(kafkaService, times(0)).send(any(), anyString(), any());
   }
 
@@ -130,12 +116,10 @@ class UserAffiliationServiceTest {
 
     when(tenantService.getByTenantId(anyString())).thenReturn(te);
     when(userTenantService.checkUserIfHasPrimaryAffiliationByUserId(any(), anyString())).thenReturn(true);
+    mockOkapiHeaders();
 
-    Map<String, Collection<String>> map = createOkapiHeaders();
-    folioExecutionContext = new DefaultFolioExecutionContext(folioModuleMetadata, map);
-    try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
-      userAffiliationService.createPrimaryUserAffiliation(userCreatedEventSample);
-    }
+    userAffiliationService.createPrimaryUserAffiliation(userCreatedEventSample);
+
     verify(kafkaService, times(0)).send(any(), anyString(), any());
   }
 
@@ -155,20 +139,12 @@ class UserAffiliationServiceTest {
     var te = createTenantEntity();
 
     when(tenantService.getByTenantId(anyString())).thenReturn(te);
-    when(userTenantService.checkUserIfHasPrimaryAffiliationByUserId(te.getConsortiumId(), userTenant.getUserId().toString()))
-      .thenReturn(true);
+    when(userTenantService.checkUserIfHasPrimaryAffiliationByUserId(te.getConsortiumId(), userTenant.getUserId().toString())).thenReturn(true);
     doNothing().when(consortiumService).checkConsortiumExistsOrThrow(any());
-    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
-    when(folioExecutionContext.getTenantId()).thenReturn("diku");
-    Map<String, Collection<String>> map = createOkapiHeaders();
-    when(folioExecutionContext.getOkapiHeaders()).thenReturn(map);
-
     when(userTenantService.getByUserIdAndTenantId(any(), anyString())).thenReturn(userTenant);
+    mockOkapiHeaders();
 
-    folioExecutionContext = new DefaultFolioExecutionContext(folioModuleMetadata, map);
-    try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
-      userAffiliationService.updatePrimaryUserAffiliation(userUpdatedEventSample);
-    }
+    userAffiliationService.updatePrimaryUserAffiliation(userUpdatedEventSample);
 
     verify(kafkaService, times(1)).send(any(), anyString(), any());
   }
@@ -180,17 +156,10 @@ class UserAffiliationServiceTest {
     var te = createTenantEntity();
 
     when(tenantService.getByTenantId(anyString())).thenReturn(te);
-    when(userTenantService.checkUserIfHasPrimaryAffiliationByUserId(te.getConsortiumId(), userId))
-      .thenReturn(false);
-    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
-    when(folioExecutionContext.getTenantId()).thenReturn(centralTenantId);
-    Map<String, Collection<String>> map = createOkapiHeaders();
-    when(folioExecutionContext.getOkapiHeaders()).thenReturn(createOkapiHeaders());
+    when(userTenantService.checkUserIfHasPrimaryAffiliationByUserId(te.getConsortiumId(), userId)).thenReturn(false);
+    mockOkapiHeaders();
 
-    folioExecutionContext = new DefaultFolioExecutionContext(folioModuleMetadata, map);
-    try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
-      userAffiliationService.updatePrimaryUserAffiliation(userUpdatedEventSample);
-    }
+    userAffiliationService.updatePrimaryUserAffiliation(userUpdatedEventSample);
 
     verify(primaryAffiliationService).createPrimaryAffiliation(eq(te.getConsortiumId()), eq(centralTenantId), eq(te), any(PrimaryAffiliationEvent.class));
     verifyNoInteractions(kafkaService);
@@ -208,14 +177,10 @@ class UserAffiliationServiceTest {
     when(userTenantService.checkUserIfHasPrimaryAffiliationByUserId(te.getConsortiumId(), userId.toString()))
       .thenReturn(true);
     doNothing().when(consortiumService).checkConsortiumExistsOrThrow(any());
-    when(folioExecutionContext.getInstance()).thenReturn(folioExecutionContext);
-    when(folioExecutionContext.getTenantId()).thenReturn("diku");
-    Map<String, Collection<String>> map = createOkapiHeaders();
-    when(folioExecutionContext.getOkapiHeaders()).thenReturn(map);
     when(userTenantService.deletePrimaryUserTenantAffiliation(any())).thenReturn(true);
-    try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
-      userAffiliationService.updatePrimaryUserAffiliation(patronUserUpdatedEventSample);
-    }
+    mockOkapiHeaders();
+
+    userAffiliationService.updatePrimaryUserAffiliation(patronUserUpdatedEventSample);
 
     verify(userTenantService).deletePrimaryUserTenantAffiliation(userId);
     verify(userTenantService).deleteShadowUsers(userId);
@@ -235,16 +200,10 @@ class UserAffiliationServiceTest {
 
     when(tenantService.getByTenantId(anyString())).thenReturn(te);
     doNothing().when(consortiumService).checkConsortiumExistsOrThrow(any());
-    when(folioExecutionContext.getTenantId()).thenReturn("diku");
-    Map<String, Collection<String>> map = createOkapiHeaders();
-    when(folioExecutionContext.getOkapiHeaders()).thenReturn(map);
-
     when(userTenantService.deletePrimaryUserTenantAffiliation(any())).thenReturn(true);
+    mockOkapiHeaders();
 
-    folioExecutionContext = new DefaultFolioExecutionContext(folioModuleMetadata, map);
-    try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
-      userAffiliationService.deletePrimaryUserAffiliation(userDeletedEventSample);
-    }
+    userAffiliationService.deletePrimaryUserAffiliation(userDeletedEventSample);
 
     verify(userTenantService).deletePrimaryUserTenantAffiliation(any());
     verify(userTenantService).deleteShadowUsers(any());
@@ -252,21 +211,15 @@ class UserAffiliationServiceTest {
   }
 
   @Test
-  public void deduplicateDeletePrimaryAffiliationTest() {
+  void deduplicateDeletePrimaryAffiliationTest() {
     var te = createTenantEntity();
 
     when(tenantService.getByTenantId(anyString())).thenReturn(te);
     doNothing().when(consortiumService).checkConsortiumExistsOrThrow(any());
-    when(folioExecutionContext.getTenantId()).thenReturn("diku");
-    Map<String, Collection<String>> map = createOkapiHeaders();
-    when(folioExecutionContext.getOkapiHeaders()).thenReturn(map);
-
     when(userTenantService.deletePrimaryUserTenantAffiliation(any())).thenReturn(false);
+    mockOkapiHeaders();
 
-    folioExecutionContext = new DefaultFolioExecutionContext(folioModuleMetadata, map);
-    try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
-      userAffiliationService.deletePrimaryUserAffiliation(userDeletedEventSample);
-    }
+    userAffiliationService.deletePrimaryUserAffiliation(userDeletedEventSample);
 
     verify(userTenantService, never()).deleteShadowUsers(any());
     verifyNoInteractions(kafkaService);
@@ -279,15 +232,10 @@ class UserAffiliationServiceTest {
     when(tenantService.getByTenantId(anyString())).thenReturn(te);
     doNothing().when(consortiumService).checkConsortiumExistsOrThrow(any());
     doThrow(new RuntimeException("Unable to send message to Kafka")).when(kafkaService).send(any(), anyString(), any());
-    when(folioExecutionContext.getTenantId()).thenReturn("diku");
-    Map<String, Collection<String>> map = createOkapiHeaders();
-    when(folioExecutionContext.getOkapiHeaders()).thenReturn(map);
-
+    mockOkapiHeaders();
     when(userTenantService.deletePrimaryUserTenantAffiliation(any())).thenReturn(true);
 
-    try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
-      userAffiliationService.deletePrimaryUserAffiliation(userDeletedEventSample);
-    }
+    userAffiliationService.deletePrimaryUserAffiliation(userDeletedEventSample);
 
     verify(kafkaService, times(1)).send(any(), anyString(), any());
   }
@@ -295,12 +243,10 @@ class UserAffiliationServiceTest {
   @Test
   void tenantNotInConsortiaWhenDeletingTest() {
     when(tenantRepository.findById(anyString())).thenReturn(null);
+    mockOkapiHeaders();
 
-    Map<String, Collection<String>> map = createOkapiHeaders();
-    folioExecutionContext = new DefaultFolioExecutionContext(folioModuleMetadata, map);
-    try (var fec = new FolioExecutionContextSetter(folioExecutionContext)) {
-      userAffiliationService.deletePrimaryUserAffiliation(userDeletedEventSample);
-    }
+    userAffiliationService.deletePrimaryUserAffiliation(userDeletedEventSample);
+
     verify(kafkaService, times(0)).send(any(), anyString(), any());
   }
 
@@ -309,6 +255,12 @@ class UserAffiliationServiceTest {
     userAffiliationService.deletePrimaryUserAffiliation("wrong event payload");
 
     verifyNoInteractions(kafkaService);
+  }
+
+  private void mockOkapiHeaders() {
+    when(folioExecutionContext.getTenantId()).thenReturn("diku");
+    Map<String, Collection<String>> okapiHeaders = createOkapiHeaders();
+    when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
   }
 
   private Map<String, Collection<String>> createOkapiHeaders() {
