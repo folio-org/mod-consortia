@@ -1,6 +1,7 @@
 package org.folio.consortia.service;
 
 import static org.folio.consortia.utils.EntityUtils.createConsortiaConfiguration;
+import static org.folio.consortia.utils.EntityUtils.createInventoryInstanceSharingPermission;
 import static org.folio.consortia.utils.EntityUtils.createTenant;
 import static org.folio.consortia.utils.EntityUtils.createTenantDetailsEntity;
 import static org.folio.consortia.utils.EntityUtils.createTenantEntity;
@@ -178,7 +179,7 @@ class TenantServiceTest {
     when(userService.getById(any())).thenReturn(new User());
     when(permissionsClient.get(any())).thenReturn(permissionUserCollection);
     when(permissionsClient.create(any())).thenReturn(PermissionUser.of(UUID.randomUUID().toString(), adminUser.getId(), List.of("users.collection.get")));
-    doNothing().when(permissionService).createPermission(any());
+    doNothing().when(permissionService).createPermission(createInventoryInstanceSharingPermission());
     when(tenantRepository.existsById(any())).thenReturn(false);
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
     when(tenantDetailsRepository.save(any(TenantDetailsEntity.class))).thenReturn(localTenantDetailsEntity);
@@ -220,7 +221,7 @@ class TenantServiceTest {
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(userService.prepareShadowUser(any(), any())).thenReturn(user);
     when(permissionsClient.get(any())).thenReturn(permissionUserCollection);
-    doNothing().when(permissionService).createPermission(any());
+    doNothing().when(permissionService).createPermission(createInventoryInstanceSharingPermission());
     doNothing().when(permissionsClient).addPermission(any(), any());
     when(tenantRepository.existsById(any())).thenReturn(false);
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
