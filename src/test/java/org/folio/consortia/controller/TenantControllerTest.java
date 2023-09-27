@@ -171,7 +171,7 @@ class TenantControllerTest extends BaseIT {
     doReturn(new User()).when(usersClient).getUsersByUserId(any());
     doReturn(permissionUserCollection).when(permissionsClient).get(anyString());
     doNothing().when(permissionsClient).addPermission(anyString(), any());
-    doNothing().when(permissionService).createPermission("consortia.consortia-configuration.item.post");
+    doNothing().when(permissionService).createPermission(any());
     when(consortiumRepository.existsById(any())).thenReturn(true);
     when(tenantRepository.existsById(any())).thenReturn(false);
     when(tenantDetailsRepository.save(any(TenantDetailsEntity.class))).thenReturn(tenantDetailsEntity);

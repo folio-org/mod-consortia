@@ -14,6 +14,7 @@ import org.folio.consortia.client.SyncPrimaryAffiliationClient;
 import org.folio.consortia.client.UserTenantsClient;
 import org.folio.consortia.config.FolioExecutionContextHelper;
 import org.folio.consortia.domain.dto.ConsortiaConfiguration;
+import org.folio.consortia.domain.dto.Permission;
 import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.domain.dto.Tenant;
 import org.folio.consortia.domain.dto.TenantCollection;
@@ -166,8 +167,8 @@ public class TenantServiceImpl implements TenantService {
         createShadowUserWithPermissions(shadowSystemUser, SHADOW_SYSTEM_USER_PERMISSION_FILE_PATH);
         log.info("save:: shadow system user '{}' with permissions was created in tenant '{}'", shadowSystemUser.getId(), tenantDto.getId());
       }
-      // create permission consortia.consortia-configuration.
-      permissionService.createPermission("consortia.consortia-configuration.item.post");
+      // create consortia configuration for ECS mode
+      createConfigurationPermission();
       syncPrimaryAffiliationClient.syncPrimaryAffiliations(consortiumId.toString(), tenantDto.getId(), centralTenantId);
     }
     log.info("save:: saved consortia configuration with centralTenantId={} by tenantId={} context", centralTenantId, tenantDto.getId());
@@ -322,6 +323,15 @@ public class TenantServiceImpl implements TenantService {
     ConsortiaConfiguration configuration = new ConsortiaConfiguration();
     configuration.setCentralTenantId(tenantId);
     return configuration;
+  }
+
+  private void createConfigurationPermission() {
+    log.info("createConfigurationPermission:: Creating permission for inventory sharing instance");
+    Permission permission = new Permission();
+    permission.setPermissionName("consortia.inventory.share.local.instance");
+    permission.setDisplayName("Inventory: Share local instance with consortium");
+    permission.setDescription("Inventory: Share local instance with consortium");
+    permissionService.createPermission(permission);
   }
 
   private void createShadowUserWithPermissions(User user, String permissionFilePath) {

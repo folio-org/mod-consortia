@@ -1,10 +1,12 @@
 package org.folio.consortia.service;
 
+import org.folio.consortia.domain.dto.Permission;
+
 public interface PermissionService {
 
   /**
    * Create new permission
-   * @param permissionName name of permission
+   * @param permission permission object
    */
-  void createPermission(String permissionName);
+  void createPermission(Permission permission);
 }

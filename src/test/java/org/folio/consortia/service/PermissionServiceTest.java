@@ -29,8 +29,8 @@ class PermissionServiceTest {
 
     doNothing().when(permissionsClient).createPermission(permission);
 
-    permissionService.createPermission(permissionName);
+    permissionService.createPermission(permission);
 
-    verify(permissionService, times(1)).createPermission(permissionName);
+    verify(permissionService, times(1)).createPermission(permission);
   }
 }

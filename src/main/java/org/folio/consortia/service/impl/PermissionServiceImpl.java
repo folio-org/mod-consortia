@@ -16,8 +16,7 @@ public class PermissionServiceImpl implements PermissionService {
   private final PermissionsClient permissionsClient;
 
   @Override
-  public void createPermission(String permissionName) {
-    Permission permission = new Permission(permissionName);
+  public void createPermission(Permission permission) {
     permissionsClient.createPermission(permission);
   }
 }
