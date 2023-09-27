@@ -480,7 +480,8 @@
     {
       "permissionName": "consortia.inventory.share.local.instance",
       "displayName": "Inventory: Share local instance with consortium",
-      "description": "Inventory: Share local instance with consortium"
+      "description": "Inventory: Share local instance with consortium",
+      "visible": true
     },
     {
       "permissionName": "consortia.sharing-instances.item.post",
