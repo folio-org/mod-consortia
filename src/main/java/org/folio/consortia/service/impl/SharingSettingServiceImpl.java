@@ -2,6 +2,7 @@ package org.folio.consortia.service.impl;
 
 import static org.folio.consortia.utils.HelperUtils.CONSORTIUM_SETTING_SOURCE;
 import static org.folio.consortia.utils.HelperUtils.LOCAL_SETTING_SOURCE;
+import static org.folio.spring.scope.FolioExecutionScopeExecutionContextManager.getRunnableWithCurrentFolioContext;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -149,14 +150,14 @@ public class SharingSettingServiceImpl implements SharingSettingService {
       sharingSettingDeleteResponse = new SharingSettingDeleteResponse()
         .pcId(pcId);
     }
-    asyncTaskExecutor.execute(() -> {
+    asyncTaskExecutor.execute(getRunnableWithCurrentFolioContext(() -> {
       try {
         updateSettingsForFailedTenants(consortiumId, pcId, sharingSettingRequest);
       } catch (InterruptedException e) {
         log.error("Thread sleep was interrupted", e);
         Thread.currentThread().interrupt();
       }
-    });
+    }));
     return sharingSettingDeleteResponse;
   }
 
