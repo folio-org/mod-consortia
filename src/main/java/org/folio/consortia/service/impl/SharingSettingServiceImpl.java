@@ -143,22 +143,20 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     log.info("start:: The Sharing Settings for settingId '{}' and '{}' unique tenant(s) were successfully deleted from the database", sharingSettingRequest.getSettingId(), publicationDeleteRequest.getTenants().size());
 
     // we create PC request with POST and PUT Http method to create settings as a consortia-system-user
-    UUID pcId;
-    SharingSettingDeleteResponse sharingSettingDeleteResponse;
     try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId()))) {
-      pcId = publishRequest(consortiumId, publicationDeleteRequest);
-      sharingSettingDeleteResponse = new SharingSettingDeleteResponse()
-        .pcId(pcId);
+      var pcId = publishRequest(consortiumId, publicationDeleteRequest);
+      var sharingSettingDeleteResponse = new SharingSettingDeleteResponse().pcId(pcId);
+      // update sources of failed requests
+      asyncTaskExecutor.execute(getRunnableWithCurrentFolioContext(() -> {
+        try {
+          updateSettingsForFailedTenants(consortiumId, pcId, sharingSettingRequest);
+        } catch (InterruptedException e) {
+          log.error("Thread sleep was interrupted", e);
+          Thread.currentThread().interrupt();
+        }
+      }));
+      return sharingSettingDeleteResponse;
     }
-    asyncTaskExecutor.execute(getRunnableWithCurrentFolioContext(() -> {
-      try {
-        updateSettingsForFailedTenants(consortiumId, pcId, sharingSettingRequest);
-      } catch (InterruptedException e) {
-        log.error("Thread sleep was interrupted", e);
-        Thread.currentThread().interrupt();
-      }
-    }));
-    return sharingSettingDeleteResponse;
   }
 
   private UUID publishRequest(UUID consortiumId, PublicationRequest publicationRequest) {
