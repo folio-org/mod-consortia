@@ -202,10 +202,8 @@ public class SharingSettingServiceImpl implements SharingSettingService {
     publicationPutRequest.setPayload(updatedPayload);
     publicationPutRequest.setTenants(failedTenantList);
 
-    try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(folioExecutionContext.getTenantId()))) {
-      log.info("send PUT request to publication with new source in payload={} by system user of {}", LOCAL_SETTING_SOURCE, folioExecutionContext.getTenantId());
-      publishRequest(consortiumId, publicationPutRequest);
-    }
+    log.info("send PUT request to publication with new source in payload={} by system user of {}", LOCAL_SETTING_SOURCE, folioExecutionContext.getTenantId());
+    publishRequest(consortiumId, publicationPutRequest);
   }
 
   private void validateSharingSettingRequestOrThrow(UUID settingId, SharingSettingRequest sharingSettingRequest) {
