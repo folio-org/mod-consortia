@@ -10,7 +10,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.folio.consortia.config.FolioExecutionContextHelper;
 import org.folio.consortia.domain.dto.PermissionUser;
 import org.folio.consortia.domain.dto.User;
@@ -211,8 +210,8 @@ public class UserTenantServiceImpl implements UserTenantService {
 
   @Override
   public void updateShadowUsersFirstAndLastNames(UUID userId, String originalTenantId) {
-    Page<UserTenantEntity> userTenantEntities = userTenantRepository.findByUserId(userId, PageRequest.of(0, Integer.MAX_VALUE));
-    if (userTenantEntities.getTotalElements() > 0) {
+    List<UserTenantEntity> userTenantEntities = userTenantRepository.getByUserIdAndIsPrimaryFalse(userId);
+    if (CollectionUtils.isNotEmpty(userTenantEntities)) {
       String firstName;
       String lastName;
       List<String> tenantIds;
@@ -220,10 +219,7 @@ public class UserTenantServiceImpl implements UserTenantService {
         User primaryUser = userService.getById(userId);
         firstName = primaryUser.getPersonal().getFirstName();
         lastName = primaryUser.getPersonal().getLastName();
-        tenantIds = userTenantEntities.stream()
-          .map(userTenantEntity -> userTenantEntity.getTenant().getId())
-          .filter(tenantId -> !tenantId.equals(originalTenantId))
-          .toList();
+        tenantIds = userTenantEntities.stream().map(userTenantEntity -> userTenantEntity.getTenant().getId()).toList();
       }
       log.info("Updating shadow users in all tenants exist in consortia for the user: {}", userId);
       tenantIds.forEach(tenantId -> {
