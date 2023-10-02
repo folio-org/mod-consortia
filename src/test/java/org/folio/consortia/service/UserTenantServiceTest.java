@@ -213,7 +213,7 @@ class UserTenantServiceTest {
     shadowUser.getPersonal().setFirstName("notUpdatedFirstName");
     shadowUser.getPersonal().setFirstName("notUpdatedLastName");
     User updatedShadowUser = createUserEntity(userId);
-    UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "user", tenantId);
+    UserTenantEntity userTenant = createUserTenantEntity(associationId, userId, "user", "shadowTenantId");
     userTenant.setIsPrimary(false);
 
     // validation part
@@ -221,7 +221,8 @@ class UserTenantServiceTest {
     mockOkapiHeaders();
 
     // Returned object when expected parameter passed
-    when(userTenantRepository.getByUserIdAndIsPrimaryFalse(userId)).thenReturn(List.of(userTenant));
+    when(userTenantRepository.findByUserId(userId, PageRequest.of(0, Integer.MAX_VALUE)))
+      .thenReturn(new PageImpl<>(List.of(userTenant)));
     // In first call it return primary User, in second call it return shadow user.
     when(userService.getById(userId)).thenReturn(primaryUser).thenReturn(shadowUser);
     doNothing().when(userService).updateUser(updatedShadowUser);
@@ -243,7 +244,8 @@ class UserTenantServiceTest {
     mockOkapiHeaders();
 
     // Returned object when expected parameter passed
-    when(userTenantRepository.getByUserIdAndIsPrimaryFalse(userId)).thenReturn(emptyListOfUserTenantEntities);
+    when(userTenantRepository.findByUserId(userId, PageRequest.of(0, Integer.MAX_VALUE)))
+      .thenReturn(new PageImpl<>(emptyListOfUserTenantEntities));
     userTenantService.updateShadowUsersFirstAndLastNames(userId, tenantId);
 
     verify(userService, times(0)).updateUser(any());
