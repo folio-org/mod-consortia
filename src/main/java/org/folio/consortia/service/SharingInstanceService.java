@@ -27,7 +27,7 @@ public interface SharingInstanceService {
   /**
    * Get a sharing instance collection
    * @param consortiumId       the UUID of the consortium
-   * @param instanceIdentifier the UUID of the instance
+   * @param instanceId the UUID of the instance
    * @param sourceTenantId     the ID of the source tenant
    * @param targetTenantId     the ID of the target tenant
    * @param status             the status of the sharing instance
@@ -35,12 +35,12 @@ public interface SharingInstanceService {
    * @param limit              the limit
    * @return the sharing instance collection
    */
-  SharingInstanceCollection getSharingInstances(UUID consortiumId, UUID instanceIdentifier, String sourceTenantId,
+  SharingInstanceCollection getSharingInstances(UUID consortiumId, UUID instanceId, String sourceTenantId,
       String targetTenantId, Status status, Integer offset, Integer limit);
 
   /**
    * Update 'status' and 'error' fields of sharingInstance according to Kafka message payload
-   * @param promotingEvent contains 'instanceIdentifier', 'sourceTenantId', 'targetTenantId', and 'error'
+   * @param promotingEvent contains 'instanceId', 'sourceTenantId', 'targetTenantId', and 'error'
    */
   void completePromotingLocalInstance(String promotingEvent);
 }

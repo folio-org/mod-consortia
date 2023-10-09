@@ -15,7 +15,7 @@ public class SharingInstanceConverter implements Converter<SharingInstanceEntity
   public SharingInstance convert(SharingInstanceEntity source) {
     SharingInstance sharingInstance = new SharingInstance();
     sharingInstance.setId(source.getId());
-    sharingInstance.setInstanceIdentifier(source.getInstanceId());
+    sharingInstance.setInstanceId(source.getInstanceId());
     sharingInstance.setSourceTenantId(source.getSourceTenantId());
     sharingInstance.setTargetTenantId(source.getTargetTenantId());
     sharingInstance.setStatus(source.getStatus());

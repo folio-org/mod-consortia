@@ -49,8 +49,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @EnableAutoConfiguration(exclude = BatchAutoConfiguration.class)
 class SharingInstanceServiceTest {
 
-  private static final UUID instanceIdentifier = UUID.fromString("5b157ec2-8134-4363-a7b1-c9531a7c6a54");
-  private static final String EVENT_PAYLOAD = "{\"instanceIdentifier\":\"5b157ec2-8134-4363-a7b1-c9531a7c6a54\",\"sourceTenantId\":\"college\",\"targetTenantId\":\"mobius\"}";
+  private static final UUID instanceId = UUID.fromString("5b157ec2-8134-4363-a7b1-c9531a7c6a54");
+  private static final String EVENT_PAYLOAD = "{\"instanceId\":\"5b157ec2-8134-4363-a7b1-c9531a7c6a54\",\"sourceTenantId\":\"college\",\"targetTenantId\":\"mobius\"}";
   private static final Map<String, Collection<String>> headers = new HashMap<>();
   @InjectMocks
   private SharingInstanceServiceImpl sharingInstanceService;
@@ -79,8 +79,8 @@ class SharingInstanceServiceTest {
 
   @Test
   void shouldGetSharingInstanceById() {
-    SharingInstance expectedSharingInstance = createSharingInstance(ACTION_ID, instanceIdentifier, "college", "mobius");
-    SharingInstanceEntity savedSharingInstance = createSharingInstanceEntity(ACTION_ID, instanceIdentifier, "college", "mobius");
+    SharingInstance expectedSharingInstance = createSharingInstance(ACTION_ID, instanceId, "college", "mobius");
+    SharingInstanceEntity savedSharingInstance = createSharingInstanceEntity(ACTION_ID, instanceId, "college", "mobius");
 
     when(consortiumRepository.existsById(any())).thenReturn(true);
     when(conversionService.convert(any(), any())).thenReturn(toDto(savedSharingInstance));
@@ -96,8 +96,8 @@ class SharingInstanceServiceTest {
 
   @Test
   void shouldSaveSharingInstanceWhenSourceTenantNotEqualCentralTenant() throws Exception{
-    SharingInstance sharingInstance = createSharingInstance(instanceIdentifier, "college", "mobius");
-    SharingInstanceEntity savedSharingInstance = createSharingInstanceEntity(instanceIdentifier, "college", "mobius");
+    SharingInstance sharingInstance = createSharingInstance(instanceId, "college", "mobius");
+    SharingInstanceEntity savedSharingInstance = createSharingInstanceEntity(instanceId, "college", "mobius");
     String event = objectMapper.writeValueAsString(sharingInstance);
 
     when(consortiumRepository.existsById(any())).thenReturn(true);
@@ -107,10 +107,10 @@ class SharingInstanceServiceTest {
     when(sharingInstanceRepository.save(any())).thenReturn(savedSharingInstance);
     when(objectMapper.writeValueAsString(any())).thenReturn(event);
 
-    var expectedSharingInstance = createSharingInstance(instanceIdentifier, "college", "mobius");
+    var expectedSharingInstance = createSharingInstance(instanceId, "college", "mobius");
     var actualSharingInstance = sharingInstanceService.start(UUID.randomUUID(), sharingInstance);
 
-    assertThat(actualSharingInstance.getInstanceIdentifier()).isEqualTo(expectedSharingInstance.getInstanceIdentifier());
+    assertThat(actualSharingInstance.getInstanceId()).isEqualTo(expectedSharingInstance.getInstanceId());
     assertThat(actualSharingInstance.getSourceTenantId()).isEqualTo(expectedSharingInstance.getSourceTenantId());
     assertThat(actualSharingInstance.getTargetTenantId()).isEqualTo(expectedSharingInstance.getTargetTenantId());
 
@@ -120,7 +120,7 @@ class SharingInstanceServiceTest {
 
   @Test
   void shouldSaveSharingInstanceWhenSourceTenantEqualsCentralTenantAndGetInstanceThrowsException() {
-    SharingInstance sharingInstance = createSharingInstance(instanceIdentifier, "mobius", "college");
+    SharingInstance sharingInstance = createSharingInstance(instanceId, "mobius", "college");
     SharingInstanceEntity sharingInstanceEntity = new SharingInstanceEntity();
 
     // skip validation part
@@ -144,7 +144,7 @@ class SharingInstanceServiceTest {
 
   @Test
   void shouldSaveSharingInstanceWhenSourceTenantEqualsCentralTenantAndPostInstanceThrowsException() throws JsonProcessingException {
-    SharingInstance sharingInstance = createSharingInstance(instanceIdentifier, "mobius", "college");
+    SharingInstance sharingInstance = createSharingInstance(instanceId, "mobius", "college");
     SharingInstanceEntity sharingInstanceEntity = new SharingInstanceEntity();
 
     // skip validation part
@@ -174,7 +174,7 @@ class SharingInstanceServiceTest {
 
   @Test
   void shouldSaveSharingInstanceWhenSourceTenantEqualsCentralTenantAndAllRequestsSuccessful() throws JsonProcessingException {
-    SharingInstance sharingInstance = createSharingInstance(instanceIdentifier, "mobius", "college");
+    SharingInstance sharingInstance = createSharingInstance(instanceId, "mobius", "college");
     SharingInstanceEntity sharingInstanceEntity = new SharingInstanceEntity();
 
     // skip validation part
@@ -205,7 +205,7 @@ class SharingInstanceServiceTest {
 
   @Test
   void shouldPromoteSharingInstanceWithCompleteStatus() throws JsonProcessingException {
-    SharingInstance sharingInstance = createSharingInstance(instanceIdentifier, "college", "mobius");
+    SharingInstance sharingInstance = createSharingInstance(instanceId, "college", "mobius");
     SharingInstanceEntity sharingInstanceEntity = new SharingInstanceEntity();
 
     when(tenantService.getCentralTenantId()).thenReturn("mobius");
@@ -222,7 +222,7 @@ class SharingInstanceServiceTest {
 
   @Test
   void shouldPromoteSharingInstanceWithErrorStatus() throws JsonProcessingException {
-    SharingInstance sharingInstance = createSharingInstance(instanceIdentifier, "college", "mobius");
+    SharingInstance sharingInstance = createSharingInstance(instanceId, "college", "mobius");
     sharingInstance.setError("Promotion failed");
     SharingInstanceEntity sharingInstanceEntity = new SharingInstanceEntity();
 
@@ -250,7 +250,7 @@ class SharingInstanceServiceTest {
 
   @Test
   void shouldThrowExceptionWhenTryingToPostSharingInstanceWithMemberTenants() {
-    SharingInstance sharingInstance = createSharingInstance(instanceIdentifier, "university", "college");
+    SharingInstance sharingInstance = createSharingInstance(instanceId, "university", "college");
     when(consortiumRepository.existsById(any())).thenReturn(true);
     doNothing().when(tenantService).checkTenantExistsOrThrow(anyString());
     when(tenantService.getCentralTenantId()).thenReturn("mobius");
@@ -261,7 +261,7 @@ class SharingInstanceServiceTest {
 
   @Test
   void shouldNotPromoteSharingInstanceWhenTargetTenantDoesNotEqualCentralTenant() throws JsonProcessingException {
-    SharingInstance sharingInstance = createSharingInstance(instanceIdentifier, "college", "mobius");
+    SharingInstance sharingInstance = createSharingInstance(instanceId, "college", "mobius");
 
     when(tenantService.getCentralTenantId()).thenReturn("college");
     doNothing().when(tenantService).checkTenantExistsOrThrow(anyString());
@@ -275,7 +275,7 @@ class SharingInstanceServiceTest {
 
   @Test
   void shouldNotPromoteSharingInstanceWhenSharingInstanceDoesNotExist() throws JsonProcessingException {
-    SharingInstance sharingInstance = createSharingInstance(instanceIdentifier, "college", "mobius");
+    SharingInstance sharingInstance = createSharingInstance(instanceId, "college", "mobius");
 
     when(tenantService.getCentralTenantId()).thenReturn("mobius");
     doNothing().when(tenantService).checkTenantExistsOrThrow(anyString());
@@ -291,7 +291,7 @@ class SharingInstanceServiceTest {
   private SharingInstance toDto(SharingInstanceEntity entity) {
     SharingInstance sharingInstance = new SharingInstance();
     sharingInstance.setId(entity.getId());
-    sharingInstance.setInstanceIdentifier(entity.getInstanceId());
+    sharingInstance.setInstanceId(entity.getInstanceId());
     sharingInstance.setSourceTenantId(entity.getSourceTenantId());
     sharingInstance.setTargetTenantId(entity.getTargetTenantId());
     sharingInstance.setStatus(entity.getStatus());

@@ -67,7 +67,7 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
   @SneakyThrows
   @Transactional
   public SharingInstance start(UUID consortiumId, SharingInstance sharingInstance) {
-    log.debug("start:: Trying to start instance sharing with instanceIdentifier: {}, consortiumId: {}", sharingInstance.getInstanceIdentifier(), consortiumId);
+    log.debug("start:: Trying to start instance sharing with instanceId: {}, consortiumId: {}", sharingInstance.getInstanceId(), consortiumId);
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
 
     String centralTenantId = tenantService.getCentralTenantId();
@@ -78,14 +78,14 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
     if (Objects.equals(centralTenantId, sourceTenantId)) {
       JsonNode inventoryInstance;
 
-      try (var context = new FolioExecutionContextSetter(prepareContextForTenant(sourceTenantId, folioModuleMetadata, folioExecutionContext))) {
-        inventoryInstance = inventoryService.getById(sharingInstance.getInstanceIdentifier());
+      try (var ignored = new FolioExecutionContextSetter(prepareContextForTenant(sourceTenantId, folioModuleMetadata, folioExecutionContext))) {
+        inventoryInstance = inventoryService.getById(sharingInstance.getInstanceId());
       } catch (Exception ex) {
-        log.error("start:: error when getting instance by id: {}", sharingInstance.getInstanceIdentifier(), ex);
+        log.error("start:: error when getting instance by id: {}", sharingInstance.getInstanceId(), ex);
         return updateFieldsAndSaveInCaseOfException(sharingInstance, GET_INSTANCE_EXCEPTION_MSG, ex);
       }
 
-      try (var context = new FolioExecutionContextSetter(prepareContextForTenant(targetTenantId, folioModuleMetadata, folioExecutionContext))) {
+      try (var ignored = new FolioExecutionContextSetter(prepareContextForTenant(targetTenantId, folioModuleMetadata, folioExecutionContext))) {
         String source = switch (inventoryInstance.get("source").asText().toLowerCase()) {
           case "folio" -> CONSORTIUM_FOLIO_INSTANCE_SOURCE;
           case "marc" -> CONSORTIUM_MARC_INSTANCE_SOURCE;
@@ -94,7 +94,7 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
         var updatedInventoryInstance = ((ObjectNode) inventoryInstance).set("source", new TextNode(source));
         inventoryService.saveInstance(updatedInventoryInstance);
       } catch (Exception ex) {
-        log.error("start:: error when posting instance with id: {}", sharingInstance.getInstanceIdentifier(), ex);
+        log.error("start:: error when posting instance with id: {}", sharingInstance.getInstanceId(), ex);
         return updateFieldsAndSaveInCaseOfException(sharingInstance, POST_INSTANCE_EXCEPTION_MSG, ex);
       }
 
@@ -112,12 +112,12 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
   }
 
   @Override
-  public SharingInstanceCollection getSharingInstances(UUID consortiumId, UUID instanceIdentifier, String sourceTenantId,
+  public SharingInstanceCollection getSharingInstances(UUID consortiumId, UUID instanceId, String sourceTenantId,
       String targetTenantId, Status status, Integer offset, Integer limit) {
-    log.debug("getSharingInstances:: parameters consortiumId: {}, instanceIdentifier: {}, sourceTenantId: {}, targetTenantId: {}, status: {}.",
-      consortiumId, instanceIdentifier, sourceTenantId, targetTenantId, status);
+    log.debug("getSharingInstances:: parameters consortiumId: {}, instanceId: {}, sourceTenantId: {}, targetTenantId: {}, status: {}.",
+      consortiumId, instanceId, sourceTenantId, targetTenantId, status);
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    var specification = constructSpecification(instanceIdentifier, sourceTenantId, targetTenantId, status);
+    var specification = constructSpecification(instanceId, sourceTenantId, targetTenantId, status);
 
     var sharingInstancePage = sharingInstanceRepository.findAll(specification, PageRequest.of(offset, limit));
     var result = new SharingInstanceCollection();
@@ -144,12 +144,12 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
         return;
       }
 
-      var specification = constructSpecification(promotingEvent.getInstanceIdentifier(), sourceTenantId, targetTenantId, null);
+      var specification = constructSpecification(promotingEvent.getInstanceId(), sourceTenantId, targetTenantId, null);
       var optionalSharingInstance = sharingInstanceRepository.findOne(specification);
 
       if (optionalSharingInstance.isEmpty()) {
-        log.warn("completePromotingLocalInstance:: sharingInstance with instanceIdentifier: {}, sourceTenantId: {}, targetTenantId: {} does not exist",
-          promotingEvent.getInstanceIdentifier(), sourceTenantId, targetTenantId);
+        log.warn("completePromotingLocalInstance:: sharingInstance with instanceId: {}, sourceTenantId: {}, targetTenantId: {} does not exist",
+          promotingEvent.getInstanceId(), sourceTenantId, targetTenantId);
         return;
       }
 
@@ -162,7 +162,7 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
       }
 
       sharingInstanceRepository.save(promotedSharingInstance);
-      log.info("completePromotingLocalInstance:: status of sharingInstance with instanceIdentifier: {}, sourceTenantId: {}, targetTenantId: {} " +
+      log.info("completePromotingLocalInstance:: status of sharingInstance with instanceId: {}, sourceTenantId: {}, targetTenantId: {} " +
         "has been updated to: {}", promotedSharingInstance.getInstanceId(), sourceTenantId, targetTenantId, promotedSharingInstance.getStatus());
     } catch (Exception e) {
       log.error("completePromotingLocalInstance:: exception occurred while promoting local sharing instance", e);
@@ -185,7 +185,7 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
   private SharingInstanceEntity toEntity(SharingInstance dto) {
     SharingInstanceEntity entity = new SharingInstanceEntity();
     entity.setId(UUID.randomUUID());
-    entity.setInstanceId(dto.getInstanceIdentifier());
+    entity.setInstanceId(dto.getInstanceId());
     entity.setSourceTenantId(dto.getSourceTenantId());
     entity.setTargetTenantId(dto.getTargetTenantId());
     entity.setStatus(dto.getStatus());

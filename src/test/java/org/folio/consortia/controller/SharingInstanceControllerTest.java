@@ -62,7 +62,7 @@ class SharingInstanceControllerTest extends BaseIT {
 
   @ParameterizedTest
   @ValueSource(strings = {
-    "{\"instanceIdentifier\":\"111841e3-e6fb-4191-8fd8-5674a5107c33\",\"sourceTenantId\":\"college\", \"targetTenantId\":\"mobius\"}"
+    "{\"instanceId\":\"111841e3-e6fb-4191-8fd8-5674a5107c33\",\"sourceTenantId\":\"college\", \"targetTenantId\":\"mobius\"}"
   })
   void shouldSaveSharingInstance(String body) throws Exception {
     SharingInstance sharingInstance = createSharingInstance(INSTANCE_ID, "college", "mobius");
@@ -80,7 +80,7 @@ class SharingInstanceControllerTest extends BaseIT {
         .accept(MediaType.APPLICATION_JSON))
       .andDo(print())
       .andExpect(status().isCreated())
-      .andExpect(jsonPath("$.instanceIdentifier").value(String.valueOf(INSTANCE_ID)))
+      .andExpect(jsonPath("$.instanceId").value(String.valueOf(INSTANCE_ID)))
       .andExpect(jsonPath("$.sourceTenantId").value("college"))
       .andExpect(jsonPath("$.targetTenantId").value("mobius"));
   }

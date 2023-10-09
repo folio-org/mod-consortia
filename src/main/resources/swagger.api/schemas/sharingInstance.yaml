@@ -5,7 +5,7 @@ SharingInstance:
     id:
       type: string
       format: uuid
-    instanceIdentifier:
+    instanceId:
       type: string
       format: uuid
     sourceTenantId:
@@ -22,7 +22,7 @@ SharingInstance:
       $ref: "common.yaml#/Metadata"
   additionalProperties: false
   required:
-    - instanceIdentifier
+    - instanceId
     - sourceTenantId
     - targetTenantId
 

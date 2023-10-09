@@ -97,7 +97,7 @@ class SharingInstanceControllerIntegrationTests extends BaseIT {
 
       // create payload
       String body = new JSONObject()
-        .appendField("instanceIdentifier", fields[0])
+        .appendField("instanceId", fields[0])
         .appendField("sourceTenantId", fields[1])
         .appendField("targetTenantId", fields[2])
         .appendField("status", fields[3])
@@ -112,7 +112,7 @@ class SharingInstanceControllerIntegrationTests extends BaseIT {
             .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").isNotEmpty())
-        .andExpect(jsonPath("$.instanceIdentifier").value(fields[0]))
+        .andExpect(jsonPath("$.instanceId").value(fields[0]))
         .andExpect(jsonPath("$.sourceTenantId").value(fields[1]))
         .andExpect(jsonPath("$.targetTenantId").value(fields[2]))
         .andExpect(jsonPath("$.status").value(fields[3]));
@@ -121,7 +121,7 @@ class SharingInstanceControllerIntegrationTests extends BaseIT {
 
   private String params(String instanceId, String sourceTenantId, String targetTenantId, String status) {
     Map<String, String> parameters = new HashMap<>();
-    parameters.put("instanceIdentifier", instanceId);
+    parameters.put("instanceId", instanceId);
     parameters.put("sourceTenantId", sourceTenantId);
     parameters.put("targetTenantId", targetTenantId);
     parameters.put("status", status);
@@ -131,7 +131,7 @@ class SharingInstanceControllerIntegrationTests extends BaseIT {
       .map(k -> k + "=" + parameters.get(k))
       .collect(Collectors.joining("&"));
 
-    return query.length() == 0 ? "" : "?" + query;
+    return query.isEmpty() ? "" : "?" + query;
   }
 
   private static class ParameterArgumentsProvider implements ArgumentsProvider {

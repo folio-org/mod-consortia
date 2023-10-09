@@ -13,7 +13,7 @@ paths:
       operationId: getSharingInstances
       parameters:
         - $ref: "#/components/parameters/consortiumId"
-        - $ref: "#/components/parameters/instanceIdentifier"
+        - $ref: "#/components/parameters/instanceId"
         - $ref: "#/components/parameters/sourceTenantId"
         - $ref: "#/components/parameters/targetTenantId"
         - $ref: "#/components/parameters/status"
@@ -138,9 +138,9 @@ components:
         $ref: "schemas/common.yaml#/uuid"
       required: true
       description: The ID of sharing instance
-    instanceIdentifier:
+    instanceId:
       in: query
-      name: instanceIdentifier
+      name: instanceId
       schema:
         $ref: "schemas/common.yaml#/uuid"
       description: The UUID of the instance

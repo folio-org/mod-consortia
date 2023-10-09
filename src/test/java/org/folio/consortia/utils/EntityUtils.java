@@ -164,29 +164,29 @@ public class EntityUtils {
     return configuration;
   }
 
-  public static SharingInstance createSharingInstance(UUID instanceIdentifier, String sourceTenantId, String targetTenantId) {
+  public static SharingInstance createSharingInstance(UUID instanceId, String sourceTenantId, String targetTenantId) {
     SharingInstance sharingInstance = new SharingInstance();
     sharingInstance.setId(ACTION_ID);
-    sharingInstance.setInstanceIdentifier(instanceIdentifier);
+    sharingInstance.setInstanceId(instanceId);
     sharingInstance.setSourceTenantId(sourceTenantId);
     sharingInstance.setTargetTenantId(targetTenantId);
     return sharingInstance;
   }
 
-  public static SharingInstance createSharingInstance(UUID actionId, UUID instanceIdentifier, String sourceTenantId,
+  public static SharingInstance createSharingInstance(UUID actionId, UUID instanceId, String sourceTenantId,
     String targetTenantId) {
     SharingInstance sharingInstance = new SharingInstance();
     sharingInstance.setId(actionId);
-    sharingInstance.setInstanceIdentifier(instanceIdentifier);
+    sharingInstance.setInstanceId(instanceId);
     sharingInstance.setSourceTenantId(sourceTenantId);
     sharingInstance.setTargetTenantId(targetTenantId);
     return sharingInstance;
   }
 
-  public static SharingInstanceEntity createSharingInstanceEntity(UUID instanceIdentifier, String sourceTenantId, String targetTenantId) {
+  public static SharingInstanceEntity createSharingInstanceEntity(UUID instanceId, String sourceTenantId, String targetTenantId) {
     SharingInstanceEntity sharingInstance = new SharingInstanceEntity();
     sharingInstance.setId(ACTION_ID);
-    sharingInstance.setInstanceId(instanceIdentifier);
+    sharingInstance.setInstanceId(instanceId);
     sharingInstance.setSourceTenantId(sourceTenantId);
     sharingInstance.setTargetTenantId(targetTenantId);
     sharingInstance.setCreatedDate(LocalDateTime.now());
@@ -194,10 +194,10 @@ public class EntityUtils {
     return sharingInstance;
   }
 
-  public static SharingInstanceEntity createSharingInstanceEntity(UUID actionId, UUID instanceIdentifier, String sourceTenantId, String targetTenantId) {
+  public static SharingInstanceEntity createSharingInstanceEntity(UUID actionId, UUID instanceId, String sourceTenantId, String targetTenantId) {
     SharingInstanceEntity sharingInstance = new SharingInstanceEntity();
     sharingInstance.setId(actionId);
-    sharingInstance.setInstanceId(instanceIdentifier);
+    sharingInstance.setInstanceId(instanceId);
     sharingInstance.setSourceTenantId(sourceTenantId);
     sharingInstance.setTargetTenantId(targetTenantId);
     sharingInstance.setCreatedDate(LocalDateTime.now());

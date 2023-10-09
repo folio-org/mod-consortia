@@ -16,11 +16,11 @@ import org.springframework.stereotype.Repository;
 public interface SharingInstanceRepository extends JpaRepository<SharingInstanceEntity, UUID>, JpaSpecificationExecutor<SharingInstanceEntity> {
 
   interface Specifications {
-    static Specification<SharingInstanceEntity> constructSpecification(UUID instanceIdentifier, String sourceTenantId,
+    static Specification<SharingInstanceEntity> constructSpecification(UUID instanceId, String sourceTenantId,
         String targetTenantId, Status status) {
       var list = new ArrayList<Specification<SharingInstanceEntity>>();
-      if (Objects.nonNull(instanceIdentifier)) {
-        list.add(by("instanceId", instanceIdentifier));
+      if (Objects.nonNull(instanceId)) {
+        list.add(by("instanceId", instanceId));
       }
       if (StringUtils.isNotEmpty(sourceTenantId)) {
         list.add(by("sourceTenantId", sourceTenantId));
