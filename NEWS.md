@@ -4,6 +4,7 @@
 The focus of this release was to implement backend logic for consortia
 
 ### Stories
+* [MODCON-108](https://issues.folio.org/browse/MODCON-108) - Secure setup of system users by default
 * [MODCON-103](https://issues.folio.org/browse/MODCON-103) - Skip patron users when migration existing users
 * [MODCON-101](https://issues.folio.org/browse/MODCON-101) - Create primary affiliation after changing user type from patron to staff/staff to patron
 * [MODCON-95](https://issues.folio.org/browse/MODCON-95) - Increase character limit of consortia member Code
