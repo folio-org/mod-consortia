@@ -281,6 +281,7 @@
             "instance-authority-links.instances.collection.put",
             "instance-authority.linking-rules.collection.get",
             "inventory-storage.authorities.collection.get",
+            "inventory-storage.instances.item.get",
             "source-storage.records.delete"
           ]
         },
@@ -492,6 +493,7 @@
       "description": "Inventory: Share local instance with consortium",
       "subPermissions": [
         "consortia.sharing-instances.item.post",
+        "consortia.sharing-instances.item.get",
         "consortia.sharing-instances.collection.get"
       ],
       "visible": true
