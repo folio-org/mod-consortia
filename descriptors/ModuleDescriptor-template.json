@@ -491,7 +491,8 @@
       "displayName": "Inventory: Share local instance with consortium",
       "description": "Inventory: Share local instance with consortium",
       "subPermissions": [
-        "consortia.sharing-instances.item.post"
+        "consortia.sharing-instances.item.post",
+        "consortia.sharing-instances.collection.get"
       ],
       "visible": true
     },
