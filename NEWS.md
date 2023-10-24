@@ -1,5 +1,11 @@
 ## 1.1.0 - Unreleased
 
+## 1.0.1 - Released (Poppy R2 2023)
+The focus of this release was to add permissions that are used during MARC instance sharing process
+
+### Bug Fixes
+* [MODCON-112](https://issues.folio.org/browse/MODCON-112) - Expand module permissions with permissions for sharing MARC instances
+
 ## 1.0.0 - Released (Poppy R2 2023)
 The focus of this release was to implement backend logic for consortia
 
