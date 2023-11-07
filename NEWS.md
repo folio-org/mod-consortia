@@ -1,7 +1,18 @@
 ## 1.1.0 - Unreleased
 
+## 1.0.2 - Released (Poppy R2 2023)
+
+The focus of this release was to secure setup of system users by default
+
+[Full Changelog](https://github.com/folio-org/mod-consortia/compare/v1.1.0...v1.2.0)
+
+### Stories
+* [MODCON-114](https://issues.folio.org/browse/MODCON-114) - Secure setup of system users by default
+
 ## 1.0.1 - Released (Poppy R2 2023)
 The focus of this release was to add permissions that are used during MARC instance sharing process
+
+[Full Changelog](https://github.com/folio-org/mod-consortia/compare/v1.0.0...v1.1.0)
 
 ### Bug Fixes
 * [MODCON-112](https://issues.folio.org/browse/MODCON-112) - Expand module permissions with permissions for sharing MARC instances
