@@ -1,7 +1,6 @@
 ## 1.1.0 - Unreleased
 
 ## 1.0.2 - Released (Poppy R2 2023)
-
 The focus of this release was to secure setup of system users by default
 
 [Full Changelog](https://github.com/folio-org/mod-consortia/compare/v1.0.1...v1.0.2)
