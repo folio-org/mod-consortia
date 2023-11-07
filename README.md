@@ -100,6 +100,11 @@ requires and provides, the permissions, and the additional module metadata.
 | KAFKA_PORT  |     9092      | Kafka broker port                                                                                                                                      |
 | ENV         |     folio     | Logical name of the deployment, must be set if Kafka/Elasticsearch are shared for environments, `a-z (any case)`, `0-9`, `-`, `_` symbols only allowed |
 
+### System user configuration
+The module uses system user to communicate with other modules.
+For production deployments you MUST specify the password for this system user via env variable:
+`SYSTEM_USER_PASSWORD=<password>`.
+
 ## Additional information
 
 ### Issue tracker
