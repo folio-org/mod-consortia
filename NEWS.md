@@ -1,5 +1,13 @@
 ## 1.1.0 - Unreleased
 
+## 1.0.3 - Released (Poppy R2 2023)
+The focus of this release was to add permissions that are used during instance sharing and to upgrade folio-spring-base to v7.2.2
+
+[Full Changelog](https://github.com/folio-org/mod-consortia/compare/v1.0.2...v1.0.3)
+
+### Stories
+* [MODCON-118](https://issues.folio.org/browse/MODCON-118) - Add sub permission to consortia.inventory.share.local.instance
+
 ## 1.0.2 - Released (Poppy R2 2023)
 The focus of this release was to secure setup of system users by default
 
