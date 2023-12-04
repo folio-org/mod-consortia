@@ -53,7 +53,7 @@ public class UserServiceImpl implements UserService {
   public User getById(UUID userId) {
     try {
       log.info("Getting user by userId {}.", userId);
-      return usersClient.getUsersByUserId(String.valueOf(userId));
+      return usersClient.getUserById(String.valueOf(userId));
     } catch (FeignException.NotFound e) {
       log.info("User with userId {} does not exist in schema, going to use new one", userId);
       return new User();
@@ -86,7 +86,7 @@ public class UserServiceImpl implements UserService {
     try (var ignored = new FolioExecutionContextSetter(prepareContextForTenant(tenantId, folioModuleMetadata, folioExecutionContext))) {
       log.info("prepareShadowUser:: Try to get user of tenant={} ", folioExecutionContext.getTenantId());
 
-      var realUser = usersClient.getUsersByUserId(userId.toString());
+      var realUser = usersClient.getUserById(userId.toString());
       if (Objects.isNull(realUser.getId())) {
         log.warn("Could not find real user with id: {} in his home tenant: {}", userId.toString(), tenantId);
         throw new ResourceNotFoundException(USER_ID, userId.toString());

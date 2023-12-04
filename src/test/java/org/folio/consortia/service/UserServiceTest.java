@@ -63,15 +63,16 @@ class UserServiceTest {
 
   @Test
   void shouldThrowNotFoundWhilePrepareShadowUser() {
-    when(usersClient.getUsersByUserId(any())).thenReturn(new User());
+    when(usersClient.getUserById(any())).thenReturn(new User());
     mockOkapiHeaders();
 
-    assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class, () -> userService.prepareShadowUser(UUID.randomUUID(), ""));
+    assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class,
+      () -> userService.prepareShadowUser(UUID.randomUUID(), ""));
   }
 
   @Test
   void shouldPrepareShadowUser() {
-    when(usersClient.getUsersByUserId(any())).thenReturn(createUserEntity(true));
+    when(usersClient.getUserById(any())).thenReturn(createUserEntity(true));
     mockOkapiHeaders();
 
     User shadow = userService.prepareShadowUser(UUID.randomUUID(), "diku");
