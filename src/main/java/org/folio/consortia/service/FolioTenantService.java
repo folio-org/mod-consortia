@@ -94,11 +94,15 @@ public class FolioTenantService extends TenantService {
   }
 
   private void updateLocalTenantShadowSystemUsers() {
-    log.debug("updateLocalTenantShadowSystemUsers:: Trying to update shadow user permissions");
+    if (!consortiaConfigurationService.isCentralTenantConfigurationExists()) {
+      return;
+    }
+
+    log.debug("updateLocalTenantShadowSystemUsers:: Trying  to update shadow user permissions");
     String requestingTenant = folioExecutionContext.getTenantId();
     String centralTenantId = consortiaConfigurationService.getCentralTenantId(requestingTenant);
 
-    if (centralTenantId == null || Objects.equals(requestingTenant, centralTenantId)) {
+    if (Objects.equals(requestingTenant, centralTenantId)) {
       // it is first time module is being installed, because central tenant id is not exist or module updating on central tenant
       log.info("updateLocalTenantShadowSystemUsers:: the first time module is being installed for tenant={}", requestingTenant);
       return;
