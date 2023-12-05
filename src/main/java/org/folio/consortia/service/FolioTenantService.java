@@ -104,8 +104,7 @@ public class FolioTenantService extends TenantService {
     String centralTenantId = consortiaConfigurationService.getCentralTenantId(requestingTenant);
 
     if (Objects.equals(requestingTenant, centralTenantId)) {
-      // it is first time module is being installed, because central tenant id is not exist or module updating on central tenant
-      log.info("updateLocalTenantShadowSystemUsers:: consortia module is being installed on central tenant, no any action required");
+      log.info("updateLocalTenantShadowSystemUsers:: consortia module is being installed on central tenant, no action required");
       return;
     }
 
@@ -129,9 +128,9 @@ public class FolioTenantService extends TenantService {
     var shadowSystemUserPermissionList = permissionsClient.getUserPermissions(shadowSystemUserId).getResult();
 
     shadowSystemUserPermissionList.forEach(systemUserPermissionList::remove);
-    systemUserPermissionList.forEach((permission) -> {
-      permissionsClient.addPermission(shadowSystemUserId, new PermissionsClient.Permission(permission));
-    });
+    systemUserPermissionList.forEach(permission ->
+      permissionsClient.addPermission(shadowSystemUserId, new PermissionsClient.Permission(permission))
+    );
     log.info("Permissions assigned to shadow system user: [{}] of tenant: {}", systemUserPermissionList, requestingTenant);
   }
 
