@@ -17,7 +17,6 @@ import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.client.PermissionsClient;
 import org.folio.spring.liquibase.FolioSpringLiquibase;
 import org.folio.spring.scope.FolioExecutionContextSetter;
-import org.folio.spring.service.PrepareSystemUserService;
 import org.folio.spring.service.TenantService;
 import org.folio.tenant.domain.dto.TenantAttributes;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,12 +36,12 @@ public class FolioTenantService extends TenantService {
   private final FolioExecutionContext folioExecutionContext;
   private final FolioExecutionContextHelper contextHelper;
   private final UserService userService;
-  private final PermissionUserService permissionUserService;
   private final PermissionsClient permissionsClient;
   private final ConsortiaConfigurationService consortiaConfigurationService;
 
   @Value("${folio.system-user.username}")
   private String systemUserUsername;
+
   private static final String ORIGINAL_TENANT_ID_NAME = "originalTenantId";
   private static final CustomField ORIGINAL_TENANT_ID_CUSTOM_FIELD = CustomField.builder()
     .name(ORIGINAL_TENANT_ID_NAME)
@@ -55,15 +54,13 @@ public class FolioTenantService extends TenantService {
   public FolioTenantService(JdbcTemplate jdbcTemplate, KafkaService kafkaService, FolioExecutionContext context,
                             FolioSpringLiquibase folioSpringLiquibase, CustomFieldService customFieldService,
                             FolioExecutionContext folioExecutionContext, FolioExecutionContextHelper contextHelper,
-                            UserService userService, PermissionUserService permissionUserService,
-                            PermissionsClient permissionsClient, ConsortiaConfigurationService consortiaConfigurationService) {
+                            UserService userService, PermissionsClient permissionsClient, ConsortiaConfigurationService consortiaConfigurationService) {
     super(jdbcTemplate, context, folioSpringLiquibase);
     this.kafkaService = kafkaService;
     this.customFieldService = customFieldService;
     this.folioExecutionContext = folioExecutionContext;
     this.contextHelper = contextHelper;
     this.userService = userService;
-    this.permissionUserService = permissionUserService;
     this.permissionsClient = permissionsClient;
     this.consortiaConfigurationService = consortiaConfigurationService;
   }
@@ -101,11 +98,11 @@ public class FolioTenantService extends TenantService {
     String requestingTenant = folioExecutionContext.getTenantId();
     String centralTenantId = consortiaConfigurationService.getCentralTenantId(requestingTenant);
 
-//    if (centralTenantId == null || Objects.equals(requestingTenant, centralTenantId)) {
+    if (centralTenantId == null || Objects.equals(requestingTenant, centralTenantId)) {
       // it is first time module is being installed, because central tenant id is not exist or module updating on central tenant
-//      log.info("updateLocalTenantShadowSystemUsers:: the first time module is being installed for tenant={}", requestingTenant);
-//      return;
-//    }
+      log.info("updateLocalTenantShadowSystemUsers:: the first time module is being installed for tenant={}", requestingTenant);
+      return;
+    }
 
     // Fetch system user and its permission lists from central tenant
     User centralSystemUser;
