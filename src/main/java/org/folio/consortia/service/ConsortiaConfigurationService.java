@@ -29,7 +29,7 @@ public interface ConsortiaConfigurationService {
 
   /**
    * Check if there is any central tenant
-   * @return boolean
+   * @return boolean value based one whether central tenant configuration exists or not
    */
   boolean isCentralTenantConfigurationExists();
 }
