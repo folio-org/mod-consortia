@@ -3,6 +3,7 @@ package org.folio.consortia.service;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
@@ -95,11 +96,11 @@ public class FolioTenantService extends TenantService {
 
   private void updateLocalTenantShadowSystemUsers() {
     if (!consortiaConfigurationService.isCentralTenantConfigurationExists()) {
-      log.info("The first time module is being installed");
+      log.info("The first time module is being installed, so skipping phase of updating shadow user permission");
       return;
     }
 
-    log.debug("updateLocalTenantShadowSystemUsers:: Trying  to update shadow user permissions");
+    log.debug("updateLocalTenantShadowSystemUsers:: Trying to update shadow user permissions");
     String requestingTenant = folioExecutionContext.getTenantId();
     String centralTenantId = consortiaConfigurationService.getCentralTenantId(requestingTenant);
 
@@ -114,24 +115,18 @@ public class FolioTenantService extends TenantService {
     try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(centralTenantId))) {
       centralSystemUser = userService.getByUsername(systemUserUsername)
         .orElseThrow(() -> new ResourceNotFoundException("systemUserUsername", systemUserUsername));
-
       systemUserPermissionList = permissionsClient.getUserPermissions(centralSystemUser.getId()).getResult();
     }
 
-    var shadowCentralSystemUser = userService.getByUsername(centralSystemUser.getId());
-    if (shadowCentralSystemUser.isEmpty()) {
-      log.info("updateLocalTenantShadowSystemUsers:: Tenant has not been saved in central tenant yet, so no action required");
-      return;
-    }
-
-    String shadowSystemUserId = shadowCentralSystemUser.get().getId();
+    var shadowCentralSystemUser = userService.getById(UUID.fromString(centralSystemUser.getId()));
+    String shadowSystemUserId = shadowCentralSystemUser.getId();
     var shadowSystemUserPermissionList = permissionsClient.getUserPermissions(shadowSystemUserId).getResult();
 
     shadowSystemUserPermissionList.forEach(systemUserPermissionList::remove);
     systemUserPermissionList.forEach(permission ->
       permissionsClient.addPermission(shadowSystemUserId, new PermissionsClient.Permission(permission))
     );
-    log.info("Permissions assigned to shadow system user: [{}] of tenant: {}", systemUserPermissionList, requestingTenant);
+    log.info("updateLocalTenantShadowSystemUsers:: Permissions assigned to shadow system user: [{}] of tenant: {}", systemUserPermissionList, requestingTenant);
   }
 
   private void createOriginalTenantIdCustomField() {
