@@ -94,6 +94,13 @@ public class FolioTenantService extends TenantService {
     );
   }
 
+  /**
+   * In second time installing of module, method looks for system user permission changes
+   * if there is new changes in system user of central tenant,
+   * permission of shadow users will be updated with same ones with central system user in requesting tenant.
+   * This functionality is required by sharing settings because operation from central tenant context use system users,
+   * so each shadow users permissions also should be updated
+   */
   private void updateLocalTenantShadowSystemUsers() {
     if (!consortiaConfigurationService.isCentralTenantConfigurationExists()) {
       log.info("The first time module is being installed, so skipping phase of updating shadow user permission");
