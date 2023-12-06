@@ -125,15 +125,17 @@ public class FolioTenantService extends TenantService {
       systemUserPermissionList = permissionsClient.getUserPermissions(centralSystemUser.getId()).getResult();
     }
 
-    var shadowCentralSystemUser = userService.getById(UUID.fromString(centralSystemUser.getId()));
-    String shadowSystemUserId = shadowCentralSystemUser.getId();
-    var shadowSystemUserPermissionList = permissionsClient.getUserPermissions(shadowSystemUserId).getResult();
+    try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(requestingTenant))) {
+      var shadowCentralSystemUser = userService.getById(UUID.fromString(centralSystemUser.getId()));
+      String shadowSystemUserId = shadowCentralSystemUser.getId();
+      var shadowSystemUserPermissionList = permissionsClient.getUserPermissions(shadowSystemUserId).getResult();
 
-    shadowSystemUserPermissionList.forEach(systemUserPermissionList::remove);
-    systemUserPermissionList.forEach(permission ->
-      permissionsClient.addPermission(shadowSystemUserId, new PermissionsClient.Permission(permission))
-    );
-    log.info("updateLocalTenantShadowSystemUsers:: Permissions assigned to shadow system user: [{}] of tenant: {}", systemUserPermissionList, requestingTenant);
+      shadowSystemUserPermissionList.forEach(systemUserPermissionList::remove);
+      systemUserPermissionList.forEach(permission ->
+        permissionsClient.addPermission(shadowSystemUserId, new PermissionsClient.Permission(permission))
+      );
+      log.info("updateLocalTenantShadowSystemUsers:: Permissions assigned to shadow system user: [{}] of tenant: {}", systemUserPermissionList, requestingTenant);
+    }
   }
 
   private void createOriginalTenantIdCustomField() {
