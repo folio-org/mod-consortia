@@ -27,12 +27,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
 
 
 @SpringBootTest
-@TestPropertySource(locations="classpath:application-test.yml")
-public class FolioTenantServiceTest {
+class FolioTenantServiceTest {
   private final String REQUESTING_TENANT = "diku";
 
   @InjectMocks
@@ -51,7 +49,6 @@ public class FolioTenantServiceTest {
   ConsortiaConfigurationService consortiaConfigurationService;
   @Mock
   UserService userService;
-
 
   @Test
   void shouldUpdatePermissionList() {
@@ -149,10 +146,9 @@ public class FolioTenantServiceTest {
     verify(customFieldService, times(0)).createCustomField(any());
   }
 
-
   private void mockOkapiHeaders() {
     when(contextHelper.getSystemUserFolioExecutionContext(anyString())).thenReturn(folioExecutionContext);
-    when(folioExecutionContext.getTenantId()).thenReturn("diku");
+    when(folioExecutionContext.getTenantId()).thenReturn(REQUESTING_TENANT);
     when(folioExecutionContext.getOkapiHeaders()).thenReturn(createOkapiHeaders());
   }
 
