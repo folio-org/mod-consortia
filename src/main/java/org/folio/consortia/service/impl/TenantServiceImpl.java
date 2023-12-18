@@ -193,13 +193,27 @@ public class TenantServiceImpl implements TenantService {
   @Transactional
   public void delete(UUID consortiumId, String tenantId) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    checkTenantExistsOrThrow(tenantId);
+    var tenant = tenantRepository.findById(tenantId);
+
+    if (tenant.isEmpty()) {
+      throw new ResourceNotFoundException("id", tenantId);
+    }
     if (userTenantRepository.existsByTenantId(tenantId)) {
       throw new IllegalArgumentException(TENANT_HAS_ACTIVE_USER_ASSOCIATIONS_ERROR_MSG);
     }
+    if (tenant.get().getIsCentral()) {
+      throw new IllegalArgumentException(String.format("central tenant %s cannot be deleted", tenantId));
+    }
+
+    var softDeletedTenant = tenant.get();
+    softDeletedTenant.setIsDeleted(true);
     // clean publish coordinator tables first, because after tenant removal it will be ignored by cleanup service
     cleanupService.clearPublicationTables();
-    tenantRepository.deleteById(tenantId);
+    tenantRepository.save(softDeletedTenant);
+
+    try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(tenantId))) {
+      userTenantsClient.deleteUserTenants();
+    }
   }
 
   private Tenant saveTenant(UUID consortiumId, Tenant tenantDto, SetupStatusEnum setupStatus) {
