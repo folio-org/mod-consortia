@@ -18,6 +18,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -27,6 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.folio.consortia.client.ConsortiaConfigurationClient;
 import org.folio.consortia.client.PermissionsClient;
@@ -56,7 +60,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -64,9 +67,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @EnableAutoConfiguration(exclude = BatchAutoConfiguration.class)
@@ -139,7 +139,7 @@ class TenantServiceTest {
       .thenReturn(new PageImpl<>(tenantEntityList, PageRequest.of(offset, limit), tenantEntityList.size()));
 
     var tenantCollection = tenantService.get(consortiumId, 0, 10);
-    Assertions.assertEquals(2, tenantCollection.getTotalRecords());
+    assertEquals(2, tenantCollection.getTotalRecords());
   }
 
   @Test
@@ -156,7 +156,7 @@ class TenantServiceTest {
     when(tenantRepository.findByConsortiumId(consortiumId)).thenReturn(tenantEntityList);
 
     var allTenants = tenantService.getAll(consortiumId);
-    Assertions.assertEquals(2, allTenants.getTotalRecords());
+    assertEquals(2, allTenants.getTotalRecords());
   }
 
   @Test
@@ -198,7 +198,7 @@ class TenantServiceTest {
     verify(userService, times(1)).getByUsername(any());
     verify(lockService).lockTenantSetupWithinTransaction();
 
-    Assertions.assertEquals(tenant, tenant1);
+    assertEquals(tenant, tenant1);
   }
 
   @Test
@@ -244,7 +244,7 @@ class TenantServiceTest {
     verify(userService, never()).createUser(any());
     verify(permissionUserService, never()).createWithPermissionsFromFile(any(), any());
 
-    Assertions.assertEquals(tenant, tenant1);
+    assertEquals(tenant, tenant1);
   }
 
 
@@ -272,32 +272,28 @@ class TenantServiceTest {
   void shouldDeleteTenant() {
     UUID consortiumId = UUID.randomUUID();
     String tenantId = "diku";
+    var tenant = createTenantEntity(tenantId);
+    var deletingTenant = createTenantEntity(tenantId);
+    deletingTenant.setIsDeleted(true);
 
     doNothing().when(consortiumService).checkConsortiumExistsOrThrow(consortiumId);
-    when(tenantRepository.existsById(any())).thenReturn(true);
     doNothing().when(cleanupService).clearPublicationTables();
-    doNothing().when(tenantRepository).deleteById(tenantId);
+    doReturn(deletingTenant).when(tenantRepository).save(deletingTenant);
+    when(tenantRepository.findById(tenant.getId())).thenReturn(Optional.of(tenant));
+    doReturn(folioExecutionContext).when(contextHelper).getSystemUserFolioExecutionContext(anyString());
+    when(folioExecutionContext.getTenantId()).thenReturn("diku");
+    Map<String, Collection<String>> okapiHeaders = new HashMap<>();
+    okapiHeaders.put(XOkapiHeaders.TENANT, List.of("diku"));
+    when(folioExecutionContext.getOkapiHeaders()).thenReturn(okapiHeaders);
 
     tenantService.delete(consortiumId, tenantId);
 
     // Assert
-    Mockito.verify(consortiumService).checkConsortiumExistsOrThrow(consortiumId);
-    Mockito.verify(tenantRepository).existsById(tenantId);
-    Mockito.verify(tenantRepository).deleteById(tenantId);
-  }
-
-  @Test()
-  void testDeleteWithAssociation() {
-    UUID consortiumId = UUID.randomUUID();
-    String tenantId = "123";
-
-    // Mock repository method calls
-    Mockito.when(tenantRepository.existsById(tenantId)).thenReturn(true);
-    Mockito.when(userTenantRepository.existsByTenantId(tenantId)).thenReturn(true);
-
-    // Call the method
-    assertThrows(IllegalArgumentException.class, () ->
-      tenantService.delete(consortiumId, tenantId));
+    verify(consortiumService).checkConsortiumExistsOrThrow(consortiumId);
+    verify(tenantRepository).findById(tenantId);
+    verify(tenantRepository).save(deletingTenant);
+    verify(cleanupService).clearPublicationTables();
+    verify(userTenantsClient).deleteUserTenants();
   }
 
   @Test
@@ -312,6 +308,29 @@ class TenantServiceTest {
     assertThrows(ResourceNotFoundException.class, () ->
       tenantService.delete(consortiumId, tenantId));
   }
+
+  @Test
+  void shouldThrowErrorWhenDeletingCentralTenant(){
+    UUID consortiumId = UUID.randomUUID();
+    String tenantId = "college";
+    var tenant = createTenantEntity(tenantId);
+    tenant.setIsCentral(true);
+    var deletingTenant = createTenantEntity(tenantId);
+    deletingTenant.setIsDeleted(true);
+
+    doNothing().when(consortiumService).checkConsortiumExistsOrThrow(consortiumId);
+    when(tenantRepository.findById(tenant.getId())).thenReturn(Optional.of(tenant));
+
+    // Assert
+    assertThrows(java.lang.IllegalArgumentException.class, () ->
+      tenantService.delete(consortiumId, tenantId));
+
+    verify(consortiumService).checkConsortiumExistsOrThrow(consortiumId);
+    verify(tenantRepository).findById(tenantId);
+    verifyNoInteractions(cleanupService);
+    verifyNoInteractions(userTenantsClient);
+  }
+
 
   @Test
   void shouldThrowExceptionWhileSavingLocalTenantWithoutAdminUserId() {

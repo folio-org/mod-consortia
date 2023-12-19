@@ -197,7 +197,7 @@ public class TenantServiceImpl implements TenantService {
       throw new ResourceNotFoundException("id", tenantId);
     }
     if (tenant.get().getIsCentral()) {
-      throw new IllegalArgumentException(String.format("central tenant %s cannot be deleted", tenantId));
+      throw new IllegalArgumentException(String.format("central tenant '%s' cannot be deleted", tenantId));
     }
 
     var softDeletedTenant = tenant.get();
@@ -206,9 +206,9 @@ public class TenantServiceImpl implements TenantService {
     cleanupService.clearPublicationTables();
     tenantRepository.save(softDeletedTenant);
 
-//    try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(tenantId))) {
-//      userTenantsClient.deleteUserTenants();
-//    }
+    try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(tenantId))) {
+      userTenantsClient.deleteUserTenants();
+    }
   }
 
   private Tenant saveTenant(UUID consortiumId, Tenant tenantDto, SetupStatusEnum setupStatus) {

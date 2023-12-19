@@ -74,6 +74,7 @@ public class EntityUtils {
     tenantEntity.setName(name);
     tenantEntity.setIsCentral(isCentral);
     tenantEntity.setConsortiumId(UUID.randomUUID());
+    tenantEntity.setIsDeleted(false);
     return tenantEntity;
   }
 
@@ -84,6 +85,7 @@ public class EntityUtils {
     tenantEntity.setName("testtenant1");
     tenantEntity.setIsCentral(false);
     tenantEntity.setConsortiumId(UUID.randomUUID());
+    tenantEntity.setIsDeleted(false);
     return tenantEntity;
   }
 
@@ -93,6 +95,17 @@ public class EntityUtils {
     tenantEntity.setCode("ABC");
     tenantEntity.setName(name);
     tenantEntity.setIsCentral(false);
+    tenantEntity.setIsDeleted(false);
+    return tenantEntity;
+  }
+
+  public static TenantEntity createTenantEntity(String id) {
+    TenantEntity tenantEntity = new TenantEntity();
+    tenantEntity.setId(id);
+    tenantEntity.setCode("ABC");
+    tenantEntity.setName(id);
+    tenantEntity.setIsCentral(false);
+    tenantEntity.setIsDeleted(false);
     return tenantEntity;
   }
 
@@ -102,6 +115,7 @@ public class EntityUtils {
     tenantDetailsEntity.setCode("ABC");
     tenantDetailsEntity.setName("testtenant1");
     tenantDetailsEntity.setIsCentral(false);
+    tenantDetailsEntity.setIsDeleted(false);
     tenantDetailsEntity.setConsortiumId(UUID.randomUUID());
     tenantDetailsEntity.setSetupStatus(SetupStatusEnum.COMPLETED);
     return tenantDetailsEntity;
@@ -113,6 +127,7 @@ public class EntityUtils {
     tenantDetailsEntity.setCode("ABC");
     tenantDetailsEntity.setName(name);
     tenantDetailsEntity.setIsCentral(false);
+    tenantDetailsEntity.setIsDeleted(false);
     tenantDetailsEntity.setSetupStatus(SetupStatusEnum.IN_PROGRESS);
     return tenantDetailsEntity;
   }
@@ -123,6 +138,7 @@ public class EntityUtils {
     tenant.setName(name);
     tenant.setIsCentral(false);
     tenant.setCode("ABC");
+    tenant.setIsDeleted(false);
     return tenant;
   }
 
@@ -131,6 +147,7 @@ public class EntityUtils {
     tenant.setId(id);
     tenant.setName(name);
     tenant.setIsCentral(isCentral);
+    tenant.setIsDeleted(false);
     tenant.setCode("ABC");
     return tenant;
   }
