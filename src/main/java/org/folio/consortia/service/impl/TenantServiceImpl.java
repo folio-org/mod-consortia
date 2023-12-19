@@ -196,7 +196,7 @@ public class TenantServiceImpl implements TenantService {
     if (tenant.isEmpty()) {
       throw new ResourceNotFoundException("id", tenantId);
     }
-    if (tenant.get().getIsCentral()) {
+    if (Boolean.TRUE.equals(tenant.get().getIsCentral())) {
       throw new IllegalArgumentException(String.format("central tenant '%s' cannot be deleted", tenantId));
     }
 
