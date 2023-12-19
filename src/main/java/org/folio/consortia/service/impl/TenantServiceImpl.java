@@ -56,8 +56,7 @@ public class TenantServiceImpl implements TenantService {
   private static final String SHADOW_ADMIN_PERMISSION_FILE_PATH = "permissions/admin-user-permissions.csv";
   private static final String SHADOW_SYSTEM_USER_PERMISSION_FILE_PATH = "permissions/system-user-permissions.csv";
   private static final String TENANTS_IDS_NOT_MATCHED_ERROR_MSG = "Request body tenantId and path param tenantId should be identical";
-  private static final String TENANT_HAS_ACTIVE_USER_ASSOCIATIONS_ERROR_MSG = "Cannot delete tenant with ID {tenantId} because it has an association with a user. "
-      + "Please remove the user association before attempting to delete the tenant.";
+
   private static final String DUMMY_USERNAME = "dummy_user";
   @Value("${folio.system-user.username}")
   private String systemUserUsername;
@@ -91,8 +90,7 @@ public class TenantServiceImpl implements TenantService {
   public TenantCollection getAll(UUID consortiumId) {
     TenantCollection result = new TenantCollection();
     List<Tenant> list = tenantRepository.findByConsortiumId(consortiumId)
-      .stream()
-      .map(o -> converter.convert(o, Tenant.class)).toList();
+      .stream().map(o -> converter.convert(o, Tenant.class)).toList();
     result.setTenants(list);
     result.setTotalRecords(list.size());
     return result;
@@ -198,9 +196,6 @@ public class TenantServiceImpl implements TenantService {
     if (tenant.isEmpty()) {
       throw new ResourceNotFoundException("id", tenantId);
     }
-    if (userTenantRepository.existsByTenantId(tenantId)) {
-      throw new IllegalArgumentException(TENANT_HAS_ACTIVE_USER_ASSOCIATIONS_ERROR_MSG);
-    }
     if (tenant.get().getIsCentral()) {
       throw new IllegalArgumentException(String.format("central tenant %s cannot be deleted", tenantId));
     }
@@ -211,9 +206,9 @@ public class TenantServiceImpl implements TenantService {
     cleanupService.clearPublicationTables();
     tenantRepository.save(softDeletedTenant);
 
-    try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(tenantId))) {
-      userTenantsClient.deleteUserTenants();
-    }
+//    try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(tenantId))) {
+//      userTenantsClient.deleteUserTenants();
+//    }
   }
 
   private Tenant saveTenant(UUID consortiumId, Tenant tenantDto, SetupStatusEnum setupStatus) {
@@ -314,6 +309,7 @@ public class TenantServiceImpl implements TenantService {
     entity.setCode(tenantDto.getCode());
     entity.setIsCentral(tenantDto.getIsCentral());
     entity.setConsortiumId(consortiumId);
+    entity.setIsDeleted(tenantDto.getIsDeleted());
     return entity;
   }
 
@@ -325,6 +321,7 @@ public class TenantServiceImpl implements TenantService {
     entity.setIsCentral(tenantDto.getIsCentral());
     entity.setConsortiumId(consortiumId);
     entity.setSetupStatus(setupStatus);
+    entity.setIsDeleted(tenantDto.getIsDeleted());
     return entity;
   }
 

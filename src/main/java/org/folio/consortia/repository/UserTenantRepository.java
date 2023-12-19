@@ -14,6 +14,10 @@ import java.util.UUID;
 
 @Repository
 public interface UserTenantRepository extends JpaRepository<UserTenantEntity, UUID> {
+
+  @Query("SELECT ut FROM UserTenantEntity ut WHERE ut.tenant.isDeleted IS NULL OR ut.tenant.isDeleted = FALSE")
+  Page<UserTenantEntity> getAll(Pageable pageable);
+
   Page<UserTenantEntity> findByUserId(UUID userId, Pageable pageable);
 
   @Query("SELECT ut FROM UserTenantEntity ut WHERE ut.username= ?1 AND ut.tenant.id= ?2")
