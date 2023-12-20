@@ -120,17 +120,46 @@ public class TenantServiceImpl implements TenantService {
   @Override
   @Transactional
   public Tenant save(UUID consortiumId, UUID adminUserId, Tenant tenantDto) {
-    log.info("save:: Trying to save a tenant by consortiumId '{}', tenant object with id '{}' and isCentral={}", consortiumId,
-        tenantDto.getId(), tenantDto.getIsCentral());
+    log.info("save:: Trying to save a tenant with id={}, consortiumId={} and isCentral={}", tenantDto.getId(),
+      consortiumId, tenantDto.getIsCentral());
 
     // validation part
-    checkTenantNotExistsAndConsortiumExistsOrThrow(consortiumId, tenantDto.getId());
-    checkCodeAndNameUniqueness(tenantDto);
-    if (tenantDto.getIsCentral()) {
-      checkCentralTenantExistsOrThrow();
+    validateCodeAndNameUniqueness(tenantDto);
+    validateConsortiumAndTenant(consortiumId, tenantDto);
+
+    var requestingTenant = tenantRepository.findById(tenantDto.getId());
+
+    // checked whether tenant exists or not.
+    return requestingTenant.isPresent() ? reAddSoftDeletedTenant(consortiumId, tenantDto)
+      : addNewTenant(consortiumId, tenantDto, adminUserId);
+  }
+
+  private Tenant reAddSoftDeletedTenant(UUID consortiumId, Tenant tenantDto) {
+    log.info("reAddSoftDeletedTenant:: Re-adding soft deleted tenant with id={}", tenantDto.getId());
+    validateExistTenant(tenantDto);
+
+    tenantDto.setIsDeleted(false);
+    lockService.lockTenantSetupWithinTransaction();
+    var savedTenant = saveTenant(consortiumId, tenantDto, SetupStatusEnum.IN_PROGRESS);
+
+    String centralTentId = getCentralTenantId();
+    try {
+      createUserTenantWithDummyUser(tenantDto.getId(), centralTentId, consortiumId);
+      log.info("reAddSoftDeletedTenant:: Dummy user re-created in user-tenants table");
+      updateTenantSetupStatus(tenantDto.getId(), centralTentId, SetupStatusEnum.COMPLETED);
+    } catch (Exception e) {
+      log.error("Failed to create dummy user with centralTenantId: {}, tenant: {}" +
+        " and error message: {}", centralTentId, tenantDto.getId(), e.getMessage(), e);
+      updateTenantSetupStatus(tenantDto.getId(), centralTentId, SetupStatusEnum.COMPLETED_WITH_ERRORS);
     }
 
-    // save tenant to db
+    return savedTenant;
+  }
+
+  private Tenant addNewTenant(UUID consortiumId, Tenant tenantDto, UUID adminUserId) {
+    log.info("addNewTenant:: Creating new tenant with id={}, consortiumId={}, and adminUserId={}",
+      tenantDto.getId(), consortiumId, adminUserId);
+
     lockService.lockTenantSetupWithinTransaction();
     Tenant savedTenant = saveTenant(consortiumId, tenantDto, SetupStatusEnum.IN_PROGRESS);
 
@@ -147,7 +176,7 @@ public class TenantServiceImpl implements TenantService {
       userTenantRepository.save(createUserTenantEntity(consortiumId, shadowAdminUser, tenantDto));
       // creating shadow user of consortia system user of central tenant with same permissions.
       var centralSystemUser = userService.getByUsername(systemUserUsername)
-        .orElseThrow(() ->  new ResourceNotFoundException("systemUserUsername", systemUserUsername));
+        .orElseThrow(() -> new ResourceNotFoundException("systemUserUsername", systemUserUsername));
       shadowSystemUser = userService.prepareShadowUser(UUID.fromString(centralSystemUser.getId()), folioExecutionContext.getTenantId());
       userTenantRepository.save(createUserTenantEntity(consortiumId, shadowSystemUser, tenantDto));
     }
@@ -180,7 +209,7 @@ public class TenantServiceImpl implements TenantService {
   @Override
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void updateTenantSetupStatus(String tenantId, String centralTenantId, SetupStatusEnum setupStatus) {
-    try (var ctx = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId,
+    try (var ignored = new FolioExecutionContextSetter(prepareContextForTenant(centralTenantId,
       folioExecutionContext.getFolioModuleMetadata(), folioExecutionContext))) {
       tenantDetailsRepository.setSetupStatusByTenantId(setupStatus, tenantId);
       log.info("updateTenantSetupStatus:: tenant id={} status updated to {}", tenantId, setupStatus);
@@ -250,14 +279,7 @@ public class TenantServiceImpl implements TenantService {
     userTenantsClient.postUserTenant(userTenant);
   }
 
-  private void checkTenantNotExistsAndConsortiumExistsOrThrow(UUID consortiumId, String tenantId) {
-    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    if (tenantRepository.existsById(tenantId)) {
-      throw new ResourceAlreadyExistException("id", tenantId);
-    }
-  }
-
-  private void checkCodeAndNameUniqueness(Tenant tenant) {
+  private void validateCodeAndNameUniqueness(Tenant tenant) {
     if (tenantRepository.existsByName(tenant.getName())) {
       throw new ResourceAlreadyExistException("name", tenant.getName());
     }
@@ -289,9 +311,16 @@ public class TenantServiceImpl implements TenantService {
     }
   }
 
-  private void checkCentralTenantExistsOrThrow() {
-    if (tenantRepository.existsByIsCentralTrue()) {
+  private void validateConsortiumAndTenant(UUID consortiumId, Tenant tenantDto) {
+    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
+    if (tenantDto.getIsCentral() && tenantRepository.existsByIsCentralTrue()) {
       throw new ResourceAlreadyExistException("isCentral", "true");
+    }
+  }
+
+  private void validateExistTenant(Tenant tenant) {
+    if (Boolean.TRUE.equals(tenant.getIsCentral()) || Boolean.FALSE.equals(tenant.getIsDeleted())) {
+      throw new ResourceAlreadyExistException("id", tenant.getId());
     }
   }
 
