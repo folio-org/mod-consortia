@@ -79,6 +79,7 @@ import jakarta.validation.ConstraintViolationException;
 @EntityScan(basePackageClasses = TenantEntity.class)
 class TenantControllerTest extends BaseIT {
   private static final String TENANT_REQUEST_BODY = "{\"id\":\"diku1234\",\"code\":\"TST\",\"name\":\"diku_tenant_name1234\", \"isCentral\":false}";
+  private static final String CENTRAL_TENANT_REQUEST_BODY = "{\"id\":\"diku1234\",\"code\":\"TST\",\"name\":\"diku_tenant_name1234\", \"isCentral\":true}";
   private static final String CONSORTIUM_ID = "7698e46-c3e3-11ed-afa1-0242ac120002";
   private static final String CENTRAL_TENANT_ID = "diku";
   public static final String SYNC_PRIMARY_AFFILIATIONS_URL = "/consortia/%s/tenants/%s/sync-primary-affiliations?centralTenantId=%s";
@@ -177,6 +178,32 @@ class TenantControllerTest extends BaseIT {
 
     this.mockMvc.perform(
         post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants?adminUserId=" + adminUser.getId())
+          .headers(headers).content(contentString))
+      .andExpect(status().isCreated());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {TENANT_REQUEST_BODY})
+  void shouldReAddSoftDeletedTenant(String contentString) throws Exception {
+    var headers = defaultHeaders();
+    String adminUser = UUID.randomUUID().toString();
+    TenantEntity centralTenant = createTenantEntity(CENTRAL_TENANT_ID, CENTRAL_TENANT_ID, "AAA", true);
+    var existedTenant = createTenantEntity("diku1234", "diku_tenant_name1234");
+    existedTenant.setIsDeleted(true);
+
+    var tenantDetailsEntity = new TenantDetailsEntity();
+    tenantDetailsEntity.setConsortiumId(centralTenant.getConsortiumId());
+    tenantDetailsEntity.setId("diku1234");
+
+    doNothing().when(userTenantsClient).postUserTenant(any());
+    when(consortiumRepository.existsById(any())).thenReturn(true);
+    when(tenantRepository.findById("diku1234")).thenReturn(Optional.of(existedTenant));
+    when(tenantDetailsRepository.save(any(TenantDetailsEntity.class))).thenReturn(tenantDetailsEntity);
+    when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
+    doReturn(folioExecutionContext).when(contextHelper).getSystemUserFolioExecutionContext(anyString());
+
+    this.mockMvc.perform(
+        post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants?adminUserId=" + adminUser)
           .headers(headers).content(contentString))
       .andExpect(status().isCreated());
   }
@@ -318,21 +345,37 @@ class TenantControllerTest extends BaseIT {
 
 
   @ParameterizedTest
-  @ValueSource(strings = {TENANT_REQUEST_BODY})
-  void shouldGet4xxErrorWhileSavingDuplicateName(String contentString) throws Exception {
+  @ValueSource(strings = {CENTRAL_TENANT_REQUEST_BODY})
+  void shouldGet4xxErrorWhileSavingDuplicateCentralTenant(String contentString) throws Exception {
     var headers = defaultHeaders();
     UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
     TenantEntity centralTenant = createTenantEntity(CENTRAL_TENANT_ID, CENTRAL_TENANT_ID, "TTA", true);
-    PermissionUser permissionUser = new PermissionUser();
-    PermissionUserCollection permissionUserCollection = new PermissionUserCollection();
-    permissionUserCollection.setPermissionUsers(List.of(permissionUser));
 
-    doReturn(new User()).when(usersClient).getUserById(any());
-    doReturn(permissionUserCollection).when(permissionsClient).get(any());
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     when(tenantRepository.existsById(any(String.class))).thenReturn(true);
+    when(tenantRepository.existsByIsCentralTrue()).thenReturn(true);
     when(tenantRepository.findCentralTenant()).thenReturn(Optional.of(centralTenant));
-    doNothing().when(configurationClient).saveConfiguration(createConsortiaConfiguration(CENTRAL_TENANT_ID));
+
+    this.mockMvc.perform(
+        post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants?adminUserId=111841e3-e6fb-4191-9fd8-5674a5107c34")
+          .headers(headers).content(contentString))
+      .andExpectAll(
+        status().is4xxClientError(),
+        jsonPath("$.errors[0].message", is("Object with isCentral [true] is already presented in the system")),
+        jsonPath("$.errors[0].code", is("DUPLICATE_ERROR")));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {TENANT_REQUEST_BODY})
+  void shouldGet4xxErrorWhileSavingExistingTenant(String contentString) throws Exception {
+    var headers = defaultHeaders();
+    UUID consortiumId = UUID.fromString(CONSORTIUM_ID);
+    var existedTenant = createTenantEntity("diku1234", "diku_tenant_name1234");
+    existedTenant.setIsDeleted(false);
+
+    when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
+    when(tenantRepository.existsById(any(String.class))).thenReturn(true);
+    when(tenantRepository.findById(anyString())).thenReturn(Optional.of(existedTenant));
 
     this.mockMvc.perform(
         post("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants?adminUserId=111841e3-e6fb-4191-9fd8-5674a5107c34")

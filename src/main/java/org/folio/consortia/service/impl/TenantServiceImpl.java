@@ -124,22 +124,21 @@ public class TenantServiceImpl implements TenantService {
       consortiumId, tenantDto.getIsCentral());
 
     // validation part
-    validateCodeAndNameUniqueness(tenantDto);
     validateConsortiumAndTenant(consortiumId, tenantDto);
+    validateCodeAndNameUniqueness(tenantDto);
 
     var requestingTenant = tenantRepository.findById(tenantDto.getId());
 
     // checked whether tenant exists or not.
-    return requestingTenant.isPresent() ? reAddSoftDeletedTenant(consortiumId, tenantDto)
+    return requestingTenant.isPresent() ? reAddSoftDeletedTenant(consortiumId, tenantDto, requestingTenant)
       : addNewTenant(consortiumId, tenantDto, adminUserId);
   }
 
-  private Tenant reAddSoftDeletedTenant(UUID consortiumId, Tenant tenantDto) {
+  private Tenant reAddSoftDeletedTenant(UUID consortiumId, Tenant tenantDto, Optional<TenantEntity> existedTenant) {
     log.info("reAddSoftDeletedTenant:: Re-adding soft deleted tenant with id={}", tenantDto.getId());
-    validateExistTenant(tenantDto);
+    validateExistTenant(existedTenant.get());
 
     tenantDto.setIsDeleted(false);
-    lockService.lockTenantSetupWithinTransaction();
     var savedTenant = saveTenant(consortiumId, tenantDto, SetupStatusEnum.IN_PROGRESS);
 
     String centralTentId = getCentralTenantId();
@@ -318,8 +317,8 @@ public class TenantServiceImpl implements TenantService {
     }
   }
 
-  private void validateExistTenant(Tenant tenant) {
-    if (Boolean.TRUE.equals(tenant.getIsCentral()) || Boolean.FALSE.equals(tenant.getIsDeleted())) {
+  private void validateExistTenant(TenantEntity tenant) {
+    if (Boolean.FALSE.equals(tenant.getIsDeleted())) {
       throw new ResourceAlreadyExistException("id", tenant.getId());
     }
   }
