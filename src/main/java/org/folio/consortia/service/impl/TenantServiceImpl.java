@@ -143,11 +143,11 @@ public class TenantServiceImpl implements TenantService {
     try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(tenantDto.getId()))) {
       createUserTenantWithDummyUser(tenantDto.getId(), centralTentId, consortiumId);
       log.info("reAddSoftDeletedTenant:: Dummy user re-created in user-tenants table");
-      updateTenantSetupStatus(tenantDto.getId(), centralTentId, SetupStatusEnum.COMPLETED);
+      this.updateTenantSetupStatus(tenantDto.getId(), centralTentId, SetupStatusEnum.COMPLETED);
     } catch (Exception e) {
       log.error("Failed to create dummy user with centralTenantId: {}, tenant: {}" +
         " and error message: {}", centralTentId, tenantDto.getId(), e.getMessage(), e);
-      updateTenantSetupStatus(tenantDto.getId(), centralTentId, SetupStatusEnum.COMPLETED_WITH_ERRORS);
+      this.updateTenantSetupStatus(tenantDto.getId(), centralTentId, SetupStatusEnum.COMPLETED_WITH_ERRORS);
     }
 
     return savedTenant;
