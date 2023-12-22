@@ -18,10 +18,10 @@ public interface UserTenantRepository extends JpaRepository<UserTenantEntity, UU
   @Query("SELECT ut FROM UserTenantEntity ut WHERE ut.tenant.isDeleted IS NULL OR ut.tenant.isDeleted= FALSE")
   Page<UserTenantEntity> getAll(Pageable pageable);
 
-  @Query("SELECT ut FROM UserTenantEntity ut WHERE ut.id= ?1 AND (ut.tenant.isDeleted IS NULL OR ut.tenant.isDeleted= FALSE)")
+  @Query("SELECT ut FROM UserTenantEntity ut WHERE ut.userId= ?1 AND (ut.tenant.isDeleted IS NULL OR ut.tenant.isDeleted= FALSE)")
   Page<UserTenantEntity> findByUserId(UUID userId, Pageable pageable);
 
-  @Query("SELECT ut FROM UserTenantEntity ut WHERE ut.id= ?1")
+  @Query("SELECT ut FROM UserTenantEntity ut WHERE ut.userId= ?1")
   Page<UserTenantEntity> findAnyByUserId(UUID userId, Pageable pageable);
 
   @Query("SELECT ut FROM UserTenantEntity ut WHERE ut.username= ?1 AND ut.tenant.id= ?2 AND (ut.tenant.isDeleted IS NULL OR ut.tenant.isDeleted= FALSE)")
