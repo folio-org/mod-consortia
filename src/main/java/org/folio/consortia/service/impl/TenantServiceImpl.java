@@ -123,26 +123,24 @@ public class TenantServiceImpl implements TenantService {
     log.info("save:: Trying to save a tenant with id={}, consortiumId={} and isCentral={}", tenantDto.getId(),
       consortiumId, tenantDto.getIsCentral());
 
-    // validation part
     validateConsortiumAndTenant(consortiumId, tenantDto);
-    validateCodeAndNameUniqueness(tenantDto);
 
     var requestingTenant = tenantRepository.findById(tenantDto.getId());
 
     // checked whether tenant exists or not.
-    return requestingTenant.isPresent() ? reAddSoftDeletedTenant(consortiumId, tenantDto, requestingTenant)
+    return requestingTenant.isPresent() ? reAddSoftDeletedTenant(consortiumId, tenantDto, requestingTenant.get())
       : addNewTenant(consortiumId, tenantDto, adminUserId);
   }
 
-  private Tenant reAddSoftDeletedTenant(UUID consortiumId, Tenant tenantDto, Optional<TenantEntity> existedTenant) {
+  private Tenant reAddSoftDeletedTenant(UUID consortiumId, Tenant tenantDto, TenantEntity existedTenant) {
     log.info("reAddSoftDeletedTenant:: Re-adding soft deleted tenant with id={}", tenantDto.getId());
-    validateExistTenant(existedTenant.get());
+    validateExistTenant(existedTenant);
 
     tenantDto.setIsDeleted(false);
     var savedTenant = saveTenant(consortiumId, tenantDto, SetupStatusEnum.IN_PROGRESS);
 
     String centralTentId = getCentralTenantId();
-    try {
+    try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(tenantDto.getId()))) {
       createUserTenantWithDummyUser(tenantDto.getId(), centralTentId, consortiumId);
       log.info("reAddSoftDeletedTenant:: Dummy user re-created in user-tenants table");
       updateTenantSetupStatus(tenantDto.getId(), centralTentId, SetupStatusEnum.COMPLETED);
@@ -158,6 +156,7 @@ public class TenantServiceImpl implements TenantService {
   private Tenant addNewTenant(UUID consortiumId, Tenant tenantDto, UUID adminUserId) {
     log.info("addNewTenant:: Creating new tenant with id={}, consortiumId={}, and adminUserId={}",
       tenantDto.getId(), consortiumId, adminUserId);
+    validateCodeAndNameUniqueness(tenantDto);
 
     lockService.lockTenantSetupWithinTransaction();
     Tenant savedTenant = saveTenant(consortiumId, tenantDto, SetupStatusEnum.IN_PROGRESS);
@@ -224,9 +223,8 @@ public class TenantServiceImpl implements TenantService {
     if (tenant.isEmpty()) {
       throw new ResourceNotFoundException("id", tenantId);
     }
-    if (Boolean.TRUE.equals(tenant.get().getIsCentral())) {
-      throw new IllegalArgumentException(String.format("central tenant '%s' cannot be deleted", tenantId));
-    }
+
+    validateTenantForDeleteOperation(tenant.get());
 
     var softDeletedTenant = tenant.get();
     softDeletedTenant.setIsDeleted(true);
@@ -256,15 +254,15 @@ public class TenantServiceImpl implements TenantService {
     return converter.convert(updatedTenant, Tenant.class);
   }
 
-  /*
-    Dummy user will be used to support cross-tenant requests checking in mod-authtoken,
-    if user-tenant table contains some record in institutional tenant - it means mod-consortia enabled for
-    this tenant and will allow cross-tenant request.
-
-    @param tenantId tenant id
-    @param centralTenantId central tenant id
-    @param consortiumId consortium id
-  */
+  /**
+   * Dummy user will be used to support cross-tenant requests checking in mod-authtoken,
+   * if user-tenant table contains some record in institutional tenant - it means mod-consortia enabled for
+   * this tenant and will allow cross-tenant request.
+   *
+   * @param tenantId        tenant id
+   * @param centralTenantId central tenant id
+   * @param consortiumId    consortium id
+   */
   private void createUserTenantWithDummyUser(String tenantId, String centralTenantId, UUID consortiumId) {
     UserTenant userTenant = new UserTenant();
     userTenant.setId(UUID.randomUUID());
@@ -276,15 +274,6 @@ public class TenantServiceImpl implements TenantService {
 
     log.info("Creating userTenant with dummy user with id {}.", userTenant.getId());
     userTenantsClient.postUserTenant(userTenant);
-  }
-
-  private void validateCodeAndNameUniqueness(Tenant tenant) {
-    if (tenantRepository.existsByName(tenant.getName())) {
-      throw new ResourceAlreadyExistException("name", tenant.getName());
-    }
-    if (tenantRepository.existsByCode(tenant.getCode())) {
-      throw new ResourceAlreadyExistException("code", tenant.getCode());
-    }
   }
 
   @Override
@@ -317,9 +306,27 @@ public class TenantServiceImpl implements TenantService {
     }
   }
 
+  private void validateCodeAndNameUniqueness(Tenant tenant) {
+    if (tenantRepository.existsByName(tenant.getName())) {
+      throw new ResourceAlreadyExistException("name", tenant.getName());
+    }
+    if (tenantRepository.existsByCode(tenant.getCode())) {
+      throw new ResourceAlreadyExistException("code", tenant.getCode());
+    }
+  }
+
   private void validateExistTenant(TenantEntity tenant) {
     if (Boolean.FALSE.equals(tenant.getIsDeleted())) {
       throw new ResourceAlreadyExistException("id", tenant.getId());
+    }
+  }
+
+  private void validateTenantForDeleteOperation(TenantEntity tenant) {
+    if (Boolean.TRUE.equals(tenant.getIsDeleted())) {
+      throw new IllegalArgumentException(String.format("Tenant '%s' has already been soft deleted", tenant.getId()));
+    }
+    if (Boolean.TRUE.equals(tenant.getIsCentral())) {
+      throw new IllegalArgumentException(String.format("central tenant '%s' cannot be deleted", tenant.getId()));
     }
   }
 
