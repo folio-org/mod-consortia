@@ -159,6 +159,7 @@ public class TenantServiceImpl implements TenantService {
     validateCodeAndNameUniqueness(tenantDto);
 
     lockService.lockTenantSetupWithinTransaction();
+    tenantDto.setIsDeleted(false);
     Tenant savedTenant = saveTenant(consortiumId, tenantDto, SetupStatusEnum.IN_PROGRESS);
 
     // save admin user tenant association for non-central tenant
@@ -316,7 +317,7 @@ public class TenantServiceImpl implements TenantService {
   }
 
   private void validateExistTenant(TenantEntity tenant) {
-    if (Boolean.FALSE.equals(tenant.getIsDeleted())) {
+    if (Boolean.FALSE.equals(tenant.getIsDeleted()) || tenant.getIsDeleted() == null) {
       throw new ResourceAlreadyExistException("id", tenant.getId());
     }
   }
