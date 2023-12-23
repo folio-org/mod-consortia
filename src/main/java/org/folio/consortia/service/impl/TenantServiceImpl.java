@@ -122,33 +122,34 @@ public class TenantServiceImpl implements TenantService {
   public Tenant save(UUID consortiumId, UUID adminUserId, Tenant tenantDto) {
     log.info("save:: Trying to save a tenant with id={}, consortiumId={} and isCentral={}", tenantDto.getId(),
       consortiumId, tenantDto.getIsCentral());
-
-    validateConsortiumAndTenant(consortiumId, tenantDto);
+    validateConsortiumAndTenantForSaveOperation(consortiumId, tenantDto);
 
     var requestingTenant = tenantRepository.findById(tenantDto.getId());
 
     // checked whether tenant exists or not.
-    return requestingTenant.isPresent() ? reAddSoftDeletedTenant(consortiumId, tenantDto, requestingTenant.get())
+    return requestingTenant.isPresent() ? reAddSoftDeletedTenant(consortiumId, requestingTenant.get())
       : addNewTenant(consortiumId, tenantDto, adminUserId);
   }
 
-  private Tenant reAddSoftDeletedTenant(UUID consortiumId, Tenant tenantDto, TenantEntity existedTenant) {
-    log.info("reAddSoftDeletedTenant:: Re-adding soft deleted tenant with id={}", tenantDto.getId());
-    validateExistTenant(existedTenant);
+  private Tenant reAddSoftDeletedTenant(UUID consortiumId, TenantEntity existedTenant) {
+    log.info("reAddSoftDeletedTenant:: Re-adding soft deleted tenant with id={}", existedTenant.getId());
+    validateExistedTenant(existedTenant);
 
-    tenantDto.setIsDeleted(false);
-    var savedTenant = saveTenant(consortiumId, tenantDto, SetupStatusEnum.IN_PROGRESS);
+    existedTenant.setIsDeleted(false);
+    var savedTenant = saveTenant(consortiumId, converter.convert(existedTenant, Tenant.class), SetupStatusEnum.IN_PROGRESS);
 
-    String centralTentId = getCentralTenantId();
-    try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(tenantDto.getId()))) {
-      createUserTenantWithDummyUser(tenantDto.getId(), centralTentId, consortiumId);
+    String centralTenantId = getCentralTenantId();
+    var hasFailedAffiliations = false;
+    try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(existedTenant.getId()))) {
+      createUserTenantWithDummyUser(existedTenant.getId(), centralTenantId, consortiumId);
       log.info("reAddSoftDeletedTenant:: Dummy user re-created in user-tenants table");
-      this.updateTenantSetupStatus(tenantDto.getId(), centralTentId, SetupStatusEnum.COMPLETED);
     } catch (Exception e) {
+      hasFailedAffiliations = true;
       log.error("Failed to create dummy user with centralTenantId: {}, tenant: {}" +
-        " and error message: {}", centralTentId, tenantDto.getId(), e.getMessage(), e);
-      this.updateTenantSetupStatus(tenantDto.getId(), centralTentId, SetupStatusEnum.COMPLETED_WITH_ERRORS);
+        " and error message: {}", centralTenantId, existedTenant.getId(), e.getMessage(), e);
     }
+    updateTenantSetupStatus(existedTenant.getId(), centralTenantId, hasFailedAffiliations ?
+      SetupStatusEnum.COMPLETED_WITH_ERRORS : SetupStatusEnum.COMPLETED);
 
     return savedTenant;
   }
@@ -199,9 +200,13 @@ public class TenantServiceImpl implements TenantService {
   @Override
   @Transactional
   public Tenant update(UUID consortiumId, String tenantId, Tenant tenantDto) {
-    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    checkTenantExistsOrThrow(tenantId);
-    checkIdenticalOrThrow(tenantId, tenantDto.getId(), TENANTS_IDS_NOT_MATCHED_ERROR_MSG);
+    log.debug("update:: Trying to update tenant '{}' in consortium '{}'", tenantId, consortiumId);
+    var existedTenant = tenantRepository.findById(tenantId)
+      .orElseThrow(() -> new ResourceNotFoundException("id", tenantId));
+
+    validateTenantForUpdateOperation(consortiumId, tenantId, tenantDto, existedTenant);
+    // isDeleted flag cannot be changed by put request
+    tenantDto.setIsDeleted(existedTenant.getIsDeleted());
     return updateTenant(consortiumId, tenantDto);
   }
 
@@ -248,7 +253,6 @@ public class TenantServiceImpl implements TenantService {
   }
 
   private Tenant updateTenant(UUID consortiumId, Tenant tenantDto) {
-    log.debug("updateTenant:: Trying to update tenant with consoritumId={} and tenant with id={}", consortiumId, tenantDto);
     TenantEntity entity = toTenantEntity(consortiumId, tenantDto);
     TenantEntity updatedTenant = tenantRepository.save(entity);
     log.info("updateTenant:: Tenant '{}' successfully updated", updatedTenant.getId());
@@ -300,7 +304,14 @@ public class TenantServiceImpl implements TenantService {
     }
   }
 
-  private void validateConsortiumAndTenant(UUID consortiumId, Tenant tenantDto) {
+  private void validateTenantForUpdateOperation(UUID consortiumId, String tenantId, Tenant tenantDto, TenantEntity existedTenant) {
+    consortiumService.checkConsortiumExistsOrThrow(consortiumId);
+    checkIdenticalOrThrow(tenantId, tenantDto.getId(), TENANTS_IDS_NOT_MATCHED_ERROR_MSG);
+    if (tenantDto.getIsCentral() != existedTenant.getIsCentral())
+      throw new IllegalArgumentException(String.format("'isCentral' field cannot be changed. It should be '%s'", existedTenant.getIsCentral()));
+  }
+
+  private void validateConsortiumAndTenantForSaveOperation(UUID consortiumId, Tenant tenantDto) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     if (tenantDto.getIsCentral() && tenantRepository.existsByIsCentralTrue()) {
       throw new ResourceAlreadyExistException("isCentral", "true");
@@ -316,18 +327,18 @@ public class TenantServiceImpl implements TenantService {
     }
   }
 
-  private void validateExistTenant(TenantEntity tenant) {
-    if (Boolean.FALSE.equals(tenant.getIsDeleted()) || tenant.getIsDeleted() == null) {
+  private void validateExistedTenant(TenantEntity tenant) {
+    if (Boolean.FALSE.equals(tenant.getIsDeleted())) {
       throw new ResourceAlreadyExistException("id", tenant.getId());
     }
   }
 
   private void validateTenantForDeleteOperation(TenantEntity tenant) {
     if (Boolean.TRUE.equals(tenant.getIsDeleted())) {
-      throw new IllegalArgumentException(String.format("Tenant '%s' has already been soft deleted", tenant.getId()));
+      throw new IllegalArgumentException(String.format("Tenant [%s] has already been soft deleted.", tenant.getId()));
     }
     if (Boolean.TRUE.equals(tenant.getIsCentral())) {
-      throw new IllegalArgumentException(String.format("central tenant '%s' cannot be deleted", tenant.getId()));
+      throw new IllegalArgumentException(String.format("Central tenant [%s] cannot be deleted.", tenant.getId()));
     }
   }
 
