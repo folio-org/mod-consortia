@@ -128,13 +128,13 @@ public class TenantServiceImpl implements TenantService {
     var existingTenant = tenantRepository.findById(tenantDto.getId());
 
     // checked whether tenant exists or not.
-    return existingTenant.isPresent() ? reAddSoftDeletedTenant(consortiumId, tenantDto)
+    return existingTenant.isPresent() ? reAddSoftDeletedTenant(consortiumId, existingTenant.get(), tenantDto)
       : addNewTenant(consortiumId, tenantDto, adminUserId);
   }
 
-  private Tenant reAddSoftDeletedTenant(UUID consortiumId, Tenant tenantDto) {
+  private Tenant reAddSoftDeletedTenant(UUID consortiumId, TenantEntity existingTenant, Tenant tenantDto) {
     log.info("reAddSoftDeletedTenant:: Re-adding soft deleted tenant with id={}", tenantDto.getId());
-    validateExistingTenant(tenantDto);
+    validateExistingTenant(existingTenant);
 
     tenantDto.setIsDeleted(false);
     var savedTenant = saveTenant(consortiumId, tenantDto, SetupStatusEnum.IN_PROGRESS);
@@ -327,9 +327,9 @@ public class TenantServiceImpl implements TenantService {
     }
   }
 
-  private void validateExistingTenant(Tenant tenant) {
-    if (Boolean.FALSE.equals(tenant.getIsDeleted())) {
-      throw new ResourceAlreadyExistException("id", tenant.getId());
+  private void validateExistingTenant(TenantEntity existingTenant) {
+    if (Boolean.FALSE.equals(existingTenant.getIsDeleted())) {
+      throw new ResourceAlreadyExistException("id", existingTenant.getId());
     }
   }
 

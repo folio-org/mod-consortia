@@ -282,13 +282,13 @@ class TenantServiceTest {
   @Test
   void shouldUpdateTenant() {
     UUID consortiumId = UUID.randomUUID();
-    TenantEntity tenantEntity1 = createTenantEntity("TestID", "TestName1");
+    TenantEntity existingTenant = createTenantEntity("TestID", "TestName1");
     Tenant tenant = createTenant("TestID", "TestName2");
 
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
-    when(tenantRepository.existsById(any())).thenReturn(true);
-    when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
-    when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
+    when(tenantRepository.findById(any())).thenReturn(Optional.of(existingTenant));
+    when(tenantRepository.save(any(TenantEntity.class))).thenReturn(existingTenant);
+    when(conversionService.convert(existingTenant, Tenant.class)).thenReturn(tenant);
     mockOkapiHeaders();
 
     var tenant1 = tenantService.update(UUID.fromString(CONSORTIUM_ID), tenant.getId(), tenant);
@@ -386,13 +386,11 @@ class TenantServiceTest {
 
   @Test
   void shouldThrowExceptionWhileUpdateTenant() {
-    TenantEntity tenantEntity1 = createTenantEntity("TestID", "TestName1");
-    Tenant tenant = createTenant("TestID", "TestName2");
+    var existingTenant = createTenantEntity("TestID", "TestName1");
+    var tenant = createTenant("TestID", "TestName2");
 
     when(consortiumRepository.existsById(any())).thenReturn(true);
-    when(tenantRepository.existsById(any())).thenReturn(true);
-    when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
-    when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
+    when(tenantRepository.findById(tenant.getId() + "1234")).thenReturn(Optional.of(existingTenant));
 
     assertThrows(java.lang.IllegalArgumentException.class, () ->
       tenantService.update(UUID.fromString(CONSORTIUM_ID), tenant.getId() + "1234", tenant));
@@ -404,7 +402,6 @@ class TenantServiceTest {
     Tenant tenant = createTenant("TestID", "TestName2");
 
     when(consortiumRepository.existsById(any())).thenReturn(true);
-    when(tenantRepository.save(any(TenantEntity.class))).thenReturn(tenantEntity1);
     when(conversionService.convert(tenantEntity1, Tenant.class)).thenReturn(tenant);
 
     assertThrows(org.folio.consortia.exception.ResourceNotFoundException.class, () ->
