@@ -26,10 +26,10 @@ public interface TenantRepository extends JpaRepository<TenantEntity, String> {
   boolean existsByIsCentralTrue();
 
   @Query("SELECT CASE WHEN COUNT(t) > 0 THEN TRUE ELSE FALSE END FROM TenantEntity t " +
-    "WHERE t.code = :code AND t.id != :tenantId")
+    "WHERE t.code = ?1 AND t.id != ?2")
   boolean existsByCodeForOtherTenant(String name, String tenantId);
 
   @Query("SELECT CASE WHEN COUNT(t) > 0 THEN TRUE ELSE FALSE END FROM TenantEntity t " +
-    "WHERE t.name = :name AND t.id != :tenantId")
+    "WHERE t.name = ?1 AND t.id != ?2")
   boolean existsByNameForOtherTenant(String name, String tenantId);
 }
