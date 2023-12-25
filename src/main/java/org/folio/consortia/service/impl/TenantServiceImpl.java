@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.folio.consortia.client.ConsortiaConfigurationClient;
 import org.folio.consortia.client.SyncPrimaryAffiliationClient;
 import org.folio.consortia.client.UserTenantsClient;
@@ -307,8 +308,9 @@ public class TenantServiceImpl implements TenantService {
   private void validateTenantForUpdateOperation(UUID consortiumId, String tenantId, Tenant tenantDto, TenantEntity existedTenant) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     checkIdenticalOrThrow(tenantId, tenantDto.getId(), TENANTS_IDS_NOT_MATCHED_ERROR_MSG);
-    if (tenantDto.getIsCentral() != existedTenant.getIsCentral())
+    if (ObjectUtils.notEqual(tenantDto.getIsCentral(), existedTenant.getIsCentral())) {
       throw new IllegalArgumentException(String.format("'isCentral' field cannot be changed. It should be '%s'", existedTenant.getIsCentral()));
+    }
   }
 
   private void validateConsortiumAndTenantForSaveOperation(UUID consortiumId, Tenant tenantDto) {
