@@ -213,8 +213,8 @@ class TenantControllerTest extends BaseIT {
   void shouldUpdateTenant(String contentString) throws Exception {
     var existingTenant = createTenantEntity();
     var updatedTenant = createTenantEntity();
-
     var headers = defaultHeaders();
+
     when(tenantRepository.findById(anyString())).thenReturn(Optional.of(existingTenant));
     when(consortiumRepository.existsById(any())).thenReturn(true);
     when(tenantRepository.save(any())).thenReturn(updatedTenant);
