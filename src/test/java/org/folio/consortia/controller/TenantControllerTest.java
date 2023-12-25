@@ -211,12 +211,13 @@ class TenantControllerTest extends BaseIT {
   @ParameterizedTest
   @ValueSource(strings = {TENANT_REQUEST_BODY})
   void shouldUpdateTenant(String contentString) throws Exception {
-    TenantEntity tenant = createTenantEntity();
+    var existingTenant = createTenantEntity();
+    var updatedTenant = createTenantEntity();
 
     var headers = defaultHeaders();
-    when(tenantRepository.existsById(any())).thenReturn(true);
+    when(tenantRepository.findById(anyString())).thenReturn(Optional.of(existingTenant));
     when(consortiumRepository.existsById(any())).thenReturn(true);
-    when(tenantRepository.save(any())).thenReturn(tenant);
+    when(tenantRepository.save(any())).thenReturn(updatedTenant);
 
     this.mockMvc.perform(
         put("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants/diku1234")
@@ -438,7 +439,7 @@ class TenantControllerTest extends BaseIT {
       .andExpectAll(
         status().is4xxClientError(),
         jsonPath("$.errors[0].code", is("VALIDATION_ERROR")),
-        jsonPath("$.errors[0].message", is("Central tenant [diku] cannot be deleted")));
+        jsonPath("$.errors[0].message", is("Central tenant [diku] cannot be deleted.")));
   }
 
   @Test
