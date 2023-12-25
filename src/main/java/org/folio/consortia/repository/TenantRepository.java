@@ -14,16 +14,22 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TenantRepository extends JpaRepository<TenantEntity, String> {
 
-  @Query("SELECT t FROM TenantEntity t WHERE t.consortiumId = ?1 and (t.isDeleted IS NULL OR t.isDeleted = FALSE)")
+  @Query("SELECT t FROM TenantEntity t WHERE t.consortiumId = ?1 and t.isDeleted = FALSE")
   Page<TenantEntity> findByConsortiumId(UUID consortiumId, Pageable pageable);
 
-  @Query("SELECT t FROM TenantEntity t WHERE t.consortiumId = ?1 and (t.isDeleted IS NULL OR t.isDeleted = FALSE)")
+  @Query("SELECT t FROM TenantEntity t WHERE t.consortiumId = ?1 and t.isDeleted = FALSE")
   List<TenantEntity> findByConsortiumId(UUID consortiumId);
 
   @Query("SELECT t FROM TenantEntity t WHERE t.isCentral = true")
   Optional<TenantEntity> findCentralTenant();
 
   boolean existsByIsCentralTrue();
-  boolean existsByCode(String code);
-  boolean existsByName(String name);
+
+  @Query("SELECT CASE WHEN COUNT(t) > 0 THEN TRUE ELSE FALSE END FROM TenantEntity t " +
+    "WHERE t.code = :code AND t.id != :tenantId")
+  boolean existsByCodeForOtherTenant(String name, String tenantId);
+
+  @Query("SELECT CASE WHEN COUNT(t) > 0 THEN TRUE ELSE FALSE END FROM TenantEntity t " +
+    "WHERE t.name = :name AND t.id != :tenantId")
+  boolean existsByNameForOtherTenant(String name, String tenantId);
 }

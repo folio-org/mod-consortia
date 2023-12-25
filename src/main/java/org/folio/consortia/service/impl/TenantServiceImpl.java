@@ -123,32 +123,33 @@ public class TenantServiceImpl implements TenantService {
     log.info("save:: Trying to save a tenant with id={}, consortiumId={} and isCentral={}", tenantDto.getId(),
       consortiumId, tenantDto.getIsCentral());
     validateConsortiumAndTenantForSaveOperation(consortiumId, tenantDto);
+    validateCodeAndNameUniqueness(tenantDto);
 
-    var requestingTenant = tenantRepository.findById(tenantDto.getId());
+    var existingTenant = tenantRepository.findById(tenantDto.getId());
 
     // checked whether tenant exists or not.
-    return requestingTenant.isPresent() ? reAddSoftDeletedTenant(consortiumId, requestingTenant.get())
+    return existingTenant.isPresent() ? reAddSoftDeletedTenant(consortiumId, tenantDto)
       : addNewTenant(consortiumId, tenantDto, adminUserId);
   }
 
-  private Tenant reAddSoftDeletedTenant(UUID consortiumId, TenantEntity existedTenant) {
-    log.info("reAddSoftDeletedTenant:: Re-adding soft deleted tenant with id={}", existedTenant.getId());
-    validateExistedTenant(existedTenant);
+  private Tenant reAddSoftDeletedTenant(UUID consortiumId, Tenant tenantDto) {
+    log.info("reAddSoftDeletedTenant:: Re-adding soft deleted tenant with id={}", tenantDto.getId());
+    validateExistingTenant(tenantDto);
 
-    existedTenant.setIsDeleted(false);
-    var savedTenant = saveTenant(consortiumId, converter.convert(existedTenant, Tenant.class), SetupStatusEnum.IN_PROGRESS);
+    tenantDto.setIsDeleted(false);
+    var savedTenant = saveTenant(consortiumId, tenantDto, SetupStatusEnum.IN_PROGRESS);
 
     String centralTenantId = getCentralTenantId();
     var hasFailedAffiliations = false;
-    try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(existedTenant.getId()))) {
-      createUserTenantWithDummyUser(existedTenant.getId(), centralTenantId, consortiumId);
+    try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(tenantDto.getId()))) {
+      createUserTenantWithDummyUser(tenantDto.getId(), centralTenantId, consortiumId);
       log.info("reAddSoftDeletedTenant:: Dummy user re-created in user-tenants table");
     } catch (Exception e) {
       hasFailedAffiliations = true;
       log.error("Failed to create dummy user with centralTenantId: {}, tenant: {}" +
-        " and error message: {}", centralTenantId, existedTenant.getId(), e.getMessage(), e);
+        " and error message: {}", centralTenantId, tenantDto.getId(), e.getMessage(), e);
     }
-    updateTenantSetupStatus(existedTenant.getId(), centralTenantId, hasFailedAffiliations ?
+    updateTenantSetupStatus(tenantDto.getId(), centralTenantId, hasFailedAffiliations ?
       SetupStatusEnum.COMPLETED_WITH_ERRORS : SetupStatusEnum.COMPLETED);
 
     return savedTenant;
@@ -157,7 +158,6 @@ public class TenantServiceImpl implements TenantService {
   private Tenant addNewTenant(UUID consortiumId, Tenant tenantDto, UUID adminUserId) {
     log.info("addNewTenant:: Creating new tenant with id={}, consortiumId={}, and adminUserId={}",
       tenantDto.getId(), consortiumId, adminUserId);
-    validateCodeAndNameUniqueness(tenantDto);
 
     lockService.lockTenantSetupWithinTransaction();
     tenantDto.setIsDeleted(false);
@@ -319,15 +319,15 @@ public class TenantServiceImpl implements TenantService {
   }
 
   private void validateCodeAndNameUniqueness(Tenant tenant) {
-    if (tenantRepository.existsByName(tenant.getName())) {
+    if (tenantRepository.existsByNameForOtherTenant(tenant.getName(), tenant.getId())) {
       throw new ResourceAlreadyExistException("name", tenant.getName());
     }
-    if (tenantRepository.existsByCode(tenant.getCode())) {
+    if (tenantRepository.existsByCodeForOtherTenant(tenant.getCode(), tenant.getId())) {
       throw new ResourceAlreadyExistException("code", tenant.getCode());
     }
   }
 
-  private void validateExistedTenant(TenantEntity tenant) {
+  private void validateExistingTenant(Tenant tenant) {
     if (Boolean.FALSE.equals(tenant.getIsDeleted())) {
       throw new ResourceAlreadyExistException("id", tenant.getId());
     }

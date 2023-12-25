@@ -438,7 +438,7 @@ class TenantControllerTest extends BaseIT {
       .andExpectAll(
         status().is4xxClientError(),
         jsonPath("$.errors[0].code", is("VALIDATION_ERROR")),
-        jsonPath("$.errors[0].message", is("central tenant 'diku' cannot be deleted")));
+        jsonPath("$.errors[0].message", is("central tenant [diku] cannot be deleted")));
   }
 
   @Test
