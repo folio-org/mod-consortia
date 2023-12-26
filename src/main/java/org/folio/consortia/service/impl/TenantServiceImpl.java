@@ -138,20 +138,16 @@ public class TenantServiceImpl implements TenantService {
     validateExistingTenant(existingTenant);
 
     tenantDto.setIsDeleted(false);
-    var savedTenant = saveTenant(consortiumId, tenantDto, SetupStatusEnum.IN_PROGRESS);
+    var savedTenant = saveTenant(consortiumId, tenantDto, SetupStatusEnum.COMPLETED);
 
     String centralTenantId = getCentralTenantId();
-    var hasFailedAffiliations = false;
     try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(tenantDto.getId()))) {
       createUserTenantWithDummyUser(tenantDto.getId(), centralTenantId, consortiumId);
       log.info("reAddSoftDeletedTenant:: Dummy user re-created in user-tenants table");
     } catch (Exception e) {
-      hasFailedAffiliations = true;
       log.error("Failed to create dummy user with centralTenantId: {}, tenant: {}" +
         " and error message: {}", centralTenantId, tenantDto.getId(), e.getMessage(), e);
     }
-    updateTenantSetupStatus(tenantDto.getId(), centralTenantId, hasFailedAffiliations ?
-      SetupStatusEnum.COMPLETED_WITH_ERRORS : SetupStatusEnum.COMPLETED);
 
     return savedTenant;
   }
@@ -321,10 +317,10 @@ public class TenantServiceImpl implements TenantService {
   }
 
   private void validateCodeAndNameUniqueness(Tenant tenant) {
-    if (tenantRepository.existsByNameForOtherTenant(tenant.getName(), tenant.getId())) {
+    if (tenantRepository.existsByName(tenant.getName())) {
       throw new ResourceAlreadyExistException("name", tenant.getName());
     }
-    if (tenantRepository.existsByCodeForOtherTenant(tenant.getCode(), tenant.getId())) {
+    if (tenantRepository.existsByCode(tenant.getCode())) {
       throw new ResourceAlreadyExistException("code", tenant.getCode());
     }
   }
