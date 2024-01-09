@@ -2,6 +2,7 @@ package org.folio.consortia.repository;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SharingInstanceRepository extends JpaRepository<SharingInstanceEntity, UUID>, JpaSpecificationExecutor<SharingInstanceEntity> {
+
+  Optional<SharingInstanceEntity> findByInstanceIdAndSourceTenantIdAndTargetTenantId(UUID instanceIdentifier, String sourceTenantId, String targetTenantId);
 
   interface Specifications {
     static Specification<SharingInstanceEntity> constructSpecification(UUID instanceIdentifier, String sourceTenantId,

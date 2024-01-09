@@ -105,7 +105,18 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
 
       sharingInstance.setStatus(Status.IN_PROGRESS);
     }
-    SharingInstanceEntity savedSharingInstance = sharingInstanceRepository.save(toEntity(sharingInstance));
+    // before to save sharing instance to db, previous attempt is checked.
+    // if there is previous attempt, it will be updated with new attempt, otherwise created new record.
+    var existedSharingInstance = sharingInstanceRepository.findByInstanceIdAndSourceTenantIdAndTargetTenantId(sharingInstance.getInstanceIdentifier(), sourceTenantId, targetTenantId);
+    SharingInstanceEntity sharingInstanceEntity;
+    if (existedSharingInstance.isEmpty()) {
+      sharingInstanceEntity = toEntity(sharingInstance);
+    } else {
+      sharingInstanceEntity = existedSharingInstance.get();
+      sharingInstanceEntity.setError(sharingInstance.getError());
+      sharingInstanceEntity.setStatus(sharingInstance.getStatus());
+    }
+    SharingInstanceEntity savedSharingInstance = sharingInstanceRepository.save(sharingInstanceEntity);
     log.info("start:: sharingInstance with id: {}, instanceId: {}, sourceTenantId: {}, targetTenantId: {} has been saved with status: {}",
       savedSharingInstance.getId(), savedSharingInstance.getInstanceId(), sourceTenantId, targetTenantId, savedSharingInstance.getStatus());
     return converter.convert(savedSharingInstance, SharingInstance.class);
