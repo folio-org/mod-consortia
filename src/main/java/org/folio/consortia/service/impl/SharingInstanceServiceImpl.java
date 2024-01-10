@@ -114,8 +114,9 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
 
   /**
    * This method save sharing instance record to database.
-   * before to save sharing instance to db, previous attempt will be checked.
-   * if there is previous attempt, it will be updated with new attempt, otherwise created new record.
+   * Before to save sharing instance to db, previous attempt will be checked.
+   * If a matching previous attempt is found, the method updates it with the new attempt's error and status information.
+   * Otherwise, new record will be created.
    *
    * @param sharingInstance sharingInstanceDto
    * @return saved sharing instance entity
@@ -125,11 +126,11 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
       sharingInstance.getInstanceIdentifier(), sharingInstance.getSourceTenantId(), sharingInstance.getTargetTenantId());
 
     if (existingSharingInstanceOptional.isEmpty()) {
-      log.info("start:: There is no existing record, so creating new record");
+      log.info("saveSharingInstance:: There is no existing record, so creating new record");
       return sharingInstanceRepository.save(toEntity(sharingInstance));
     }
 
-    log.info("start:: Existed sharingInstance is being updated with new attempt with status={}", sharingInstance.getStatus());
+    log.info("saveSharingInstance:: Existed sharingInstance is being updated with new attempt with status={}", sharingInstance.getStatus());
     var existingSharingInstance = existingSharingInstanceOptional.get();
     existingSharingInstance.setError(sharingInstance.getError());
     existingSharingInstance.setStatus(sharingInstance.getStatus());
