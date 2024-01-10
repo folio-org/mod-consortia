@@ -11,12 +11,14 @@ import org.folio.consortia.domain.entity.SharingInstanceEntity;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SharingInstanceRepository extends JpaRepository<SharingInstanceEntity, UUID>, JpaSpecificationExecutor<SharingInstanceEntity> {
 
-  Optional<SharingInstanceEntity> findByInstanceIdAndSourceTenantIdAndTargetTenantId(UUID instanceIdentifier, String sourceTenantId, String targetTenantId);
+  @Query("SELECT si FROM SharingInstanceEntity si WHERE si.instanceId = ?1 AND si.sourceTenantId= ?2 AND si.targetTenantId= ?3")
+  Optional<SharingInstanceEntity> findByInstanceAndTenantIds(UUID instanceIdentifier, String sourceTenantId, String targetTenantId);
 
   interface Specifications {
     static Specification<SharingInstanceEntity> constructSpecification(UUID instanceIdentifier, String sourceTenantId,
