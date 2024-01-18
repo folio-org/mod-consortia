@@ -1,5 +1,13 @@
 ## 1.1.0 - Unreleased
 
+## 1.0.4 - Released (Poppy R2 2023)
+The focus of this release was to add permission to ensure instance update during sharing marc instances
+
+[Full Changelog](https://github.com/folio-org/mod-consortia/compare/v1.0.3...v1.0.4)
+
+### Stories
+* [MODCON-132](https://issues.folio.org/browse/MODCON-132) - Provide module permission to ensure instance update during sharing marc instances
+
 ## 1.0.3 - Released (Poppy R2 2023)
 The focus of this release was to add permissions that are used during instance sharing and to upgrade folio-spring-base to v7.2.2
 
