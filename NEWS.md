@@ -1,5 +1,13 @@
 ## 1.1.0 - Unreleased
 
+## 1.0.5 - Released (Poppy R2 2023)
+The focus of this release was to allow to re-share instance functionality
+
+[Full Changelog](https://github.com/folio-org/mod-consortia/compare/v1.0.4...v1.0.5)
+
+### Stories
+* [MODCON-134](https://issues.folio.org/browse/MODCON-134) - Allow to re-share instance after first failed attempt
+
 ## 1.0.4 - Released (Poppy R2 2023)
 The focus of this release was to add permission to ensure instance update during sharing marc instances
 
