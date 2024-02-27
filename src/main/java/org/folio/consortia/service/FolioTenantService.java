@@ -38,6 +38,7 @@ public class FolioTenantService extends TenantService {
   private final FolioExecutionContextHelper contextHelper;
   private final UserService userService;
   private final PermissionsClient permissionsClient;
+  private final PermissionUserService permissionUserService;
   private final ConsortiaConfigurationService consortiaConfigurationService;
 
   @Value("${folio.system-user.username}")
@@ -55,7 +56,7 @@ public class FolioTenantService extends TenantService {
   public FolioTenantService(JdbcTemplate jdbcTemplate, KafkaService kafkaService, FolioExecutionContext context,
                             FolioSpringLiquibase folioSpringLiquibase, CustomFieldService customFieldService,
                             FolioExecutionContext folioExecutionContext, FolioExecutionContextHelper contextHelper,
-                            UserService userService, PermissionsClient permissionsClient, ConsortiaConfigurationService consortiaConfigurationService) {
+                            UserService userService, PermissionsClient permissionsClient, PermissionUserService permissionUserService, ConsortiaConfigurationService consortiaConfigurationService) {
     super(jdbcTemplate, context, folioSpringLiquibase);
     this.kafkaService = kafkaService;
     this.customFieldService = customFieldService;
@@ -63,6 +64,7 @@ public class FolioTenantService extends TenantService {
     this.contextHelper = contextHelper;
     this.userService = userService;
     this.permissionsClient = permissionsClient;
+    this.permissionUserService = permissionUserService;
     this.consortiaConfigurationService = consortiaConfigurationService;
   }
 
@@ -123,14 +125,18 @@ public class FolioTenantService extends TenantService {
       centralSystemUser = userService.getByUsername(systemUserUsername)
         .orElseThrow(() -> new ResourceNotFoundException("systemUserUsername", systemUserUsername));
       systemUserPermissionList = permissionsClient.getUserPermissions(centralSystemUser.getId()).getResult();
+      log.info("updateLocalTenantShadowSystemUsers:: Retrieved permissions '{}' of centralSystemUser '{}' from centralTenantId={}",
+        systemUserPermissionList, centralSystemUser.getId(), centralTenantId);
     }
 
     try (var ignored = new FolioExecutionContextSetter(contextHelper.getSystemUserFolioExecutionContext(requestingTenant))) {
       var shadowCentralSystemUser = userService.getById(UUID.fromString(centralSystemUser.getId()));
       String shadowSystemUserId = shadowCentralSystemUser.getId();
       var shadowSystemUserPermissionList = permissionsClient.getUserPermissions(shadowSystemUserId).getResult();
+      log.info("updateLocalTenantShadowSystemUsers:: Retrieved permissions '{}' of shadowSystemUser '{}' from requestingTenant={}",
+        shadowSystemUserPermissionList, shadowSystemUserId, requestingTenant);
 
-      shadowSystemUserPermissionList.forEach(systemUserPermissionList::remove);
+      systemUserPermissionList.removeAll(shadowSystemUserPermissionList);
       systemUserPermissionList.forEach(permission ->
         permissionsClient.addPermission(shadowSystemUserId, new PermissionsClient.Permission(permission))
       );
