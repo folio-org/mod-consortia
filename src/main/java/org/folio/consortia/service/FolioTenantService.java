@@ -39,7 +39,6 @@ public class FolioTenantService extends TenantService {
   private final FolioExecutionContextHelper contextHelper;
   private final UserService userService;
   private final PermissionsClient permissionsClient;
-  private final PermissionUserService permissionUserService;
   private final ConsortiaConfigurationService consortiaConfigurationService;
 
   @Value("${folio.system-user.username}")
@@ -57,7 +56,7 @@ public class FolioTenantService extends TenantService {
   public FolioTenantService(JdbcTemplate jdbcTemplate, KafkaService kafkaService, FolioExecutionContext context,
                             FolioSpringLiquibase folioSpringLiquibase, CustomFieldService customFieldService,
                             FolioExecutionContext folioExecutionContext, FolioExecutionContextHelper contextHelper,
-                            UserService userService, PermissionsClient permissionsClient, PermissionUserService permissionUserService, ConsortiaConfigurationService consortiaConfigurationService) {
+                            UserService userService, PermissionsClient permissionsClient, ConsortiaConfigurationService consortiaConfigurationService) {
     super(jdbcTemplate, context, folioSpringLiquibase);
     this.kafkaService = kafkaService;
     this.customFieldService = customFieldService;
@@ -65,7 +64,6 @@ public class FolioTenantService extends TenantService {
     this.contextHelper = contextHelper;
     this.userService = userService;
     this.permissionsClient = permissionsClient;
-    this.permissionUserService = permissionUserService;
     this.consortiaConfigurationService = consortiaConfigurationService;
   }
 
