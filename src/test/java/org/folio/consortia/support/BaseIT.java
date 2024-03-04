@@ -69,7 +69,6 @@ public abstract class BaseIT {
   static void beforeAll(@Autowired MockMvc mockMvc) {
     wireMockServer = new WireMockServer(wireMockConfig()
       .port(WIRE_MOCK_PORT)
-      //todo
       .extensions(new ResponseTemplateTransformer(TemplateEngine.defaultTemplateEngine(), true, new ClasspathFileSource("/"), new ArrayList<>())));
 
     wireMockServer.start();
