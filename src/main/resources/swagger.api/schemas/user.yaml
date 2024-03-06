@@ -103,6 +103,10 @@ Personal:
     preferredContactTypeId:
       description: Id of user's preferred contact type
       type: string
+    profilePictureLink:
+      description: Link to the profile picture
+      type: string
+      format: uri
   additionalProperties: true
   required:
     - lastName
