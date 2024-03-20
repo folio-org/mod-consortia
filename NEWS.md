@@ -8,7 +8,6 @@ The focus of this release was to implement ECS tenant soft delete functionality 
 * [MODCON-144](https://folio-org.atlassian.net/browse/MODCON-144) - Spring upgrade
 * [MODCON-142](https://folio-org.atlassian.net/browse/MODCON-142) - Upgrade to the latest spring-base versions
 * [MODCON-137](https://folio-org.atlassian.net/browse/MODCON-137) - Stabilize acquisition/consortia karate tests
-* [MODCON-132](https://folio-org.atlassian.net/browse/MODCON-132) - Provide module permission to ensure instance update during sharing marc instances
 * [MODCON-130](https://folio-org.atlassian.net/browse/MODCON-130) - Adjust process to add ECS tenant with soft deleted functionality
 * [MODCON-127](https://folio-org.atlassian.net/browse/MODCON-127) - Implement ECS tenant soft deletion functionality
 * [MODCON-123](https://folio-org.atlassian.net/browse/MODCON-123) - Implement mechanism to update system shadow users permissions
@@ -20,7 +19,6 @@ The focus of this release was to implement ECS tenant soft delete functionality 
 
 ### Bugfixes
 * [MODCON-139](https://folio-org.atlassian.net/browse/MODCON-139) - SYSTEM_USER_PASSWORD is not propogated AND permissions already set issues
-* [MODCON-134](https://folio-org.atlassian.net/browse/MODCON-134) - Allow to re-share instance after first failed attempt
 * [MODCON-122](https://folio-org.atlassian.net/browse/MODCON-122) - Allow Contributor Name Types To Be Updateable By Publish Coordinator
 * [MODCON-121](https://folio-org.atlassian.net/browse/MODCON-121) - Allow Holding Sources To Be Updated With Publish Coordinator
 
