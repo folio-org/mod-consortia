@@ -1,15 +1,28 @@
 ## 1.2.0 - Unreleased
 
 ## 1.1.0 - Released (Quesnelia R1 2024)
-The focus of this release was to upgrade dependencies and fix bugs
+The focus of this release was to implement ECS tenant soft delete functionality and fix bugs
 
 ### Stories
 * [MODCON-146](https://folio-org.atlassian.net/browse/MODCON-146) - Update users schema to not fail when unknown field arrives
+* [MODCON-144](https://folio-org.atlassian.net/browse/MODCON-144) - Spring upgrade
 * [MODCON-142](https://folio-org.atlassian.net/browse/MODCON-142) - Upgrade to the latest spring-base versions
+* [MODCON-137](https://folio-org.atlassian.net/browse/MODCON-137) - Stabilize acquisition/consortia karate tests
+* [MODCON-132](https://folio-org.atlassian.net/browse/MODCON-132) - Provide module permission to ensure instance update during sharing marc instances
+* [MODCON-130](https://folio-org.atlassian.net/browse/MODCON-130) - Adjust process to add ECS tenant with soft deleted functionality
+* [MODCON-127](https://folio-org.atlassian.net/browse/MODCON-127) - Implement ECS tenant soft deletion functionality
+* [MODCON-123](https://folio-org.atlassian.net/browse/MODCON-123) - Implement mechanism to update system shadow users permissions
 * [MODCON-120](https://folio-org.atlassian.net/browse/MODCON-120) - Add more fields to shadow user that are required in UI
+* [MODCON-118](https://folio-org.atlassian.net/browse/MODCON-118) - Add sub permission to consortia.inventory.share.local.instance
+* [MODCON-114](https://folio-org.atlassian.net/browse/MODCON-114) - Secure setup of system users by defaults
+* [MODCON-112](https://folio-org.atlassian.net/browse/MODCON-112) - Expand module permissions with permissions for sharing marc instances
+* [MODCON-108](https://folio-org.atlassian.net/browse/MODCON-108) - Secure setup of system users by default
 
 ### Bugfixes
 * [MODCON-139](https://folio-org.atlassian.net/browse/MODCON-139) - SYSTEM_USER_PASSWORD is not propogated AND permissions already set issues
+* [MODCON-134](https://folio-org.atlassian.net/browse/MODCON-134) - Allow to re-share instance after first failed attempt
+* [MODCON-122](https://folio-org.atlassian.net/browse/MODCON-122) - Allow Contributor Name Types To Be Updateable By Publish Coordinator
+* [MODCON-121](https://folio-org.atlassian.net/browse/MODCON-121) - Allow Holding Sources To Be Updated With Publish Coordinator
 
 ### Dependencies
 * Bump `spring-boot` from `3.1.4` to `3.2.3`
