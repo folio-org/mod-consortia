@@ -1,4 +1,18 @@
-## 1.1.0 - Unreleased
+## 1.2.0 - Unreleased
+
+## 1.1.0 - Released (Quesnelia R1 2024)
+The focus of this release was to upgrade dependencies and fix bugs
+
+### Stories
+* [MODCON-146](https://folio-org.atlassian.net/browse/MODCON-146) - Update users schema to not fail when unknown field arrives
+* [MODCON-142](https://folio-org.atlassian.net/browse/MODCON-142) - Upgrade to the latest spring-base versions
+* [MODCON-120](https://folio-org.atlassian.net/browse/MODCON-120) - Add more fields to shadow user that are required in UI
+
+### Bugfixes
+* [MODCON-139](https://folio-org.atlassian.net/browse/MODCON-139) - SYSTEM_USER_PASSWORD is not propogated AND permissions already set issues
+
+### Dependencies
+* Bump `spring-boot` from `3.1.4` to `3.2.3`
 
 ## 1.0.0 - Released (Poppy R2 2023)
 The focus of this release was to implement backend logic for consortia
