@@ -12,10 +12,6 @@ The focus of this release was to implement ECS tenant soft delete functionality 
 * [MODCON-127](https://folio-org.atlassian.net/browse/MODCON-127) - Implement ECS tenant soft deletion functionality
 * [MODCON-123](https://folio-org.atlassian.net/browse/MODCON-123) - Implement mechanism to update system shadow users permissions
 * [MODCON-120](https://folio-org.atlassian.net/browse/MODCON-120) - Add more fields to shadow user that are required in UI
-* [MODCON-118](https://folio-org.atlassian.net/browse/MODCON-118) - Add sub permission to consortia.inventory.share.local.instance
-* [MODCON-114](https://folio-org.atlassian.net/browse/MODCON-114) - Secure setup of system users by defaults
-* [MODCON-112](https://folio-org.atlassian.net/browse/MODCON-112) - Expand module permissions with permissions for sharing marc instances
-* [MODCON-108](https://folio-org.atlassian.net/browse/MODCON-108) - Secure setup of system users by default
 
 ### Bugfixes
 * [MODCON-139](https://folio-org.atlassian.net/browse/MODCON-139) - SYSTEM_USER_PASSWORD is not propogated AND permissions already set issues
