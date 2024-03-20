@@ -13,6 +13,7 @@ The focus of this release was to upgrade dependencies and fix bugs
 
 ### Dependencies
 * Bump `spring-boot` from `3.1.4` to `3.2.3`
+* Bump `folio-service-tools` from `3.1.0` to `4.0.0`
 
 ## 1.0.0 - Released (Poppy R2 2023)
 The focus of this release was to implement backend logic for consortia
