@@ -67,8 +67,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   public UserTenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     var result = new UserTenantCollection();
-    var offsetRequest = new OffsetRequest(offset, limit);
-    Page<UserTenantEntity> userTenantPage = userTenantRepository.getAll(offsetRequest);
+    Page<UserTenantEntity> userTenantPage = userTenantRepository.getAll(OffsetRequest.of(offset, limit));
     result.setUserTenants(userTenantPage.map(o -> converter.convert(o, UserTenant.class)).getContent());
     result.setTotalRecords((int) userTenantPage.getTotalElements());
     return result;
@@ -99,8 +98,7 @@ public class UserTenantServiceImpl implements UserTenantService {
   public UserTenantCollection getByUserId(UUID consortiumId, UUID userId, Integer offset, Integer limit) {
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     var result = new UserTenantCollection();
-    var offsetRequest = new OffsetRequest(offset, limit);
-    Page<UserTenantEntity> userTenantPage = userTenantRepository.findByUserId(userId, offsetRequest);
+    Page<UserTenantEntity> userTenantPage = userTenantRepository.findByUserId(userId, OffsetRequest.of(offset, limit));
 
     if (userTenantPage.getContent().isEmpty()) {
       throw new ResourceNotFoundException(USER_ID, String.valueOf(userId));

@@ -143,8 +143,8 @@ public class SharingInstanceServiceImpl implements SharingInstanceService {
       consortiumId, instanceIdentifier, sourceTenantId, targetTenantId, status);
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
     var specification = constructSpecification(instanceIdentifier, sourceTenantId, targetTenantId, status);
-    var offsetRequest = new OffsetRequest(offset, limit);
-    var sharingInstancePage = sharingInstanceRepository.findAll(specification, offsetRequest);
+
+    var sharingInstancePage = sharingInstanceRepository.findAll(specification, OffsetRequest.of(offset, limit));
     var result = new SharingInstanceCollection();
     result.setSharingInstances(sharingInstancePage.stream().map(o -> converter.convert(o, SharingInstance.class)).toList());
     result.setTotalRecords((int) sharingInstancePage.getTotalElements());

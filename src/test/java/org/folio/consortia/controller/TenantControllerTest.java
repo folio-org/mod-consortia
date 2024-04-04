@@ -32,6 +32,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.WireMock;
+
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.folio.consortia.client.ConsortiaConfigurationClient;
 import org.folio.consortia.client.PermissionsClient;
 import org.folio.consortia.client.SyncPrimaryAffiliationClient;
@@ -59,6 +64,7 @@ import org.folio.consortia.service.impl.ConsortiaConfigurationServiceImpl;
 import org.folio.consortia.support.BaseIT;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.FolioModuleMetadata;
+import org.folio.spring.data.OffsetRequest;
 import org.folio.spring.integration.XOkapiHeaders;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -67,14 +73,7 @@ import org.mockito.Mock;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.client.WireMock;
-
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
 
 @EntityScan(basePackageClasses = TenantEntity.class)
 class TenantControllerTest extends BaseIT {
@@ -128,8 +127,8 @@ class TenantControllerTest extends BaseIT {
     tenantEntityList.add(tenantEntity1);
     tenantEntityList.add(tenantEntity2);
 
-    when(tenantRepository.findByConsortiumId(any(), any(PageRequest.of(1, 2)
-      .getClass()))).thenReturn(new PageImpl<>(tenantEntityList, PageRequest.of(1, 2), tenantEntityList.size()));
+    when(tenantRepository.findByConsortiumId(any(), any(OffsetRequest.of(1, 2).getClass())))
+      .thenReturn(new PageImpl<>(tenantEntityList, OffsetRequest.of(2, 2), tenantEntityList.size()));
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     var headers = defaultHeaders();
 

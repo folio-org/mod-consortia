@@ -80,8 +80,7 @@ public class TenantServiceImpl implements TenantService {
   public TenantCollection get(UUID consortiumId, Integer offset, Integer limit) {
     TenantCollection result = new TenantCollection();
     consortiumService.checkConsortiumExistsOrThrow(consortiumId);
-    var offsetRequest = new OffsetRequest(offset, limit);
-    Page<TenantEntity> page = tenantRepository.findByConsortiumId(consortiumId, offsetRequest);
+    Page<TenantEntity> page = tenantRepository.findByConsortiumId(consortiumId, OffsetRequest.of(offset, limit));
     result.setTenants(page.map(o -> converter.convert(o, Tenant.class)).getContent());
     result.setTotalRecords((int) page.getTotalElements());
     return result;
