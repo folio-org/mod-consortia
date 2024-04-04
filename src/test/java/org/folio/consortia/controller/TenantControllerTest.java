@@ -252,7 +252,7 @@ class TenantControllerTest extends BaseIT {
       andExpectAll(
         status().is4xxClientError(),
         content().contentType(MediaType.APPLICATION_JSON_VALUE),
-        jsonPath("$.errors[0].message", is("Page size must not be less than one")));
+        jsonPath("$.errors[0].message", is("Limit cannot be negative or zero: 0")));
   }
 
   @Test
