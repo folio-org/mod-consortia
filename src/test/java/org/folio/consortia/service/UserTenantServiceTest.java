@@ -64,7 +64,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 
 @SpringBootTest
 @EnableAutoConfiguration(exclude = BatchAutoConfiguration.class)
@@ -153,7 +152,8 @@ class UserTenantServiceTest {
     when(consortiumRepository.findById(UUID.fromString(CONSORTIUM_ID))).thenReturn(Optional.of(createConsortiumEntity()));
     when(conversionService.convert(userTenant, UserTenant.class)).thenReturn(toDto(userTenant));
     when(conversionService.convert(userTenant2, UserTenant.class)).thenReturn(toDto(userTenant2));
-    when(userTenantRepository.findByUserId(userId, OffsetRequest.of(0, 10))).thenReturn(new PageImpl<>(userTenantEntities, PageRequest.of(0, 10), userTenantEntities.size()));
+    when(userTenantRepository.findByUserId(userId, OffsetRequest.of(0, 10)))
+      .thenReturn(new PageImpl<>(userTenantEntities, OffsetRequest.of(0, 10), userTenantEntities.size()));
 
     // when
     UserTenantCollection result = userTenantService.getByUserId(UUID.fromString(CONSORTIUM_ID), userId, 0, 10);
