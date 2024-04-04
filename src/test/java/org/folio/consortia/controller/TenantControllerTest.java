@@ -128,12 +128,12 @@ class TenantControllerTest extends BaseIT {
     tenantEntityList.add(tenantEntity1);
     tenantEntityList.add(tenantEntity2);
 
-    when(tenantRepository.findByConsortiumId(any(), any(PageRequest.of(0, 2)
-      .getClass()))).thenReturn(new PageImpl<>(tenantEntityList, PageRequest.of(0, 2), tenantEntityList.size()));
+    when(tenantRepository.findByConsortiumId(any(), any(PageRequest.of(1, 2)
+      .getClass()))).thenReturn(new PageImpl<>(tenantEntityList, PageRequest.of(1, 2), tenantEntityList.size()));
     when(consortiumRepository.existsById(consortiumId)).thenReturn(true);
     var headers = defaultHeaders();
 
-    this.mockMvc.perform(get("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants?limit=2&offset=1").headers(headers))
+    this.mockMvc.perform(get("/consortia/7698e46-c3e3-11ed-afa1-0242ac120002/tenants?limit=2&offset=2").headers(headers))
       .andExpectAll(status().isOk(), content().contentType(MediaType.APPLICATION_JSON_VALUE));
   }
 
