@@ -1,5 +1,6 @@
 package org.folio.consortia.config;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.folio.consortia.domain.converter.ConsortiumConverter;
 import org.folio.consortia.domain.converter.TenantEntityToTenantConverter;
 import org.folio.consortia.domain.converter.UserTenantConverter;
@@ -45,7 +46,8 @@ public class AppConfig implements WebMvcConfigurer {
     final ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.findAndRegisterModules()
       .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-      .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+      .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+      .setSerializationInclusion(JsonInclude.Include.NON_NULL);
     return objectMapper;
   }
 
