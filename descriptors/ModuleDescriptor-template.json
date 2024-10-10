@@ -20,7 +20,7 @@
     },
     {
       "id": "inventory",
-      "version": "13.0"
+      "version": "14.0"
     }
   ],
   "provides": [
@@ -387,6 +387,7 @@
         "consortia.user-tenants.item.delete",
         "consortia.consortia-configuration.item.post",
         "consortia.inventory.share.local.instance",
+        "consortia.inventory.update.ownership",
         "consortia.sync-primary-affiliations.item.post",
         "consortia.create-primary-affiliations.item.post",
         "consortia.sharing-instances.item.post",
@@ -503,6 +504,16 @@
       "visible": true
     },
     {
+      "permissionName": "consortia.inventory.update.ownership",
+      "displayName": "Inventory: Update ownership",
+      "description": "Inventory: Update ownership",
+      "subPermissions": [
+        "inventory.holdings.update-ownership.item.post",
+        "inventory.items.update-ownership.item.post"
+      ],
+      "visible": true
+    },
+    {
       "permissionName": "consortia.sharing-instances.item.post",
       "displayName": "create sharing instance",
       "description": "Create sharing instance"
@@ -587,6 +598,26 @@
       {
         "name": "KAFKA_PORT",
         "value": "9092"
+      },
+      {
+        "name": "KAFKA_SECURITY_PROTOCOL",
+        "value": "PLAINTEXT"
+      },
+      {
+        "name": "KAFKA_SSL_KEYSTORE_LOCATION",
+        "value": ""
+      },
+      {
+        "name": "KAFKA_SSL_KEYSTORE_PASSWORD",
+        "value": ""
+      },
+      {
+        "name": "KAFKA_SSL_TRUSTSTORE_LOCATION",
+        "value": ""
+      },
+      {
+        "name": "KAFKA_SSL_TRUSTSTORE_PASSWORD",
+        "value": ""
       },
       {
         "name": "OKAPI_URL",
