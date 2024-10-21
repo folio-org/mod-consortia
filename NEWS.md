@@ -1,6 +1,7 @@
 ## 1.2.0 - Unreleased
 ### Stories
 * [MODLD-450](https://folio-org.atlassian.net/browse/MODLD-450) - ECS support for Linked Data
+* [MODCON-156](https://folio-org.atlassian.net/browse/MODCON-156) - Update module permissions in the ModuleDescriptor
 * [MODCON-160](https://folio-org.atlassian.net/browse/MODCON-160) - Rename change-manager permissions
 
 ## 1.1.0 - Released (Quesnelia R1 2024)
