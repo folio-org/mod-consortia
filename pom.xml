@@ -58,6 +58,9 @@
     <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
     <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
 
+    <!--Folio dependencies properties-->
+    <folio-module-descriptor-validator.version>1.0.0</folio-module-descriptor-validator.version>
+
     <!-- test dependencies -->
     <wiremock-standalone.version>3.0.1</wiremock-standalone.version>
     <testcontainers.version>1.20.2</testcontainers.version>
@@ -593,6 +596,18 @@
         </executions>
       </plugin>
 
+      <plugin>
+        <groupId>org.folio</groupId>
+        <artifactId>folio-module-descriptor-validator</artifactId>
+        <version>${folio-module-descriptor-validator.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>validate</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
