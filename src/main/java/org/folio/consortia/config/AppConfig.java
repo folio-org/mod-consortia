@@ -40,17 +40,6 @@ public class AppConfig implements WebMvcConfigurer {
     return executor;
   }
 
-  @Primary
-  @Bean
-  public ObjectMapper objectMapper() {
-    final ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.findAndRegisterModules()
-      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-      .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-      .setSerializationInclusion(JsonInclude.Include.NON_NULL);
-    return objectMapper;
-  }
-
   @Bean
   public RestTemplate restTemplate() {
     return new RestTemplate();
