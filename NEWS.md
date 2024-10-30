@@ -1,8 +1,26 @@
-## 1.2.0 - Unreleased
+## 1.3.0 - Unreleased
+
+## 1.2.0 - Released (Ramsons R2 2024)
+The primary focus of this release was to enhance Kafka consumer processing, update tenant logic, and improve filtering performance.
+
+[Full Changelog](https://github.com/folio-org/mod-consortia/compare/v1.1.0...v1.2.0)
+
 ### Stories
-* [MODLD-450](https://folio-org.atlassian.net/browse/MODLD-450) - ECS support for Linked Data
-* [MODCON-156](https://folio-org.atlassian.net/browse/MODCON-156) - Update module permissions in the ModuleDescriptor
+* [MODCONSKC-10](https://folio-org.atlassian.net/browse/MODCONSKC-10) - Add support of TLS when  connecting to MSK
+* [MODCON-164](https://folio-org.atlassian.net/browse/MODCON-164) - Update libraries of dependant acq modules to the latest versions
+* [MODCON-163](https://folio-org.atlassian.net/browse/MODCON-163) - Add system user permissions to support subject types/subject sources sharing
+* [MODCON-162](https://folio-org.atlassian.net/browse/MODCON-162) - inventory API version update
 * [MODCON-160](https://folio-org.atlassian.net/browse/MODCON-160) - Rename change-manager permissions
+* [MODCON-159](https://folio-org.atlassian.net/browse/MODCON-159) - Make default limit param as 100 instead 10 all consortia endpoints
+* [MODCON-158](https://folio-org.atlassian.net/browse/MODCON-158) - Extend "Inventory: Update ownership" permission
+* [MODCON-157](https://folio-org.atlassian.net/browse/MODCON-157) - testcontainers.kafka.KafkaContainer, apache/kafka-native:3.8.0
+* [MODCON-156](https://folio-org.atlassian.net/browse/MODCON-156) - Update module permissions in the ModuleDescriptor
+* [MODCON-155](https://folio-org.atlassian.net/browse/MODCON-155) - Add required Inventory: Update ownership permissions during setup only for ECS mode
+* [MODLD-450](https://folio-org.atlassian.net/browse/MODLD-450) - ECS support for Linked Data
+
+### Bugfixes
+* [MODCON-149](https://folio-org.atlassian.net/browse/MODCON-149) - Out of memory error when connecting to MSK using TLS
+* [MODCON-148](https://folio-org.atlassian.net/browse/MODCON-148) - "offset" does not behave according to documentation for /consortia/<<consortiaId>>/tenants
 
 ## 1.1.0 - Released (Quesnelia R1 2024)
 The focus of this release was to implement ECS tenant soft delete functionality and fix bugs
