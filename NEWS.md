@@ -1,5 +1,17 @@
 ## 1.3.0 - Unreleased
 
+## 1.2.1 - Released (Ramsons R2 2024 Bug Fix)
+The primary focus of this release was to review and cleanup module descriptor permissions.
+
+[Full Changelog](https://github.com/folio-org/mod-consortia/compare/v1.2.0...v1.2.1)
+
+### Stories
+* [UIU-3214](https://folio-org.atlassian.net/browse/UIU-3214) - UIU-3214 - Review and cleanup Module Descriptors for ui-users
+
+### Bugfixes
+* [MODINV-1116](https://folio-org.atlassian.net/browse/MODINV-1116) - ECS | User with "Share" permission cannot share "Local" MARC bib record from member tenant
+
+
 ## 1.2.0 - Released (Ramsons R2 2024)
 The primary focus of this release was to enhance Kafka consumer processing, update tenant logic, and improve filtering performance.
 
