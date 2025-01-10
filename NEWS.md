@@ -1,5 +1,14 @@
 ## 1.3.0 - Unreleased
 
+## 1.2.2 - Released (Ramsons R2 2024 Bug Fix)
+The primary focus of this release was to provide module permission needed for sharing MARC instances
+
+[Full Changelog](https://github.com/folio-org/mod-consortia/compare/v1.2.1...v1.2.2)
+
+### Stories
+* [MODCON-174](https://folio-org.atlassian.net/browse/MODCON-174) - Expand module permissions with permission for sharing marc instances
+
+
 ## 1.2.1 - Released (Ramsons R2 2024 Bug Fix)
 The primary focus of this release was to review and cleanup module descriptor permissions.
 
