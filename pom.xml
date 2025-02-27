@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.3.4</version>
+    <version>3.4.2</version>
     <relativePath />
   </parent>
 
@@ -24,7 +24,10 @@
   </licenses>
 
   <properties>
-    <java.version>17</java.version>
+    <java.version>21</java.version>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
+
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <start-class>org.folio.consortia.FolioConsortiaApplication</start-class>
@@ -45,18 +48,19 @@
     <sharing_settings.yaml.file>${project.basedir}/src/main/resources/swagger.api/sharing_settings.yaml</sharing_settings.yaml.file>
 
     <!-- runtime dependencies -->
-    <folio-spring-base.version>8.2.0</folio-spring-base.version>
-    <folio-service-tools.version>4.0.1</folio-service-tools.version>
+    <folio-spring-base.version>8.2.2</folio-spring-base.version>
+    <folio-service-tools.version>4.1.1</folio-service-tools.version>
     <mapstruct.version>1.6.2</mapstruct.version>
 
     <!--Maven plugin dependencies-->
-    <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-    <copy-rename-maven-plugin.version>1.0.1</copy-rename-maven-plugin.version>
     <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
-    <openapi-generator.version>7.9.0</openapi-generator.version>
-    <maven-surefire-plugin.version>3.5.1</maven-surefire-plugin.version>
+    <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+    <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
     <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
+    <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
     <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
+    <copy-rename-maven-plugin.version>1.0.1</copy-rename-maven-plugin.version>
+    <openapi-generator.version>7.11.0</openapi-generator.version>
 
     <!--Folio dependencies properties-->
     <folio-module-descriptor-validator.version>1.0.0</folio-module-descriptor-validator.version>
@@ -65,7 +69,7 @@
     <wiremock-standalone.version>3.0.1</wiremock-standalone.version>
     <testcontainers.version>1.20.2</testcontainers.version>
     <snakeyaml.version>2.3</snakeyaml.version>
-    <maven-checkstyle-plugin.version>3.5.0</maven-checkstyle-plugin.version>
+    <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
   </properties>
 
   <dependencyManagement>
@@ -567,6 +571,29 @@
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven-compiler-plugin.version}</version>
+        <configuration>
+          <release>17</release>
+          <parameters>true</parameters>
+        </configuration>
+        <executions>
+          <execution>
+            <id>default-compile</id>
+            <phase>process-sources</phase>
+          </execution>
+          <execution>
+            <id>build-generated-code</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${maven-surefire-plugin.version}</version>
         <configuration>
@@ -590,7 +617,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.5.0</version>
+        <version>${maven-enforcer-plugin.version}</version>
         <executions>
           <execution>
             <id>enforce-maven</id>
