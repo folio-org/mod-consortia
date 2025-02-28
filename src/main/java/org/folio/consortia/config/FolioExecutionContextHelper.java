@@ -22,6 +22,6 @@ public class FolioExecutionContextHelper {
   }
 
   public FolioExecutionContext getSystemUserFolioExecutionContext(String tenantId) {
-    return contextBuilder.forSystemUser(systemUserService.getAuthedSystemUser(tenantId));
+    return contextBuilder.forSystemUser(systemUserService.getAuthedSystemUser(tenantId), () -> systemUserService.getAuthedSystemUser(tenantId));
   }
 }
