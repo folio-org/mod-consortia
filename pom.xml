@@ -48,9 +48,9 @@
     <sharing_settings.yaml.file>${project.basedir}/src/main/resources/swagger.api/sharing_settings.yaml</sharing_settings.yaml.file>
 
     <!-- runtime dependencies -->
-    <folio-spring-base.version>8.2.2</folio-spring-base.version>
-    <folio-service-tools.version>4.1.1</folio-service-tools.version>
-    <mapstruct.version>1.6.2</mapstruct.version>
+    <mapstruct.version>1.6.3</mapstruct.version>
+    <streamex.version>0.8.3</streamex.version>
+    <openapi-generator.version>7.11.0</openapi-generator.version>
 
     <!--Maven plugin dependencies-->
     <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
@@ -60,16 +60,18 @@
     <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
     <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
     <copy-rename-maven-plugin.version>1.0.1</copy-rename-maven-plugin.version>
-    <openapi-generator.version>7.11.0</openapi-generator.version>
+    <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
 
     <!--Folio dependencies properties-->
+    <folio-spring-base.version>9.0.0</folio-spring-base.version>
+    <folio-service-tools.version>5.0.0</folio-service-tools.version>
     <folio-module-descriptor-validator.version>1.0.0</folio-module-descriptor-validator.version>
 
     <!-- test dependencies -->
     <wiremock-standalone.version>3.0.1</wiremock-standalone.version>
-    <testcontainers.version>1.20.2</testcontainers.version>
-    <snakeyaml.version>2.3</snakeyaml.version>
-    <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
+    <testcontainers.version>1.20.5</testcontainers.version>
+    <awaitility.version>4.3.0</awaitility.version>
+
   </properties>
 
   <dependencyManagement>
@@ -132,7 +134,7 @@
     <dependency>
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
-      <version>4.2.2</version>
+      <version>${awaitility.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -172,7 +174,7 @@
     <dependency>
       <groupId>one.util</groupId>
       <artifactId>streamex</artifactId>
-      <version>0.8.3</version>
+      <version>${streamex.version}</version>
     </dependency>
     <dependency>
       <groupId>org.mapstruct</groupId>
