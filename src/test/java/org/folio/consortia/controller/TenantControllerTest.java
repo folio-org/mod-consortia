@@ -71,9 +71,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @EntityScan(basePackageClasses = TenantEntity.class)
 class TenantControllerTest extends BaseIT {
@@ -84,23 +84,23 @@ class TenantControllerTest extends BaseIT {
   public static final String SYNC_PRIMARY_AFFILIATIONS_URL = "/consortia/%s/tenants/%s/sync-primary-affiliations?centralTenantId=%s";
   public static final String PRIMARY_AFFILIATIONS_URL = "/consortia/%s/tenants/%s/create-primary-affiliations?centralTenantId=%s";
 
-  @MockBean
+  @MockitoBean
   ConsortiumRepository consortiumRepository;
-  @MockBean
+  @MockitoBean
   TenantRepository tenantRepository;
-  @MockBean
+  @MockitoBean
   TenantDetailsRepository tenantDetailsRepository;
-  @MockBean
+  @MockitoBean
   UserTenantRepository userTenantRepository;
-  @MockBean
+  @MockitoBean
   ConsortiaConfigurationServiceImpl configurationService;
-  @MockBean
+  @MockitoBean
   ConsortiaConfigurationClient configurationClient;
-  @MockBean
+  @MockitoBean
   KafkaService kafkaService;
-  @MockBean
+  @MockitoBean
   UserTenantService userTenantService;
-  @MockBean
+  @MockitoBean
   UserService userService;
   @Mock
   FolioExecutionContextHelper contextHelper;
@@ -110,11 +110,11 @@ class TenantControllerTest extends BaseIT {
   FolioExecutionContext folioExecutionContext = new FolioExecutionContext() {};
   @Mock
   PermissionsClient permissionsClient;
-  @MockBean
+  @MockitoBean
   UserTenantsClient userTenantsClient;
-  @MockBean
+  @MockitoBean
   SyncPrimaryAffiliationClient syncPrimaryAffiliationClient;
-  @MockBean
+  @MockitoBean
   UsersClient usersClient;
 
   /* Success cases */

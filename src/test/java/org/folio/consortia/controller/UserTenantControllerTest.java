@@ -43,13 +43,13 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 @EntityScan(basePackageClasses = UserTenantEntity.class)
 class UserTenantControllerTest extends BaseIT {
@@ -63,13 +63,13 @@ class UserTenantControllerTest extends BaseIT {
   private UserTenantService userTenantService;
   @InjectMocks
   private UserTenantController userTenantController;
-  @MockBean
+  @MockitoBean
   private ConsortiumRepository consortiumRepository;
-  @MockBean
+  @MockitoBean
   private UserTenantRepository userTenantRepository;
-  @MockBean
+  @MockitoBean
   private TenantService tenantService;
-  @SpyBean
+  @MockitoSpyBean
   private UsersClient usersClient;
 
   @Test
