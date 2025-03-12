@@ -7,7 +7,7 @@ The primary focus of this release was to update to mod-consortia Java 21 and upd
 
 ### Stories
 * [FOLIO-4204](https://folio-org.atlassian.net/browse/FOLIO-4204) - Update to mod-consortia Java 21
-* [MODCONSKC-61](https://folio-org.atlassian.net/browse/[MODCONSKC-61]) - ECS | Update Member tenant user email value on Central tenant
+* [MODCONSKC-61](https://folio-org.atlassian.net/browse/MODCONSKC-61) - ECS | Update Member tenant user email value on Central tenant
 
 
 ## 1.2.0 - Released (Ramsons R2 2024)
