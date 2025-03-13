@@ -1,4 +1,17 @@
-## 1.3.0 - Unreleased
+## 1.4.0 - Unreleased
+
+## 1.3.0 - Released (Sunflower R1 2025)
+The primary focus of this release was to update to mod-consortia Java 21 and update Member tenant user email value on Central tenant.
+
+[Full Changelog](https://github.com/folio-org/mod-consortia/compare/v1.2.0...v1.3.0)
+
+### Stories
+* [FOLIO-4204](https://folio-org.atlassian.net/browse/FOLIO-4204) - Update to mod-consortia Java 21
+* [MODCONSKC-61](https://folio-org.atlassian.net/browse/MODCONSKC-61) - ECS | Update Member tenant user email value on Central tenant
+
+### Dependencies
+* Bump `spring-boot` from `3.3.4` to `3.4.3`
+* Bump `java` from `17` to `21`
 
 ## 1.2.0 - Released (Ramsons R2 2024)
 The primary focus of this release was to enhance Kafka consumer processing, update tenant logic, and improve filtering performance.
