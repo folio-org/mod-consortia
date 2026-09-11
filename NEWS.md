@@ -1,5 +1,8 @@
 ## 1.4.0 - Unreleased
 
+### Stories
+* [MODCON-196](https://folio-org.atlassian.net/browse/MODCON-196) - Update mod-consortia _self descriptor to require an access token
+
 ## 1.3.0 - Released (Sunflower R1 2025)
 The primary focus of this release was to update to mod-consortia Java 21 and update Member tenant user email value on Central tenant.
 

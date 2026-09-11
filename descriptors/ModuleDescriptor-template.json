@@ -128,7 +128,7 @@
             "GET"
           ],
           "pathPattern": "/consortia/{consortiumId}/_self",
-          "permissionsRequired": [],
+          "permissionsRequired": ["*"],
           "modulePermissions": []
         },
         {
