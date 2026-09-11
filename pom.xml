@@ -65,7 +65,7 @@
     <!--Folio dependencies properties-->
     <folio-spring-base.version>9.0.0</folio-spring-base.version>
     <folio-service-tools.version>5.0.0</folio-service-tools.version>
-    <folio-module-descriptor-validator.version>1.0.0</folio-module-descriptor-validator.version>
+    <folio-module-descriptor-validator.version>1.0.2-SNAPSHOT</folio-module-descriptor-validator.version>
 
     <!-- test dependencies -->
     <wiremock-standalone.version>3.0.1</wiremock-standalone.version>
