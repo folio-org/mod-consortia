@@ -5,6 +5,14 @@ Copyright (C) 2022-2023 The Open Library Foundation
 This software is distributed under the terms of the Apache License,
 Version 2.0. See the file "[LICENSE](LICENSE)" for more information.
 
+## DEPRECATED
+
+mod-consortia is deprecated and has been replaced with https://github.com/folio-org/mod-consortia-keycloak
+
+mod-consortia is for Okapi-based FOLIO installations only.
+
+mod-consortia-keycloak is for Eureka-based FOLIO installations.
+
 ## Table of Contents
 
 - [Introduction](#introduction)
